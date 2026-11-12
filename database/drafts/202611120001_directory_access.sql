@@ -245,6 +245,23 @@ create policy directory_category_requests_decide on public.supplier_directory_ca
 create policy directory_audit_admin_read on public.supplier_directory_audit for select to authenticated
   using ((select supplier_directory_private.is_admin()));
 
+-- This is presentation metadata only. Table policies remain authoritative.
+-- The function returns no identities or unit membership information.
+create function public.supplier_directory_my_access()
+returns jsonb language sql stable security definer set search_path = '' as $$
+  select jsonb_build_object(
+    'active', supplier_directory_private.active_user(),
+    'admin', supplier_directory_private.is_admin(),
+    'manage_profiles', supplier_directory_private.is_admin() or exists (
+      select 1 from public.supplier_directory_roles r
+      where r.user_id = (select auth.uid()) and r.role = 'department_manager'
+        and supplier_directory_private.manages_unit(r.unit_id)
+    )
+  );
+$$;
+revoke all on function public.supplier_directory_my_access() from public, anon, authenticated;
+grant execute on function public.supplier_directory_my_access() to authenticated;
+
 -- Category hierarchy is deliberately limited to one parent and one child level.
 -- Lock the parent row while checking to prevent concurrent reciprocal moves.
 create function supplier_directory_private.check_category_parent()
