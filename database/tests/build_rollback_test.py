@@ -69,6 +69,8 @@ do $$ begin
 end $$;
 
 reset role;
+select set_config('request.jwt.claims', json_build_object(
+  'sub', current_setting('directory_test.user_id'), 'role', 'authenticated', 'is_anonymous', false)::text, true);
 update public.supplier_directory_roles set revoked_at = now()
   where user_id = current_setting('directory_test.user_id')::uuid and role = 'admin';
 set local role authenticated;
