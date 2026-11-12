@@ -162,9 +162,8 @@ grant select on public.audit_log to authenticated;
 create policy audit_log_admin_read on public.audit_log for select to authenticated
   using ((select private.is_admin()));
 
-drop policy activity_admin_read on public.activity_events;
-drop policy activity_insert_own on public.activity_events;
-create policy activity_admin_read on public.activity_events for select to authenticated
+-- Altered in place rather than dropped, so the policies are never missing.
+alter policy activity_admin_read on public.activity_events
   using ((select private.is_admin()));
-create policy activity_insert_own on public.activity_events for insert to authenticated
+alter policy activity_insert_own on public.activity_events
   with check (actor_id = (select auth.uid()) and (select private.is_member()));
