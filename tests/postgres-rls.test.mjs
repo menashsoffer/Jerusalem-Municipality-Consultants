@@ -44,6 +44,7 @@ async function asAuthenticated(db, user, action) {
 
 async function bootstrappedDatabase() {
   const db = new PGlite();
+  try {
   await db.exec(setup);
   await db.exec(await readFile(resolve(root, 'database/drafts/202611120001_directory_access.sql'), 'utf8'));
   await db.exec(`
@@ -62,6 +63,10 @@ async function bootstrappedDatabase() {
       ('40000000-0000-0000-0000-000000000001','Planning','${admin}');
   `);
   return db;
+  } catch (error) {
+    await db.close();
+    throw error;
+  }
 }
 
 test('migration and rollback fixture execute in isolated PostgreSQL', async () => {
