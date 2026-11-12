@@ -1,11 +1,13 @@
--- Calculated monthly CPI thresholds. The first row preserves an unverified legacy amount.
+-- Calculated monthly CPI thresholds from the published CBS series.
 -- CBS values are on the 1985 average base; calculations are estimates, not official amounts.
 -- Coverage intentionally ends on 2026-11-15: October CPI was not yet published.
 insert into public.thresholds
   (valid_from, valid_until, no_tender_max, zuta4_max, zuta6_max, index_value, source, is_official)
 values
-  ('2021-10-16', '2021-11-15', 145500, 355300, 710600, null,
-    'Legacy procurement_seed.sql; https://www.gov.il/he/pages/connections', false),
+  ('2021-09-16', '2021-10-15', 145500, 355300, 710600, 980.8749,
+    'CBS CPI 2021-08; https://api.cbs.gov.il/index/data/price?id=120010', false),
+  ('2021-10-16', '2021-11-15', 145800, 356000, 712000, 982.7963,
+    'CBS CPI 2021-09; https://api.cbs.gov.il/index/data/price?id=120010', false),
   ('2021-11-16', '2021-12-15', 145900, 356400, 712700, 983.7570,
     'CBS CPI 2021-10; https://api.cbs.gov.il/index/data/price?id=120010', false),
   ('2021-12-16', '2022-01-15', 145800, 356000, 712000, 982.7963,
