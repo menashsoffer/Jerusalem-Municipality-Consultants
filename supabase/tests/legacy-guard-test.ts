@@ -28,7 +28,7 @@ async function withLegacyClaim(
 describe('legacy table requires a current database admin', () => {
   let db: PGlite;
   before(async () => {
-    db = await migratedDatabase();
+    db = await migratedDatabase({ until: '20261112091000_guard_legacy_access.sql' });
     await db.exec(ACCESS_FIXTURE);
     await db.exec(`insert into public.legacy_suppliers (name, field, registry)
       values ('ספק לדוגמה', 'תכנון', 'מאגר')`);

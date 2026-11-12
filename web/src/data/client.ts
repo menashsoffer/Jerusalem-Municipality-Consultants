@@ -17,7 +17,9 @@ export class DataError extends Error {
         ? 'פג תוקף ההתחברות. יש להתחבר מחדש.'
         : status === 403
           ? 'אין לך הרשאה לבצע פעולה זו.'
-          : 'לא ניתן להשלים את הפעולה. יש לנסות שוב.',
+          : status === 409
+            ? 'הרשומה כבר קיימת. בדקו את פרטי הספק לפני ניסיון נוסף.'
+            : 'לא ניתן להשלים את הפעולה. יש לנסות שוב.',
     );
     this.status = status;
   }
@@ -58,7 +60,8 @@ export class DataClient {
       headers.set(key, value);
     });
     try {
-      response = await this.fetcher(`${this.root}/${path}`, {
+      const fetcher = this.fetcher;
+      response = await fetcher(`${this.root}/${path}`, {
         ...init,
         headers,
       });
@@ -76,6 +79,18 @@ export class DataClient {
 
   async rpc(name: 'my_access'): Promise<unknown> {
     return this.request(`rpc/${name}`, { method: 'POST', body: '{}' });
+  }
+
+  async supplierWrite(
+    name: 'save_supplier_membership' | 'rename_supplier' | 'replace_supplier_contact',
+    payload: Record<string, string>,
+  ): Promise<string> {
+    const result = await this.request(`rpc/${name}`, {
+      method: 'POST',
+      body: JSON.stringify({ payload }),
+    });
+    if (typeof result !== 'string') throw new DataError(0);
+    return result;
   }
 
   async list<T extends Resource>(

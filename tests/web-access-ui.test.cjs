@@ -14,9 +14,11 @@ async function page(access, metadata, supplies) {
   window.SupplierCatalog = catalog;
   window.CatalogView = {setSuppliers: () => {}, options: () => {}, render: () => {}, setOpenHandler: () => {}};
   window.SupplierDetails = {open: async () => {}, close: () => {}};
+  window.SupplierWrite = {bind: () => {}, open: async () => {}};
   let calls = 0;
   window.SiteData = {
     BASE: 'https://example.test',
+    canAddSupplier: () => !!access.admin,
     currentUser: async () => ({ok: true, json: async () => ({id: 'user', app_metadata: metadata})}),
     access: async () => access,
     catalog: async () => { calls++; return supplies(); },
@@ -45,10 +47,10 @@ test('viewer cannot see add action while the new catalog is readable', async () 
   p.close();
 });
 
-test('administrator cannot add to the old catalog during the transition', async () => {
+test('administrator can access the new supplier form', async () => {
   const p = await page({state:'active',member:true,admin:true}, {role:'supplier_admin'}, () => []);
   assert.equal(p.window.document.querySelector('#private-content').hidden, false);
-  assert.equal(p.window.document.querySelector('#add-open').hidden, true);
+  assert.equal(p.window.document.querySelector('#add-open').hidden, false);
   p.close();
 });
 

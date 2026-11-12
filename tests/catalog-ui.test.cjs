@@ -15,9 +15,10 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
     window.CatalogView = view;
     let opened = null;
     window.SupplierDetails = {open: async (id, token) => { opened = {id, token}; }, close: () => {}};
+    window.SupplierWrite = {bind: () => {}, open: async () => {}};
     window.SupplierCatalog = await import('../web/src/catalog.ts');
     window.SiteData = {
-      BASE:'https://example.test',
+      BASE:'https://example.test', canAddSupplier: () => false,
       currentUser: async () => ({ok:true, json:async () => ({id:'viewer',app_metadata:{}})}),
       access: async () => ({state:'active', member:true, admin:false}),
       catalog: async () => [{id:'s1', name:'שם נוכחי', aliases:['שם קודם'], verified:true,
