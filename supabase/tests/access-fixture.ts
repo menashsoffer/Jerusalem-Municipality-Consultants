@@ -14,6 +14,7 @@ export const USERS = {
   otherViewer: '10000000-0000-0000-0000-00000000000e',
   pending: '10000000-0000-0000-0000-00000000000f',
   blocked: '10000000-0000-0000-0000-000000000010',
+  auditor: '10000000-0000-0000-0000-000000000011',
 } as const;
 
 const ROLES: [keyof typeof USERS, string, string | null][] = [
@@ -23,6 +24,7 @@ const ROLES: [keyof typeof USERS, string, string | null][] = [
   ['viewer', 'viewer', UNIT_1],
   ['otherViewer', 'viewer', UNIT_2],
   ['blocked', 'viewer', UNIT_1],
+  ['auditor', 'auditor', null],
 ];
 
 function profile(key: keyof typeof USERS): string {
