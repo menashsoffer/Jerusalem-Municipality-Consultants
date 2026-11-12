@@ -1,0 +1,11 @@
+{
+  "name": "jerusalem-consultants-development",
+  "private": true,
+  "scripts": {
+    "test:ui": "node --test tests/*.test.cjs",
+    "test:database": "python3 database/tests/build_rollback_test.py && node --test tests/postgres-rls.test.mjs"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8"
+  }
+}
