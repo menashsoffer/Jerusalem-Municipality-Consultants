@@ -2,6 +2,11 @@ import { filterCatalog, type Filters } from './catalog-filter.ts';
 import { validity, type Membership, type Supplier, type Validity } from './catalog-model.ts';
 
 let suppliers: Supplier[] = [];
+let openSupplier: ((id: string) => void) | null = null;
+
+export function setOpenHandler(handler: (id: string) => void): void {
+  openSupplier = handler;
+}
 function el(id: string): HTMLElement {
   const element = document.getElementById(id);
   if (!element) throw new Error(`Missing element ${id}`);
@@ -107,6 +112,15 @@ function card(supplier: Supplier, day: string): HTMLElement {
       ),
     );
   }
+  const button = document.createElement('button');
+  button.type = 'button';
+  button.className = 'secondary supplier-detail-open';
+  button.textContent = 'פרטי ספק';
+  button.setAttribute('aria-label', `פרטי ספק: ${supplier.name}`);
+  button.addEventListener('click', () => {
+    openSupplier?.(supplier.id);
+  });
+  node.append(button);
   return node;
 }
 export function render(): void {

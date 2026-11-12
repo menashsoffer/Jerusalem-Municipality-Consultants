@@ -1,7 +1,8 @@
 import type { PublicSchema } from '../database.types.ts';
 import { buildCatalog, type Supplier } from '../catalog-model.ts';
 import { loadAccess, type Access } from './access.ts';
-import { loadCatalog } from './catalog.ts';
+import { loadCatalog, type CatalogData } from './catalog.ts';
+import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { DataClient } from './client.ts';
 
 export const BASE = 'https://jzsvhjkiklfnogseelbe.supabase.co';
@@ -43,9 +44,13 @@ export function sendLink(email: string, redirect: string): Promise<Response> {
 }
 
 let currentAccess: Access | null = null;
+let currentCatalog: CatalogData | null = null;
+let currentToken: string | null = null;
 
 export async function access(token: string, userId: string): Promise<Access> {
   currentAccess = null;
+  currentCatalog = null;
+  currentToken = null;
   currentAccess = await loadAccess(data(token), userId);
   return currentAccess;
 }
@@ -55,7 +60,15 @@ export function getAccess(): Access | null {
 }
 
 export async function catalog(token: string): Promise<Supplier[]> {
-  return buildCatalog(await loadCatalog(data(token)));
+  currentCatalog = await loadCatalog(data(token));
+  currentToken = token;
+  return buildCatalog(currentCatalog);
+}
+
+export async function detail(token: string, supplierId: string): Promise<SupplierDetail> {
+  if (!currentAccess || !currentCatalog || currentToken !== token)
+    throw new Error('יש להתחבר מחדש.');
+  return supplierDetail(data(token), currentCatalog, { supplierId, access: currentAccess });
 }
 
 export function legacySuppliers(token: string): Promise<PublicSchema['legacy_suppliers']['Row'][]> {

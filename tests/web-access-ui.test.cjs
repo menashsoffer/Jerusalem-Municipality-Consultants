@@ -12,7 +12,8 @@ async function page(access, metadata, supplies) {
   const {window} = dom;
   const catalog = await import('../web/src/catalog.ts');
   window.SupplierCatalog = catalog;
-  window.CatalogView = {setSuppliers: () => {}, options: () => {}, render: () => {}};
+  window.CatalogView = {setSuppliers: () => {}, options: () => {}, render: () => {}, setOpenHandler: () => {}};
+  window.SupplierDetails = {open: async () => {}, close: () => {}};
   let calls = 0;
   window.SiteData = {
     BASE: 'https://example.test',

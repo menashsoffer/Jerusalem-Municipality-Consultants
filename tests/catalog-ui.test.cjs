@@ -13,6 +13,8 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
   try {
     const view = await import('../web/src/catalog-view.ts');
     window.CatalogView = view;
+    let opened = null;
+    window.SupplierDetails = {open: async (id, token) => { opened = {id, token}; }, close: () => {}};
     window.SupplierCatalog = await import('../web/src/catalog.ts');
     window.SiteData = {
       BASE:'https://example.test',
@@ -34,6 +36,8 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
     assert.match(window.document.querySelector('#results').textContent, /שם נוכחי/);
     assert.match(window.document.querySelector('#results').textContent, /ספק מאומת/);
     assert.equal(window.document.querySelector('#add-open').hidden, true);
+    window.document.querySelector('.supplier-detail-open').click();
+    assert.deepEqual(opened, {id:'s1', token:'x'});
   } finally {
     window.close();
     delete global.document;
