@@ -33,7 +33,7 @@ const setup = `
 const admin = '10000000-0000-0000-0000-000000000003';
 const viewer = '20000000-0000-0000-0000-000000000003';
 const pending = '30000000-0000-0000-0000-000000000003';
-const claims = user => JSON.stringify({sub: user, role: 'authenticated', is_anonymous: false});
+const claims = user => JSON.stringify({sub: user, role: 'authenticated', is_anonymous: false, email: user + '@example.test'});
 
 async function asAuthenticated(db, user, action) {
   await db.query("select set_config('request.jwt.claims', $1, false)", [claims(user)]);
@@ -86,10 +86,13 @@ test('pending users can request access but cannot approve themselves or create r
   const db = await bootstrappedDatabase();
   try {
     await asAuthenticated(db, pending, async () => {
+      await assert.rejects(db.exec(`insert into public.supplier_directory_profiles(user_id,first_name,last_name,email,job_title,unit_id,purpose)
+        values ('${pending}','Pending','User','spoof@example.test','Employee','10000000-0000-0000-0000-000000000002','Test access')`), {code: '42501'});
       await db.exec(`insert into public.supplier_directory_profiles(user_id,first_name,last_name,job_title,unit_id,purpose)
         values ('${pending}','Pending','User','Employee','10000000-0000-0000-0000-000000000002','Test access')`);
-      const own = await db.query('select status from public.supplier_directory_profiles');
+      const own = await db.query('select status,email from public.supplier_directory_profiles');
       assert.deepEqual(own.rows.map(row => row.status), ['pending']);
+      assert.equal(own.rows[0].email, pending + '@example.test');
       const update = await db.exec(`update public.supplier_directory_profiles set status='active', reviewed_at=now(), reviewed_by='${pending}' where user_id='${pending}'`);
       assert.equal(update[0].affectedRows, 0);
       const categories = await db.query('select * from public.supplier_directory_categories');
@@ -219,8 +222,8 @@ test('department managers approve only their unit and can grant only viewer acce
       assert.equal(visible.rows.some(row => row.user_id === outsider), false);
       const denied = await db.exec(`update public.supplier_directory_profiles set status='blocked', reviewed_by='${manager}', reviewed_at=now() where user_id='${outsider}'`);
       assert.equal(denied[0].affectedRows, 0);
-      await db.exec(`update public.supplier_directory_profiles set status='active', reviewed_by='${manager}', reviewed_at=now() where user_id='${pending}'`);
-      await db.exec(`insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${pending}','viewer','${unit}','${manager}')`);
+      await db.query("select public.supplier_directory_decide_profile($1, 'active', 'Verified employee')", [pending]);
+      assert.equal((await db.query(`select role from public.supplier_directory_roles where user_id='${pending}'`)).rows[0].role, 'viewer');
       await assert.rejects(db.exec(`insert into public.supplier_directory_roles(user_id,role,granted_by) values ('${pending}','admin','${manager}')`), {code: '42501'});
       await assert.rejects(db.exec(`insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${outsider}','viewer','${unit}','${manager}')`), {code: '42501'});
       await assert.rejects(db.exec(`insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${pending}','editor','${unit}','${manager}')`), {code: '42501'});
@@ -229,5 +232,22 @@ test('department managers approve only their unit and can grant only viewer acce
       assert.equal((await db.query('select * from public.supplier_directory_categories')).rows.length, 1));
     await asAuthenticated(db, outsider, async () =>
       assert.equal((await db.query('select * from public.supplier_directory_categories')).rows.length, 0));
+  } finally { await db.close(); }
+});
+
+test('profile decision is atomic if role creation fails', async () => {
+  const db = await bootstrappedDatabase();
+  const unit = '10000000-0000-0000-0000-000000000002';
+  try {
+    await db.exec(`insert into public.supplier_directory_profiles(user_id,first_name,last_name,job_title,unit_id,purpose)
+      values ('${pending}','Pending','User','Employee','${unit}','Test access');
+      insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by,granted_at,expires_at)
+      values ('${pending}','viewer','${unit}','${admin}',now()-interval '2 days',now()-interval '1 day')`);
+    await asAuthenticated(db, admin, async () => {
+      await assert.rejects(db.query("select public.supplier_directory_decide_profile($1, 'active', 'Approve')", [pending]), {code: '23505'});
+      assert.equal((await db.query('select status from public.supplier_directory_profiles where user_id=$1', [pending])).rows[0].status, 'pending');
+      await assert.rejects(db.query("select public.supplier_directory_decide_profile($1, 'rejected', '')", [pending]), {code: '22023'});
+      assert.equal((await db.query('select status from public.supplier_directory_profiles where user_id=$1', [pending])).rows[0].status, 'pending');
+    });
   } finally { await db.close(); }
 });
