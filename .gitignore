@@ -1,2 +1,4 @@
 *.sqlite3
 __pycache__/
+node_modules/
+database/tests/generated_access_rollback.sql
