@@ -1,0 +1,12 @@
+# Legacy code (coding standards, section 10). Remove entries as files are replaced.
+docs/assets/
+index.html
+docs/index.html
+tests/*.cjs
+tests/*.mjs
+# Generated or third-party
+node_modules/
+package-lock.json
+database/tests/generated_access_rollback.sql
+# Prose is reviewed by hand; Prettier reflows Hebrew tables badly
+*.md
