@@ -24,6 +24,7 @@ create table public.supplier_directory_profiles (
   user_id uuid primary key references auth.users(id) on delete cascade,
   first_name text not null check (length(trim(first_name)) between 1 and 100),
   last_name text not null check (length(trim(last_name)) between 1 and 100),
+  email text default nullif((auth.jwt() ->> 'email'), '') check (email is null or length(email) <= 320),
   job_title text not null check (length(trim(job_title)) between 1 and 200),
   phone text check (length(phone) <= 80),
   unit_id uuid not null references public.supplier_directory_units(id),
@@ -34,7 +35,8 @@ create table public.supplier_directory_profiles (
   reviewed_by uuid references auth.users(id),
   review_note text check (length(review_note) <= 2000),
   check ((status = 'pending' and reviewed_at is null and reviewed_by is null)
-      or (status <> 'pending' and reviewed_at is not null and reviewed_by is not null))
+      or (status <> 'pending' and reviewed_at is not null and reviewed_by is not null)),
+  check (status <> 'rejected' or length(trim(coalesce(review_note, ''))) >= 2)
 );
 
 create table public.supplier_directory_roles (
@@ -200,6 +202,7 @@ create policy directory_profiles_read on public.supplier_directory_profiles for 
 create policy directory_profiles_signup on public.supplier_directory_profiles for insert to authenticated
   with check (user_id = (select auth.uid()) and status = 'pending'
     and coalesce((select auth.jwt()) ->> 'is_anonymous', 'false') <> 'true'
+    and email is not null and email = ((select auth.jwt()) ->> 'email')
     and exists (select 1 from public.supplier_directory_units u
       join public.supplier_directory_units parent on parent.id = u.parent_id
       where u.id = supplier_directory_profiles.unit_id and u.kind = 'department' and u.active and u.verified
@@ -346,5 +349,53 @@ create trigger directory_categories_audit after insert or update on public.suppl
   for each row execute function supplier_directory_private.record_change();
 create trigger directory_category_requests_audit after insert or update on public.supplier_directory_category_requests
   for each row execute function supplier_directory_private.record_change();
+
+-- SECURITY INVOKER deliberately keeps the caller subject to column grants and
+-- RLS. The update and viewer grant either both succeed or both roll back.
+create function public.supplier_directory_decide_profile(target_user uuid, decision text, note text default null)
+returns jsonb language plpgsql security invoker set search_path = '' as $$
+declare
+  target_unit uuid;
+  acting_user uuid := (select auth.uid());
+begin
+  if acting_user is null or decision not in ('active', 'rejected') or decision is null then
+    raise exception 'Invalid decision' using errcode = '22023';
+  end if;
+  if decision = 'rejected' and length(trim(coalesce(note, ''))) < 2 then
+    raise exception 'Rejection requires a reason' using errcode = '22023';
+  end if;
+  if length(coalesce(note, '')) > 2000 then
+    raise exception 'Decision note is too long' using errcode = '22023';
+  end if;
+  update public.supplier_directory_profiles
+    set status = decision, reviewed_at = now(), reviewed_by = acting_user, review_note = note
+    where user_id = target_user and status = 'pending'
+    returning unit_id into target_unit;
+  if not found then
+    raise exception 'Request not found, not pending, or not authorized' using errcode = '42501';
+  end if;
+  if decision = 'active' then
+    if not exists (
+      select 1 from public.supplier_directory_units u
+      join public.supplier_directory_units parent on parent.id = u.parent_id
+      where u.id = target_unit and u.kind = 'department' and u.active and u.verified
+        and parent.kind = 'administration' and parent.active and parent.verified
+    ) then
+      raise exception 'Department or administration is not active and verified' using errcode = '22023';
+    end if;
+    if not exists (
+      select 1 from public.supplier_directory_roles r where r.user_id = target_user
+        and r.unit_id = target_unit and r.role = 'viewer' and r.revoked_at is null
+        and r.granted_at <= now() and (r.expires_at is null or r.expires_at > now())
+    ) then
+      insert into public.supplier_directory_roles(user_id, role, unit_id, granted_by)
+        values (target_user, 'viewer', target_unit, acting_user);
+    end if;
+  end if;
+  return jsonb_build_object('status', decision);
+end;
+$$;
+revoke all on function public.supplier_directory_decide_profile(uuid, text, text) from public, anon, authenticated;
+grant execute on function public.supplier_directory_decide_profile(uuid, text, text) to authenticated;
 
 commit;
