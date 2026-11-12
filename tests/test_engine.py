@@ -4,8 +4,8 @@ from datetime import date
 from pathlib import Path
 
 from procurement.engine import (Thresholds, check_continuation_3_20, check_increase, check_new_contract,
-                                check_splitting, comparable_value, indexed_amount, thresholds_for,
-                                thresholds_from_index)
+                                check_splitting, comparable_value, indexed_amount, next_update_day,
+                                threshold_valid_until, thresholds_for, thresholds_from_index)
 from procurement.store import load_thresholds, related_request_values
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -55,6 +55,33 @@ class NewContractTests(unittest.TestCase):
         d = check_new_contract(150_000, DAY, TABLE, value_includes_vat=False, compare_incl_vat=False)
         self.assertEqual(d.route, "no_tender_low_value")
 
+    def test_stale_thresholds_need_review(self):
+        # סף אוקטובר 2026 תקף עד 15.11.2026 בלבד
+        self.assertTrue(self.route(1000).allowed)
+        d = check_new_contract(1000, date(2026, 11, 16), TABLE, value_includes_vat=True, related_values=[])
+        self.assertEqual(d.status, "needs_review")
+        # גם סף רשמי ישן אינו תקף לנצח
+        d = check_new_contract(1000, date(2022, 1, 1), TABLE, value_includes_vat=True, related_values=[])
+        self.assertEqual(d.status, "needs_review")
+        self.assertIs(thresholds_for(date(2022, 1, 1), TABLE), OCT_2021)
+
+    def test_explicit_valid_until(self):
+        t = Thresholds(date(2026, 10, 16), 1, 2, 3, "x", True, valid_until=date(2027, 1, 1))
+        self.assertEqual(threshold_valid_until(t), date(2027, 1, 1))
+        self.assertEqual(threshold_valid_until(NOV_2026), date(2026, 11, 15))
+        self.assertEqual(next_update_day(date(2026, 12, 20)), date(2027, 1, 16))
+
+    def test_splitting_wired_into_result(self):
+        d = self.route(100_000, related_values=[100_000])
+        self.assertTrue(d.splitting_checked)
+        self.assertEqual(d.route, "no_tender_low_value")
+        self.assertEqual(d.status, "needs_review")
+        self.assertTrue(any("פיצול" in w for w in d.warnings))
+        d = self.route(100_000)
+        self.assertFalse(d.splitting_checked)
+        self.assertTrue(any("לא בוצעה" in w for w in d.warnings))
+        self.assertTrue(self.route(10_000, related_values=[10_000]).allowed)
+
     def test_unofficial_thresholds_warn(self):
         self.assertTrue(any("אינם פרסום רשמי" in w for w in self.route(1000).warnings))
         d = check_new_contract(1000, date(2022, 1, 1), TABLE, value_includes_vat=True)
@@ -70,6 +97,17 @@ class NewContractTests(unittest.TestCase):
         d = self.route(900_000, exemption="3(8)")
         self.assertEqual(d.route, "public_tender")
         self.assertEqual(len(d.missing), 1)
+
+    def test_3_14_with_all_modeled_facts_still_needs_review(self):
+        d = self.route(900_000, exemption="3(14)", facts={"counterparty_is_npo": True, "city_holding_40": True,
+                                                         "purpose_education_culture_welfare_sport": True})
+        self.assertEqual(d.route, "exemption_3_14")
+        self.assertEqual(d.status, "needs_review")
+        self.assertFalse(d.allowed)
+        self.assertTrue(d.missing)
+
+    def test_fully_modeled_exemption_is_ok(self):
+        self.assertTrue(self.route(900_000, exemption="3(8)", facts={"professional_work": True}).allowed)
 
     def test_3_14_needs_all_conditions(self):
         d = self.route(900_000, exemption="3(14)", facts={"counterparty_is_npo": True, "city_holding_40": True})
@@ -104,7 +142,7 @@ class IncreaseTests(unittest.TestCase):
 class ContinuationTests(unittest.TestCase):
     def base(self, on=DAY, **kw):
         args = dict(first_value=100_000, first_months=12, previous_continuations=[], new_value=50_000,
-                    new_months=3, committee_convinced=True, special_state_end=None)
+                    new_months=3, committee_convinced=True, special_state_active_confirmed=True)
         args.update(kw)
         return check_continuation_3_20(on, **args)
 
@@ -119,7 +157,20 @@ class ContinuationTests(unittest.TestCase):
         self.assertFalse(self.base(previous_continuations=[(60_000, 1)]).allowed)
 
     def test_expired(self):
-        self.assertFalse(self.base(special_state_end=date(2026, 10, 1)).allowed)
+        d = self.base(special_state_end=date(2026, 10, 1))
+        self.assertFalse(d.allowed)
+        self.assertEqual(d.status, "blocked")
+
+    def test_unknown_validity_is_undecided(self):
+        d = self.base(special_state_active_confirmed=False)
+        self.assertFalse(d.allowed)
+        self.assertEqual(d.status, "needs_review")
+        self.assertTrue(d.missing)
+        self.assertFalse(d.as_dict()["allowed"])
+
+    def test_blocked_is_not_downgraded(self):
+        d = self.base(special_state_active_confirmed=False, previous_continuations=[(10_000, 4)])
+        self.assertEqual(d.status, "blocked")
 
 
 class SplittingTests(unittest.TestCase):
@@ -143,6 +194,9 @@ class StoreTests(unittest.TestCase):
                        " VALUES (?, 'ניקיון', 'cleaning', ?, 1)",
                        [("2026-11-01", 100_000), ("2026-11-10", 90_000), ("2026-01-01", 50_000)])
         self.assertEqual(sorted(related_request_values(db, "cleaning", DAY, exclude_id=2)), [100_000])
+        db.execute("INSERT INTO engagement_requests(requested_on, subject, subject_key, estimated_value, value_includes_vat)"
+                   " VALUES ('2026-11-05', 'גינון', 'garden', 100000, 0)")
+        self.assertAlmostEqual(related_request_values(db, "garden", DAY)[0], 118_000)
 
 
 if __name__ == "__main__":

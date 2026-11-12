@@ -19,7 +19,8 @@ CREATE TABLE IF NOT EXISTS thresholds (
   zuta_4_max INTEGER NOT NULL,
   zuta_6_max INTEGER NOT NULL,
   source TEXT NOT NULL,
-  is_official INTEGER NOT NULL DEFAULT 0
+  is_official INTEGER NOT NULL DEFAULT 0,
+  valid_until TEXT                  -- ריק: עד יום העדכון הבא (15 בחודש שאחרי). אחריו המנוע דורש אימות
 );
 
 -- בקשת התקשרות של אגף. ממנה נגזר המסלול החוקי.

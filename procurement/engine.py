@@ -13,7 +13,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import date
+from datetime import date, timedelta
 from typing import Iterable, Optional
 
 # סכומי הבסיס בתקנות (תקנות 3(3) ו-8) והמדד היסודי (תקנה 2)
@@ -37,6 +37,18 @@ class Thresholds:
     zuta_6_max: int      # עד סכום זה: מכרז זוטא עם 6 פניות לפחות. מעליו: מכרז פומבי
     source: str
     is_official: bool
+    valid_until: Optional[date] = None   # ריק: עד יום העדכון הבא (16 בחודש הבא) פחות יום
+
+
+def next_update_day(day: date) -> date:
+    """יום העדכון הבא לפי תקנה 2: ה-16 בחודש שאחרי היום הנתון (או באותו חודש אם טרם הגיע)."""
+    if day.day < 16:
+        return day.replace(day=16)
+    return date(day.year + (day.month == 12), day.month % 12 + 1, 16)
+
+
+def threshold_valid_until(t: Thresholds) -> date:
+    return t.valid_until or next_update_day(t.effective_from) - timedelta(days=1)
 
 
 def indexed_amount(base_amount: int, index_ratio: float) -> int:
@@ -73,15 +85,32 @@ class Decision:
     route: str                      # קוד מסלול, למשל public_tender, zuta_4, exemption_3_8
     regulation: str                 # התקנה שעליה נשענת התוצאה
     approver: str                   # הגורם שמאשר
-    allowed: bool = True            # False כשהבקשה במתכונתה אינה אפשרית
+    status: str = "ok"              # ok / needs_review (לא הוכרע, נדרשת בדיקה ידנית) / blocked
     requirements: list[str] = field(default_factory=list)   # מה צריך לתעד לפני ההתקשרות
     missing: list[str] = field(default_factory=list)        # נתונים שחסרים כדי להחיל את המסלול שהתבקש
     warnings: list[str] = field(default_factory=list)
     compared_value: Optional[float] = None
     thresholds_source: Optional[str] = None
+    splitting_checked: Optional[bool] = None   # None: לא רלוונטי. False: הבדיקה לא בוצעה
+
+    @property
+    def allowed(self) -> bool:
+        """True רק כשכל התנאים נבדקו ונמצאו מתקיימים. needs_review אינו אישור."""
+        return self.status == "ok"
+
+    def escalate(self, status: str, warning: Optional[str] = None) -> None:
+        if STATUS_RANK[status] > STATUS_RANK[self.status]:
+            self.status = status
+        if warning:
+            self.warnings.append(warning)
 
     def as_dict(self) -> dict:
-        return dict(self.__dict__)
+        d = dict(self.__dict__)
+        d["allowed"] = self.allowed
+        return d
+
+
+STATUS_RANK = {"ok": 0, "needs_review": 1, "blocked": 2}
 
 
 TENDER_COMMITTEE = "ועדת המכרזים"
@@ -110,54 +139,78 @@ def route_by_value(value: float, t: Thresholds) -> Decision:
                                   "רישום בפנקס המכרזים (תקנה 7)"])
 
 
-# כל פטור: (תקנה, גורם מאשר, עובדות חובה, דרישות תיעוד)
-EXEMPTIONS: dict[str, tuple[str, str, dict[str, str], list[str]]] = {
+# כל פטור: (תקנה, גורם מאשר, עובדות חובה, דרישות תיעוד, תנאים שאינם ממודלים)
+# תנאי שאינו ממודל משאיר את התוצאה במצב needs_review עד שאדם בודק אותו.
+EXEMPTIONS: dict[str, tuple[str, str, dict[str, str], list[str], list[str]]] = {
     "3(4)": ("3(4)", TENDER_COMMITTEE,
              {"sole_supplier_expert_opinion": "חוות דעת בכתב של מומחה שמינתה הוועדה שהספק או המומחה יחיד בארץ"},
-             ["אישור הוועדה לחוות הדעת"]),
+             ["אישור הוועדה לחוות הדעת"], []),
     "3(6)": ("3(6)", "לפי נוהל העירייה, עם דיווח לוועדה",
              {"urgent_life_or_property": "ההתקשרות דחופה להצלת נפש או רכוש"},
-             ["נימוק הדחיפות ותיעוד בזמן אמת"]),
+             ["נימוק הדחיפות ותיעוד בזמן אמת"], []),
     "3(8)": ("3(8)", EXEMPTION_COMMITTEE,
              {"professional_work": "עבודה מקצועית הדורשת ידע ומומחיות מיוחדים או יחסי אמון מיוחדים"},
              ["בחירה מתוך מאגר יועצים לפי חוזר מנכ\"ל משרד הפנים 8/2016",
               "פרסום ההחלטה באתר העירייה (לפי החוזר)",
-              "נימוק בחירת היועץ מתוך המאגר"]),
+              "נימוק בחירת היועץ מתוך המאגר"], []),
     "3(10א)": ("3(10א)", "לפי נוהל העירייה",
-               {"counterparty_is_state": "הצד השני הוא המדינה"}, []),
+               {"counterparty_is_state": "הצד השני הוא המדינה"}, [], []),
     "3(14)": ("3(14)", "לפי נוהל העירייה",
               {"counterparty_is_npo": "התאגיד מוכר כמוסד ללא כוונת רווח",
                "city_holding_40": "העירייה מחזיקה 40% לפחות מההון, מההצבעה או מכוח המינוי",
                "purpose_education_culture_welfare_sport": "מיזם ללא כוונת רווח לחינוך, תרבות, רווחה או ספורט בתחום העירייה"},
-              ["בדיקת שאר התנאים שבתקנה 3(14) (לא ממודלים כאן)",
-               "לקח מעניין התעוררות נ' עיריית ירושלים: נוהל מיזמים משותפים בוטל בבית המשפט, יש לבדוק כל מיזם לגופו"]),
+              ["לקח מעניין התעוררות נ' עיריית ירושלים: נוהל מיזמים משותפים בוטל בבית המשפט, יש לבדוק כל מיזם לגופו"],
+              ["התנאים הנוספים שבפסקאות המשנה של תקנה 3(14), כולל מימון התאגיד, לא נבדקו במנוע"]),
     "3(16)": ("3(16)", "לפי נוהל העירייה",
               {"counterparty_is_local_authority": "הצד השני הוא רשות מקומית אחרת, בשירות מתחום סמכותה",
                "savings_justified": "העירייה שוכנעה שההתקשרות חוסכת ויעילה"},
-              ["תיעוד הנימוק לחיסכון וליעילות"]),
+              ["תיעוד הנימוק לחיסכון וליעילות"], []),
 }
 
 
 def check_new_contract(value: float, on: date, table: Iterable[Thresholds], *,
                        value_includes_vat: bool, compare_incl_vat: bool = True,
                        vat_rate: float = DEFAULT_VAT_RATE, exemption: Optional[str] = None,
-                       facts: Optional[dict] = None) -> Decision:
-    """המסלול החוקי להתקשרות חדשה, לפי שווי ובקשת פטור אם יש."""
+                       facts: Optional[dict] = None,
+                       related_values: Optional[Iterable[float]] = None) -> Decision:
+    """המסלול החוקי להתקשרות חדשה, לפי שווי ובקשת פטור אם יש.
+
+    related_values: שווי בקשות קשורות לבדיקת פיצול (תקנה 5), כבר באותו בסיס מע"מ כמו ההשוואה.
+    None פירושו שהבדיקה לא בוצעה, והתוצאה תאמר זאת במפורש.
+    """
     facts = facts or {}
     t = thresholds_for(on, table)
     v = comparable_value(value, value_includes_vat, compare_incl_vat, vat_rate)
-    by_value = route_by_value(v, t)
-    by_value.compared_value, by_value.thresholds_source = v, t.source
-    if not t.is_official:
-        by_value.warnings.append("הספים מחושבים ואינם פרסום רשמי של משרד הפנים. יש לאמת לפני הסתמכות.")
+    d = _decide(v, t, exemption, facts)
+    d.compared_value, d.thresholds_source = v, t.source
 
+    if not t.is_official:
+        d.warnings.append("הספים מחושבים ואינם פרסום רשמי של משרד הפנים. יש לאמת לפני הסתמכות.")
+    until = threshold_valid_until(t)
+    if on > until:
+        d.escalate("needs_review", f"אין בטבלה סף מעודכן ליום {on.isoformat()}. הסף האחרון תקף עד "
+                                   f"{until.isoformat()}. יש לעדכן את טבלת הספים לפני הסתמכות.")
+
+    if related_values is None:
+        d.splitting_checked = False
+        d.warnings.append("בדיקת פיצול (תקנה 5) לא בוצעה: לא נמסרו בקשות קשורות.")
+    else:
+        d.splitting_checked = True
+        split = check_splitting(v, related_values, t)
+        if split:
+            d.escalate("needs_review", split)
+    return d
+
+
+def _decide(v: float, t: Thresholds, exemption: Optional[str], facts: dict) -> Decision:
+    by_value = route_by_value(v, t)
     if exemption is None:
         return by_value
     if exemption not in EXEMPTIONS:
         by_value.warnings.append(f"בסיס הפטור {exemption} אינו ממודל במנוע. נבדק לפי שווי בלבד.")
         return by_value
 
-    reg, approver, needed, reqs = EXEMPTIONS[exemption]
+    reg, approver, needed, reqs, unmodeled = EXEMPTIONS[exemption]
     missing = [text for key, text in needed.items() if not facts.get(key)]
     if missing:
         by_value.missing = missing
@@ -165,8 +218,10 @@ def check_new_contract(value: float, on: date, table: Iterable[Thresholds], *,
         return by_value
 
     code = "exemption_" + reg.replace("(", "_").replace(")", "")
-    d = Decision(code, reg, approver, requirements=list(reqs),
-                 warnings=list(by_value.warnings), compared_value=v, thresholds_source=t.source)
+    d = Decision(code, reg, approver, requirements=list(reqs))
+    if unmodeled:
+        d.missing = list(unmodeled)
+        d.escalate("needs_review", f"הפטור לפי תקנה {reg} אפשרי רק אחרי בדיקה ידנית של תנאים שהמנוע אינו בודק.")
     if exemption == "3(6)":
         d.warnings.append("פטור דחיפות אינו מכשיר המשך התקשרות אחרי שהדחיפות חלפה.")
     return d
@@ -175,11 +230,13 @@ def check_new_contract(value: float, on: date, table: Iterable[Thresholds], *,
 def check_continuation_3_20(on: date, *, first_value: float, first_months: float,
                             previous_continuations: Iterable[tuple[float, float]],
                             new_value: float, new_months: float, committee_convinced: bool,
-                            special_state_end: Optional[date] = None) -> Decision:
+                            special_state_end: Optional[date] = None,
+                            special_state_active_confirmed: bool = False) -> Decision:
     """התקשרות המשך לפי הוראת השעה בתקנה 3(20).
 
     previous_continuations: זוגות (שווי, חודשים) של התקשרויות המשך קודמות, שנספרות במצטבר (3(20)(ג)).
     special_state_end: יום תום ההכרזה על מצב מיוחד בעורף, אם ידוע. ההוראה חלה עד 30 יום אחריו.
+    special_state_active_confirmed: אישור שההכרזה עדיין בתוקף ביום הבדיקה. בלי אחד מהשניים התוצאה לא מוכרעת.
     """
     d = Decision("continuation_3_20", "3(20)", "ועדה: מנכ\"ל (יו\"ר), גזבר, יועץ משפטי",
                  requirements=["החלטה מנומקת של הוועדה",
@@ -190,22 +247,19 @@ def check_continuation_3_20(on: date, *, first_value: float, first_months: float
     total_months = new_months + sum(m for _, m in prev)
 
     if on < REG_3_20_START:
-        d.allowed = False
-        d.warnings.append("הוראת השעה חלה רק מ-21.4.2026.")
+        d.escalate("blocked", "הוראת השעה חלה רק מ-21.4.2026.")
     if special_state_end and (on - special_state_end).days > 30:
-        d.allowed = False
-        d.warnings.append("הוראת השעה פקעה: עברו יותר מ-30 יום מתום המצב המיוחד בעורף.")
-    if special_state_end is None:
-        d.warnings.append("מועד תום המצב המיוחד בעורף לא הוזן. יש לוודא שהוראת השעה עדיין בתוקף.")
+        d.escalate("blocked", "הוראת השעה פקעה: עברו יותר מ-30 יום מתום המצב המיוחד בעורף.")
+    if special_state_end is None and not special_state_active_confirmed:
+        d.missing.append("מועד תום ההכרזה על מצב מיוחד בעורף, או אישור שההכרזה עדיין בתוקף")
+        d.escalate("needs_review", "תוקף הוראת השעה תלוי במועד תום המצב המיוחד בעורף, שלא הוזן. התוצאה לא הוכרעה.")
     if total_months > 6:
-        d.allowed = False
-        d.warnings.append(f"משך מצטבר של {total_months:g} חודשים עולה על 6 (3(20)(ב)).")
+        d.escalate("blocked", f"משך מצטבר של {total_months:g} חודשים עולה על 6 (3(20)(ב)).")
     if total_value > first_value:
-        d.allowed = False
-        d.warnings.append("שווי מצטבר של התקשרויות ההמשך עולה על שווי ההתקשרות הראשונה (3(20)(א)).")
+        d.escalate("blocked", "שווי מצטבר של התקשרויות ההמשך עולה על שווי ההתקשרות הראשונה (3(20)(א)).")
     if not committee_convinced:
         d.missing.append("קביעת הוועדה שמגבלות המצב הביטחוני מונעות עריכת מכרז")
-        d.allowed = False
+        d.escalate("needs_review")
     return d
 
 
@@ -234,8 +288,7 @@ def check_increase(*, kind: str, base_amount: float, previous_increases: float, 
     if kind == "added_items" and council_decided_tender_useless:
         d.requirements.append("החלטת מועצה שעריכת מכרז לא תביא תועלת")
     if pct > cap:
-        d.allowed = False
-        d.warnings.append(f"הגדלה מצטברת של {pct:.1%} עולה על התקרה של {cap:.0%} לפי תקנה {reg}. נדרש הליך תחרותי חדש.")
+        d.escalate("blocked", f"הגדלה מצטברת של {pct:.1%} עולה על התקרה של {cap:.0%} לפי תקנה {reg}. נדרש הליך תחרותי חדש.")
     elif pct > cap * 0.8:
         d.warnings.append(f"הגדלה מצטברת של {pct:.1%} קרובה לתקרה של {cap:.0%}.")
     return d
