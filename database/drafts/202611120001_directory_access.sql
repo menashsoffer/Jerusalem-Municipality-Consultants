@@ -123,8 +123,11 @@ returns boolean language sql stable security definer set search_path = '' as $$
     where p.user_id = (select auth.uid()) and p.status = 'active'
       and coalesce((select auth.jwt()) ->> 'is_anonymous', 'false') <> 'true'
       and r.granted_at <= now() and r.revoked_at is null and (r.expires_at is null or r.expires_at > now())
-      and (r.role = 'admin' or exists (select 1 from public.supplier_directory_units u
-           where u.id = r.unit_id and u.active and u.verified))
+      and (r.role = 'admin' or exists (
+        select 1 from public.supplier_directory_units u
+        join public.supplier_directory_units parent on parent.id = u.parent_id
+        where u.id = r.unit_id and u.kind = 'department' and u.active and u.verified
+          and parent.kind = 'administration' and parent.active and parent.verified))
   );
 $$;
 create function supplier_directory_private.is_admin()
