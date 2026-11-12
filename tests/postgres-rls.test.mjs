@@ -196,3 +196,38 @@ test('only admins manage categories and hierarchy cannot exceed two levels', asy
     });
   } finally { await db.close(); }
 });
+
+test('department managers approve only their unit and can grant only viewer access', async () => {
+  const db = await bootstrappedDatabase();
+  const manager = '50000000-0000-0000-0000-000000000001';
+  const outsider = '50000000-0000-0000-0000-000000000002';
+  const unit = '10000000-0000-0000-0000-000000000002';
+  const otherUnit = '10000000-0000-0000-0000-000000000004';
+  try {
+    await db.exec(`insert into auth.users(id) values ('${manager}'), ('${outsider}');
+      insert into public.supplier_directory_units(id,name,kind,parent_id,verified)
+        values ('${otherUnit}','Other department','department','10000000-0000-0000-0000-000000000001',true);
+      insert into public.supplier_directory_profiles(user_id,first_name,last_name,job_title,unit_id,purpose,status,reviewed_at,reviewed_by)
+        values ('${manager}','Manager','One','Manager','${unit}','Test access','active',now(),'${admin}'),
+               ('${outsider}','Other','User','Employee','${otherUnit}','Test access','active',now(),'${admin}');
+      insert into public.supplier_directory_profiles(user_id,first_name,last_name,job_title,unit_id,purpose)
+        values ('${pending}','Pending','User','Employee','${unit}','Test access');
+      insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by)
+        values ('${manager}','department_manager','${unit}','${admin}')`);
+    await asAuthenticated(db, manager, async () => {
+      const visible = await db.query('select user_id from public.supplier_directory_profiles');
+      assert.equal(visible.rows.some(row => row.user_id === outsider), false);
+      const denied = await db.exec(`update public.supplier_directory_profiles set status='blocked', reviewed_by='${manager}', reviewed_at=now() where user_id='${outsider}'`);
+      assert.equal(denied[0].affectedRows, 0);
+      await db.exec(`update public.supplier_directory_profiles set status='active', reviewed_by='${manager}', reviewed_at=now() where user_id='${pending}'`);
+      await db.exec(`insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${pending}','viewer','${unit}','${manager}')`);
+      await assert.rejects(db.exec(`insert into public.supplier_directory_roles(user_id,role,granted_by) values ('${pending}','admin','${manager}')`), {code: '42501'});
+      await assert.rejects(db.exec(`insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${outsider}','viewer','${unit}','${manager}')`), {code: '42501'});
+      await assert.rejects(db.exec(`insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${pending}','editor','${unit}','${manager}')`), {code: '42501'});
+    });
+    await asAuthenticated(db, pending, async () =>
+      assert.equal((await db.query('select * from public.supplier_directory_categories')).rows.length, 1));
+    await asAuthenticated(db, outsider, async () =>
+      assert.equal((await db.query('select * from public.supplier_directory_categories')).rows.length, 0));
+  } finally { await db.close(); }
+});
