@@ -19,7 +19,8 @@ function fixture() {
     ],
     versions: [{id:'v1', registry_id:'r1', source_document_id:'d1'}, {id:'v2', registry_id:'r2', source_document_id:null}],
     registries: [{id:'r1', name:'מאגר א', owner_unit_id:'u1'}, {id:'r2', name:'מאגר ב', owner_unit_id:'u2'}],
-    fields: [{id:'f1', source_text:'תכנון'}, {id:'f2', source_text:'ניהול'}],
+    fields: [{id:'f1', source_text:'תכנון', category_id:'child'}, {id:'f2', source_text:'ניהול', category_id:'other'}],
+    categories: [{id:'root',name:'הנדסה',parent_id:null}, {id:'child',name:'כבישים',parent_id:'root'}, {id:'other',name:'ניהול',parent_id:null}],
     units: [{id:'u1', name:'אגף א'}, {id:'u2', name:'אגף ב'}],
     contacts: [{supplier_id:'s0', kind:'email', value:'bad', is_valid:false}],
     documents: [{id:'d1', url:'https://example.test/source'}],
@@ -58,4 +59,14 @@ test('filters the current catalog size in under one second', async () => {
   const results = filterCatalog(rows, filters({query:'ספק 5'}));
   assert.ok(results.length > 0);
   assert.ok(performance.now() - start < 1000);
+});
+
+test('category and subcategory filters follow the same membership as other filters', async () => {
+  const {buildCatalog} = await model;
+  const {filterCatalog} = await filtering;
+  const rows = buildCatalog(fixture());
+  assert.equal(filterCatalog(rows, filters({category:'root',subcategory:'child',registry:'r1'}))[0].id, 's0');
+  assert.equal(filterCatalog(rows, filters({category:'root',registry:'r2'})).length, 0);
+  assert.equal(filterCatalog(rows, filters({category:'other',registry:'r2'})).length, 2);
+  assert.equal(filterCatalog(rows, filters({subcategory:'other',registry:'r1'})).length, 0);
 });
