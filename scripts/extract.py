@@ -1,8 +1,12 @@
 """Extract selected public tables into reviewable records; run with pdfplumber/openpyxl."""
 from pathlib import Path
-import json,re
+import json,re,argparse
 import pdfplumber,openpyxl
-ROOT=Path(__file__).resolve().parents[2]; SRC=ROOT/'sources'; OUT=ROOT/'consultant_app/web/data/suppliers.json'
+parser=argparse.ArgumentParser(description='Extract selected municipal source tables')
+parser.add_argument('--sources',type=Path,required=True,help='Directory containing the source documents')
+parser.add_argument('--output',type=Path,required=True,help='Output JSON file')
+args=parser.parse_args(); SRC=args.sources; OUT=args.output
+OUT.parent.mkdir(parents=True,exist_ok=True)
 records=[]
 def clean(v):
     return re.sub(r'\s+', ' ', str(v or '')).strip()
