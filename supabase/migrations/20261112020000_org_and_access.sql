@@ -62,7 +62,6 @@ create table public.role_grants (
 );
 create index role_grants_user_idx on public.role_grants (user_id);
 create index role_grants_unit_idx on public.role_grants (unit_id);
-create index role_grants_created_by_idx on public.role_grants (created_by);
 create unique index role_grants_active_idx
   on public.role_grants (user_id, role, coalesce(unit_id, '00000000-0000-0000-0000-000000000000'::uuid))
   where revoked_at is null;

@@ -57,7 +57,6 @@ create index suppliers_normalized_trgm_idx
   on public.suppliers using gin (normalized_name extensions.gin_trgm_ops);
 create index suppliers_merged_into_idx on public.suppliers (merged_into_id);
 create index suppliers_verified_by_idx on public.suppliers (verified_by);
-create index suppliers_created_by_idx on public.suppliers (created_by);
 
 -- Company, nonprofit and VAT dealer numbers from the Registrar of Companies and the
 -- Registrar of Nonprofits (the data GuideStar Israel publishes), looked up by name.

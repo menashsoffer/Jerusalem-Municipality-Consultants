@@ -6,6 +6,7 @@ create table public.import_batches (
   id uuid primary key default gen_random_uuid(),
   source_document_id uuid references public.source_documents (id) on delete restrict,
   registry_id uuid references public.registries (id) on delete restrict,
+  registry_version_id uuid references public.registry_versions (id) on delete restrict,
   script_name text not null check (length(script_name) <= 200),
   script_version text check (length(script_version) <= 100),
   row_count integer not null default 0 check (row_count >= 0),
@@ -18,6 +19,7 @@ create table public.import_batches (
 );
 create index import_batches_source_idx on public.import_batches (source_document_id);
 create index import_batches_registry_idx on public.import_batches (registry_id);
+create index import_batches_version_idx on public.import_batches (registry_version_id);
 
 create table public.import_rows (
   id bigint generated always as identity primary key,

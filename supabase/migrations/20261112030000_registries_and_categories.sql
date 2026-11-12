@@ -105,7 +105,6 @@ create table public.category_requests (
   check (status = 'pending' or length(trim(coalesce(decision_note, ''))) >= 2),
   check ((status in ('approved', 'linked')) = (resolved_category_id is not null))
 );
-create index category_requests_created_by_idx on public.category_requests (created_by);
 create index category_requests_parent_idx on public.category_requests (parent_id);
 create index category_requests_resolved_idx on public.category_requests (resolved_category_id);
 create index category_requests_decided_by_idx on public.category_requests (decided_by);

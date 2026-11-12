@@ -89,7 +89,8 @@ end;
 $$;
 revoke all on function private.audit_row() from public, anon, authenticated;
 
--- Attaches the stamp and audit triggers in one call, so no table is forgotten.
+-- Attaches the stamp and audit triggers and indexes created_by in one call, so
+-- no table is forgotten.
 create function private.track_table(target regclass, hidden_columns text[] default '{}')
 returns void
 language plpgsql
@@ -101,6 +102,7 @@ begin
   execute format('create trigger audit_row after insert or update or delete on %s '
     'for each row execute function private.audit_row(%s)', target,
     array_to_string(array(select quote_literal(c) from unnest(hidden_columns) c), ', '));
+  execute format('create index on %s (created_by)', target);
 end;
 $$;
 revoke all on function private.track_table(regclass, text[]) from public, anon, authenticated;
