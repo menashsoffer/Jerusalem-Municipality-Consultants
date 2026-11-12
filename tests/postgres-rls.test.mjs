@@ -276,3 +276,78 @@ test('category decisions create or link categories atomically for admins only', 
     });
   } finally { await db.close(); }
 });
+
+test('access summary is server derived and respects revocation', async () => {
+  const db = await bootstrappedDatabase();
+  try {
+    for (const [user, expected] of [[admin,{active:true,admin:true,manage_profiles:true}],
+      [viewer,{active:true,admin:false,manage_profiles:false}],
+      [pending,{active:false,admin:false,manage_profiles:false}]]) {
+      await asAuthenticated(db,user,async()=>{
+        const result=await db.query('select public.supplier_directory_my_access() as access');
+        assert.deepEqual(result.rows[0].access,expected);
+      });
+    }
+    await db.query('update public.supplier_directory_roles set revoked_at=now() where user_id=$1',[viewer]);
+    await asAuthenticated(db,viewer,async()=>{
+      assert.deepEqual((await db.query('select public.supplier_directory_my_access() as access')).rows[0].access,
+        {active:false,admin:false,manage_profiles:false});
+    });
+    await db.exec('set role anon');
+    try { await assert.rejects(db.query('select public.supplier_directory_my_access()'),{code:'42501'}); }
+    finally { await db.exec('reset role'); }
+  } finally { await db.close(); }
+});
+
+test('normalized suppliers support multiple categories and unit-scoped review', async () => {
+  const db=await bootstrappedDatabase();
+  const editor='50000000-0000-0000-0000-000000000003';
+  const department='10000000-0000-0000-0000-000000000002';
+  const other='60000000-0000-0000-0000-000000000002';
+  try {
+    await db.exec(await readFile(resolve(root,'database/drafts/202611130002_supplier_model.sql'),'utf8'));
+    await db.exec(`insert into auth.users(id) values ('${editor}');
+      insert into public.supplier_directory_units(id,name,kind,parent_id,verified) values
+      ('${other}','Other department','department','10000000-0000-0000-0000-000000000001',true);
+      insert into public.supplier_directory_profiles(user_id,first_name,last_name,job_title,unit_id,purpose,status,reviewed_at,reviewed_by)
+      values ('${editor}','Editor','One','Editor','${department}','Test access','active',now(),'${admin}');
+      insert into public.supplier_directory_roles(user_id,role,unit_id,granted_by) values ('${editor}','editor','${department}','${admin}');
+      insert into public.supplier_directory_sources(id,title,source_url,owner_unit_id,created_by)
+      values ('70000000-0000-0000-0000-000000000001','Other source','https://example.test/other','${other}','${admin}');
+      insert into public.supplier_directory_categories(id,name,parent_id,created_by) values
+      ('40000000-0000-0000-0000-000000000002','Child','40000000-0000-0000-0000-000000000001','${admin}');`);
+    let entity, source, membership;
+    await asAuthenticated(db,editor,async()=>{
+      await assert.rejects(db.query('insert into public.supplier_directory_entities(name,owner_unit_id,created_by) values ($1,$2,$3)',['Denied',other,editor]),{code:'42501'});
+      entity=(await db.query('insert into public.supplier_directory_entities(name,owner_unit_id,email,created_by) values ($1,$2,$3,$4) returning id',['Supplier',department,'private@example.test',editor])).rows[0].id;
+      source=(await db.query('insert into public.supplier_directory_sources(title,source_url,owner_unit_id,created_by) values ($1,$2,$3,$4) returning id',['Registry','https://example.test/source',department,editor])).rows[0].id;
+      await assert.rejects(db.query('insert into public.supplier_directory_memberships(entity_id,source_id,owner_unit_id,created_by) values ($1,$2,$3,$4)',[entity,'70000000-0000-0000-0000-000000000001',department,editor]),{code:'42501'});
+      membership=(await db.query('insert into public.supplier_directory_memberships(entity_id,source_id,owner_unit_id,created_by) values ($1,$2,$3,$4) returning id',[entity,source,department,editor])).rows[0].id;
+      for (const category of ['40000000-0000-0000-0000-000000000001','40000000-0000-0000-0000-000000000002'])
+        await db.query('insert into public.supplier_directory_membership_categories(membership_id,category_id,created_by) values ($1,$2,$3)',[membership,category,editor]);
+      const result=await db.query("update public.supplier_directory_entities set review_status='published',reviewed_by=$1,reviewed_at=now() where id=$2",[editor,entity]);
+      assert.equal(result.affectedRows,0);
+    });
+    await asAuthenticated(db,viewer,async()=>{
+      assert.equal((await db.query('select * from public.supplier_directory_entities')).rows.length,0);
+      assert.equal((await db.query('select * from public.supplier_directory_memberships')).rows.length,0);
+    });
+    await asAuthenticated(db,admin,async()=>{
+      await db.query("update public.supplier_directory_entities set review_status='published',reviewed_by=$1,reviewed_at=now() where id=$2",[admin,entity]);
+      await db.query("update public.supplier_directory_memberships set review_status='published',reviewed_by=$1,reviewed_at=now() where id=$2",[admin,membership]);
+      const audit=await db.query('select after_state from public.supplier_directory_audit where entity_id=$1',[entity]);
+      assert.ok(audit.rows.length>=2); assert.ok(!JSON.stringify(audit.rows).includes('private@example.test'));
+    });
+    await asAuthenticated(db,viewer,async()=>{
+      assert.equal((await db.query('select * from public.supplier_directory_entities')).rows.length,1);
+      assert.equal((await db.query('select * from public.supplier_directory_memberships')).rows.length,1);
+      assert.equal((await db.query('select * from public.supplier_directory_membership_categories')).rows.length,2);
+    });
+    await asAuthenticated(db,pending,async()=>{
+      assert.equal((await db.query('select * from public.supplier_directory_entities')).rows.length,0);
+    });
+    await db.exec('set role anon');
+    try { await assert.rejects(db.query('select * from public.supplier_directory_entities'),{code:'42501'}); }
+    finally { await db.exec('reset role'); }
+  } finally { await db.close(); }
+});
