@@ -20,7 +20,7 @@
     try { [profile, units] = await Promise.all([api.getProfile(user.id), api.listUnits()]); }
     catch { message.textContent = 'לא ניתן לטעון את הפרטים. נסו שוב מאוחר יותר.'; return; }
     if (profile) {
-      const states = {pending: 'הבקשה ממתינה לבדיקת מנהל המערכת.', active: 'הבקשה אושרה.', rejected: 'הבקשה לא אושרה. פנו למנהל המערכת.', disabled: 'הגישה לחשבון הושבתה. פנו למנהל המערכת.'};
+      const states = {pending: 'הבקשה ממתינה לבדיקת מנהל המערכת.', active: 'הבקשה אושרה.', rejected: 'הבקשה לא אושרה. פנו למנהל המערכת.', blocked: 'הגישה לחשבון הושבתה. פנו למנהל המערכת.'};
       message.textContent = states[profile.status] || 'לא ניתן לקבוע את מצב הבקשה. פנו למנהל המערכת.';
       return;
     }
