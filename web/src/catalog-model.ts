@@ -6,6 +6,10 @@ export interface Membership {
   registry: string;
   fieldId: string | null;
   field: string;
+  categoryId: string | null;
+  categoryName: string;
+  parentCategoryId: string | null;
+  parentCategoryName: string;
   unitId: string | null;
   unit: string;
   validFrom: string | null;
@@ -44,6 +48,7 @@ function lookup(data: CatalogData) {
     versions: new Map(data.versions.map((row) => [row.id, row])),
     registries: new Map(data.registries.map((row) => [row.id, row])),
     fields: new Map(data.fields.map((row) => [row.id, row])),
+    categories: new Map(data.categories.map((row) => [row.id, row])),
     units: new Map(data.units.map((row) => [row.id, row])),
     documents: new Map(data.documents.map((row) => [row.id, row])),
   };
@@ -53,6 +58,20 @@ type Lookup = ReturnType<typeof lookup>;
 type MemberRow = CatalogData['memberships'][number];
 function optional<T>(map: Map<string, T>, key: string | null): T | undefined {
   return map.get(key ?? '');
+}
+
+function categoryLabels(categoryId: string | null, refs: Lookup) {
+  const category = optional(refs.categories, categoryId);
+  const parent = optional(refs.categories, category?.parent_id ?? null);
+  return {
+    categoryId: category?.id ?? null,
+    categoryName: category?.name ?? '',
+    ...parentLabels(parent),
+  };
+}
+
+function parentLabels(parent: CatalogData['categories'][number] | undefined) {
+  return { parentCategoryId: parent?.id ?? null, parentCategoryName: parent?.name ?? '' };
 }
 
 function labels(
@@ -70,6 +89,7 @@ function labels(
   return {
     fieldId: field?.id ?? null,
     field: field?.source_text ?? '',
+
     unit: unit?.name ?? '',
     source: document?.url ?? null,
   };
@@ -83,6 +103,7 @@ function member(row: MemberRow, refs: Lookup): Membership | null {
     registryId: registry.id,
     registry: registry.name,
     ...labels(row, { registry, version }, refs),
+    ...categoryLabels(optional(refs.fields, row.registry_field_id)?.category_id ?? null, refs),
     unitId: registry.owner_unit_id,
     validFrom: row.registered_from,
     validUntil: row.registered_until,

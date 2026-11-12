@@ -34,3 +34,21 @@ test('renders each supplier once and filters by registry and validity', async ()
     delete global.Option;
   }
 });
+
+
+test('shows only subcategories of the selected root and clears stale selection', async () => {
+  const dom = new JSDOM(fs.readFileSync('web/index.html', 'utf8'), {url:'https://example.test/'});
+  global.document = dom.window.document;
+  global.Option = dom.window.Option;
+  try {
+    const view = await import('../web/src/catalog-view.ts');
+    const common = {registryId:'r1', registry:'מאגר', fieldId:'f1', field:'תחום', unitId:'u', unit:'אגף', validFrom:null, validUntil:null, source:null, page:null};
+    view.setSuppliers([{id:'s1',name:'א',aliases:[],verified:false,contacts:[],memberships:[{...common,categoryId:'c1',categoryName:'כבישים',parentCategoryId:'r1',parentCategoryName:'הנדסה'}]},
+      {id:'s2',name:'ב',aliases:[],verified:false,contacts:[],memberships:[{...common,categoryId:'c2',categoryName:'מוזיקה',parentCategoryId:'r2',parentCategoryName:'תרבות'}]}]);
+    const root = document.querySelector('#category-filter'), child = document.querySelector('#subcategory-filter');
+    assert.equal(child.disabled,true);
+    root.value='r1';view.options();assert.deepEqual([...child.options].map(option=>option.value),['','c1']);
+    child.value='c1';view.render();assert.equal(document.querySelectorAll('#results .card').length,1);
+    root.value='r2';view.options();assert.equal(child.value,'');assert.deepEqual([...child.options].map(option=>option.value),['','c2']);
+  } finally {dom.window.close();delete global.document;delete global.Option;}
+});

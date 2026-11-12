@@ -34,6 +34,8 @@ function filters(): Filters {
     query: (el('query') as HTMLInputElement).value,
     registry: select('registry').value,
     field: select('field-filter').value,
+    category: select('category-filter').value,
+    subcategory: select('subcategory-filter').value,
     unit: select('unit-filter').value,
     validity: select('validity-filter').value as Validity | '',
     today: today(),
@@ -50,6 +52,31 @@ function populate(id: string, label: string, options: Map<string, string>): void
     });
   node.value = options.has(previous) ? previous : '';
 }
+function matchingSubcategories(
+  visible: Membership[],
+  selectedCategory: string,
+): Map<string, string> {
+  const subcategories = new Map<string, string>();
+  for (const member of visible) {
+    if (member.parentCategoryId === selectedCategory && member.categoryId && member.categoryName)
+      subcategories.set(member.categoryId, member.categoryName);
+  }
+  return subcategories;
+}
+function populateCategories(visible: Membership[]): void {
+  const roots = new Map<string, string>();
+  for (const member of visible) {
+    if (member.parentCategoryId && member.parentCategoryName)
+      roots.set(member.parentCategoryId, member.parentCategoryName);
+    else if (member.categoryId && member.categoryName)
+      roots.set(member.categoryId, member.categoryName);
+  }
+  populate('category-filter', 'כל הקטגוריות', roots);
+  const selectedCategory = select('category-filter').value;
+  const subcategories = matchingSubcategories(visible, selectedCategory);
+  populate('subcategory-filter', 'כל תתי הקטגוריות', subcategories);
+  select('subcategory-filter').disabled = !selectedCategory || subcategories.size === 0;
+}
 export function options(): void {
   const members = suppliers.flatMap((supplier) => supplier.memberships);
   populate('registry', 'כל המאגרים', new Map(members.map((m) => [m.registryId, m.registry])));
@@ -61,6 +88,7 @@ export function options(): void {
   const units = visible
     .filter((m) => m.unitId !== null && m.unit)
     .map((m): [string, string] => [m.unitId ?? '', m.unit]);
+  populateCategories(visible);
   populate('field-filter', 'כל התחומים', new Map(fields));
   populate('unit-filter', 'כל היחידות', new Map(units));
 }
