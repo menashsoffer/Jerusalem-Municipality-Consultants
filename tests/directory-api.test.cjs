@@ -50,3 +50,15 @@ test('category decisions validate linked categories and use one server operation
   assert.throws(() => api.decideCategory({requestId: 'request', decision: 'linked', note: 'קיים'}), {code: 'invalid_category'});
   assert.throws(() => api.decideCategory({requestId: 'request', decision: 'approved', note: 'מאושר', existingCategoryId: 'category'}), {code: 'invalid_category'});
 });
+
+test('access capabilities are read from the server and require a valid response', async () => {
+  let call;
+  const api = createClient({base:'https://example.org', apiKey:'public', accessToken:'token', fetcher:async (url, options) => {
+    call={url,options}; return {ok:true,json:async()=>({active:true,admin:false,manage_profiles:true})};
+  }});
+  assert.deepEqual(await api.getAccess(), {active:true,admin:false,manageProfiles:true});
+  assert.equal(new URL(call.url).pathname,'/rest/v1/rpc/supplier_directory_my_access');
+  assert.equal(call.options.method,'POST');
+  const invalid=createClient({base:'https://example.org',apiKey:'public',accessToken:'token',fetcher:async()=>({ok:true,json:async()=>({active:'yes'})})});
+  await assert.rejects(invalid.getAccess(),{code:'invalid_response'});
+});
