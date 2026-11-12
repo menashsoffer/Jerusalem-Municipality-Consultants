@@ -28,3 +28,14 @@ test('category request cannot set its own decision or category', async () => {
   assert.equal(request.status, undefined);
   assert.equal(request.resolved_category_id, undefined);
 });
+
+test('profile approval uses a single server-side decision operation', async () => {
+  let call;
+  const api = createClient({base: 'https://example.org', apiKey: 'public', accessToken: 'token',
+    fetcher: async (url, options) => { call = {url, body: JSON.parse(options.body)}; return {ok: true}; }});
+  await api.decideProfile({userId: 'user', decision: 'active', note: 'נבדק'});
+  assert.equal(new URL(call.url).pathname, '/rest/v1/rpc/supplier_directory_decide_profile');
+  assert.deepEqual(call.body, {target_user: 'user', decision: 'active', note: 'נבדק'});
+  assert.throws(() => api.decideProfile({userId: 'user', decision: 'rejected', note: ''}), {code: 'invalid_note'});
+  assert.throws(() => api.decideProfile({userId: 'user', decision: 'admin', note: 'x'}), {code: 'invalid_decision'});
+});
