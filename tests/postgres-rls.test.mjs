@@ -251,3 +251,28 @@ test('profile decision is atomic if role creation fails', async () => {
     });
   } finally { await db.close(); }
 });
+
+test('category decisions create or link categories atomically for admins only', async () => {
+  const db = await bootstrappedDatabase();
+  try {
+    await asAuthenticated(db, viewer, async () => {
+      await db.exec(`insert into public.supplier_directory_category_requests(requested_by,proposed_name,description)
+        values ('${viewer}','Surveying','Surveying services'), ('${viewer}','Planning','Already exists')`);
+      const requests = await db.query('select id from public.supplier_directory_category_requests order by proposed_name');
+      await assert.rejects(db.query("select public.supplier_directory_decide_category($1, 'rejected', 'No')", [requests.rows[0].id]), {code: '42501'});
+    });
+    await asAuthenticated(db, admin, async () => {
+      const requests = await db.query('select id,proposed_name from public.supplier_directory_category_requests');
+      const duplicate = requests.rows.find(row => row.proposed_name === 'Planning').id;
+      const fresh = requests.rows.find(row => row.proposed_name === 'Surveying').id;
+      await assert.rejects(db.query("select public.supplier_directory_decide_category($1, 'approved', 'Approved')", [duplicate]), {code: '23505'});
+      assert.equal((await db.query('select status from public.supplier_directory_category_requests where id=$1', [duplicate])).rows[0].status, 'pending');
+      const created = await db.query("select public.supplier_directory_decide_category($1, 'approved', 'Approved') as result", [fresh]);
+      assert.equal(created.rows[0].result.status, 'approved');
+      assert.ok(created.rows[0].result.category_id);
+      const linked = await db.query("select public.supplier_directory_decide_category($1, 'linked', 'Existing category', $2) as result", [duplicate, '40000000-0000-0000-0000-000000000001']);
+      assert.equal(linked.rows[0].result.status, 'linked');
+      assert.equal((await db.query('select count(*) as count from public.supplier_directory_categories')).rows[0].count, 2);
+    });
+  } finally { await db.close(); }
+});
