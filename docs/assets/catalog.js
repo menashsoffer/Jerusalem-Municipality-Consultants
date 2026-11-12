@@ -20,15 +20,30 @@
     return key ? records.filter(row => nameKey(row.name) === key) : [];
   };
 
+  // The flat table is renamed to legacy_suppliers by the 2026-11-12 migrations.
+  // Until they are applied on the live project, fall back to the old name.
+  const TABLES = ['legacy_suppliers', 'suppliers'];
+  let table = TABLES[0];
+  const tableName = () => table;
+
+  async function loadPage(fetcher, base, requestHeaders, offset, size) {
+    const params = new URLSearchParams({select: '*', order: 'id.asc', limit: String(size), offset: String(offset)});
+    for (const candidate of offset === 0 ? TABLES : [table]) {
+      const response = await fetcher(base + '/rest/v1/' + candidate + '?' + params, {headers: requestHeaders});
+      if (response.status === 404 && offset === 0) continue;
+      if (!response.ok) throw new Error('database');
+      table = candidate;
+      return response.json();
+    }
+    throw new Error('database');
+  }
+
   async function loadAllSuppliers(fetcher, base, requestHeaders) {
     const records = [];
     const size = 500;
     let offset = 0;
     for (;;) {
-      const params = new URLSearchParams({select: '*', order: 'id.asc', limit: String(size), offset: String(offset)});
-      const response = await fetcher(base + '/rest/v1/suppliers?' + params, {headers: requestHeaders});
-      if (!response.ok) throw new Error('database');
-      const page = await response.json();
+      const page = await loadPage(fetcher, base, requestHeaders, offset, size);
       if (!Array.isArray(page)) throw new Error('format');
       records.push(...page);
       if (page.length < size) return records;
@@ -36,5 +51,5 @@
     }
   }
 
-  return Object.freeze({registryNames, fieldsForRegistry, selectionExists, possibleDuplicates, loadAllSuppliers});
+  return Object.freeze({registryNames, fieldsForRegistry, selectionExists, possibleDuplicates, loadAllSuppliers, tableName});
 });
