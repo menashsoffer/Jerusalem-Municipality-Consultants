@@ -8,7 +8,7 @@ import tseslint from 'typescript-eslint';
 const legacy = ['docs/assets/**', 'index.html', 'tests/*.cjs'];
 
 export default defineConfig(
-  globalIgnores(['node_modules/**', ...legacy]),
+  globalIgnores(['node_modules/**', 'web/src/database.types.ts', ...legacy]),
   {
     files: ['**/*.ts'],
     extends: [
