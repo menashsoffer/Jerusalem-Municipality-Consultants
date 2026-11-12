@@ -54,8 +54,7 @@ describe('migrations on an empty database', () => {
     const result = await db.query<{ a: string; b: string }>(`
       select private.normalize_name('חברת "אבג" בע"מ') as a,
         private.normalize_name('חברת אבג  בע״מ') as b`);
-    assert.equal(result.rows[0]?.a, 'חברת אבג');
-    assert.equal(result.rows[0]?.b, 'חברת אבג');
+    assert.deepEqual(result.rows[0], { a: 'חברת אבג', b: 'חברת אבג' });
   });
 
   it('rejects overlapping threshold periods', async () => {

@@ -10,11 +10,12 @@
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npm run test:ts && npm run test:ui && npm run test:database",
+    "test": "npm run test:ts && npm run test:supabase && npm run test:ui && npm run test:database",
     "test:ts": "node --test \"supabase/functions/tests/*-test.ts\"",
     "test:ui": "node --test tests/*.test.cjs",
     "test:database": "python3 database/tests/build_rollback_test.py && node --test tests/postgres-rls.test.mjs",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
+    "test:supabase": "node --test \"supabase/tests/*-test.ts\""
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",

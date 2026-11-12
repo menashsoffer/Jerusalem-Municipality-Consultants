@@ -41,7 +41,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['supabase/functions/tests/**/*.ts'],
+    files: ['supabase/functions/tests/**/*.ts', 'supabase/tests/**/*.ts'],
     rules: {
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': 'off',
