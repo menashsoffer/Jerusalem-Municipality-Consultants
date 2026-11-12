@@ -12,17 +12,21 @@
   function createClient({base, apiKey, accessToken, fetcher = fetch}) {
     if (!base || !apiKey || !accessToken) throw new DirectoryError('missing_session');
     const headers = {'apikey': apiKey, 'Authorization': 'Bearer ' + accessToken, 'Content-Type': 'application/json'};
-    async function request(table, {method = 'GET', params, body} = {}) {
+    async function request(table, {method = 'GET', params, body, responseKind = 'array'} = {}) {
       const url = new URL(base + '/rest/v1/' + table);
       for (const [key, value] of Object.entries(params || {})) url.searchParams.set(key, value);
       const options = {method, headers: {...headers}};
-      if (body !== undefined) { options.body = JSON.stringify(body); options.headers.Prefer = 'return=minimal'; }
+      if (body !== undefined) { options.body = JSON.stringify(body); if (responseKind !== 'object') options.headers.Prefer = 'return=minimal'; }
       let response;
       try { response = await fetcher(url.toString(), options); }
       catch { throw new DirectoryError('network_error'); }
       if (!response.ok) throw new DirectoryError(response.status === 401 || response.status === 403 ? 'not_authorized' : 'request_failed');
-      if (method !== 'GET') return;
+      if (method !== 'GET' && responseKind !== 'object') return;
       const rows = await response.json();
+      if (responseKind === 'object') {
+        if (!rows || typeof rows !== 'object' || Array.isArray(rows)) throw new DirectoryError('invalid_response');
+        return rows;
+      }
       if (!Array.isArray(rows)) throw new DirectoryError('invalid_response');
       return rows;
     }
@@ -34,6 +38,11 @@
     }
 
     return Object.freeze({
+      getAccess: async () => {
+        const access = await request('rpc/supplier_directory_my_access', {method: 'POST', body: {}, responseKind: 'object'});
+        if (['active', 'admin', 'manage_profiles'].some(key => typeof access[key] !== 'boolean')) throw new DirectoryError('invalid_response');
+        return Object.freeze({active: access.active, admin: access.admin, manageProfiles: access.manage_profiles});
+      },
       listUnits: () => request('supplier_directory_units', {params: {select: 'id,name,kind,parent_id', active: 'eq.true', verified: 'eq.true', order: 'name.asc'}}),
       getProfile: async userId => {
         const id = text(userId, 1, 100, 'user');
