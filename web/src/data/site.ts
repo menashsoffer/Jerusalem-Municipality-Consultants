@@ -1,5 +1,7 @@
 import type { PublicSchema } from '../database.types.ts';
+import { buildCatalog, type Supplier } from '../catalog-model.ts';
 import { loadAccess, type Access } from './access.ts';
+import { loadCatalog } from './catalog.ts';
 import { DataClient } from './client.ts';
 
 export const BASE = 'https://jzsvhjkiklfnogseelbe.supabase.co';
@@ -50,6 +52,10 @@ export async function access(token: string, userId: string): Promise<Access> {
 
 export function getAccess(): Access | null {
   return currentAccess;
+}
+
+export async function catalog(token: string): Promise<Supplier[]> {
+  return buildCatalog(await loadCatalog(data(token)));
 }
 
 export function legacySuppliers(token: string): Promise<PublicSchema['legacy_suppliers']['Row'][]> {
