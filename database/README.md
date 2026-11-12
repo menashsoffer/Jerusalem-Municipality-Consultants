@@ -1,7 +1,7 @@
 # Directory access schema — draft
 
-The SQL in `drafts/` is a proposal, not a production migration. It must not be applied to the existing project until it has been reviewed and tested in an isolated Supabase/PostgreSQL instance, including the rollback fixture in `tests/`, RLS negative cases, bootstrap, data migration, backup and recovery.
+The SQL in `drafts/` is a proposal, not a production migration. Do not apply it to the existing project until it has been reviewed and tested in an isolated Supabase instance, including Auth integration, bootstrap, data migration, backup and recovery.
 
-Run the browser-client tests with `node --test tests/*.test.cjs`. Generate (but do not apply) the database rollback test with `python3 database/tests/build_rollback_test.py`. A generated SQL file is only a test fixture; generating it is not evidence that the SQL or policies passed PostgreSQL execution.
+Run `npm ci --ignore-scripts`, then `npm run test:ui` and `npm run test:database`. The database tests run the draft against isolated in-memory PostgreSQL with a minimal test implementation of Supabase Auth; they check pending, active, blocked, revoked, anonymous and administrator access, category approvals and hierarchy, and transaction rollback. They do not replace an end-to-end test on isolated Supabase or a security review.
 
-No existing `suppliers` table or live authorization policy is changed by the draft. The draft is incomplete until the application, verified municipal units and the administrator approval flow are integrated and tested.
+The draft does not alter the existing `suppliers` table or its live authorization policy. Verified municipal units, frontend approval screens, supplier policies and administrator bootstrap remain to be implemented and tested.
