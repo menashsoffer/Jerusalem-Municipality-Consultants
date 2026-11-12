@@ -20,5 +20,10 @@
     "skipLibCheck": true,
     "types": ["node"]
   },
-  "include": ["supabase/functions/**/*.ts", "supabase/tests/**/*.ts", "scripts/thresholds/**/*.ts"]
+  "include": [
+    "supabase/functions/**/*.ts",
+    "supabase/tests/**/*.ts",
+    "scripts/thresholds/**/*.ts",
+    "scripts/schema/**/*.ts"
+  ]
 }

@@ -8,3 +8,8 @@ node_modules/
 package-lock.json
 # Prose is reviewed by hand; Prettier reflows Hebrew tables badly
 *.md
+
+# Generated database types and copied legacy site assets
+web/src/database.types.ts
+web/public/assets/
+web/index.html
