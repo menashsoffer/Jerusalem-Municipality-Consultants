@@ -276,3 +276,32 @@ test('category decisions create or link categories atomically for admins only', 
     });
   } finally { await db.close(); }
 });
+
+test('supplier writes cannot spoof creator or review status', async () => {
+  const db = new PGlite();
+  try {
+    await db.exec(setup);
+    // Minimal stand-in for the live suppliers table, with a permissive policy, so the
+    // test isolates the guard itself rather than the live authorization rules.
+    await db.exec(`
+      insert into auth.users(id) values ('${viewer}');
+      create table public.suppliers (id bigint generated always as identity primary key, name text not null,
+        created_by uuid, review_status text not null default 'needs_review');
+      alter table public.suppliers enable row level security;
+      create policy suppliers_test_all on public.suppliers for all to authenticated using (true) with check (true);
+      grant select, insert, update on public.suppliers to authenticated;
+    `);
+    await db.exec(await readFile(resolve(root, 'database/drafts/202611120002_suppliers_write_guard.sql'), 'utf8'));
+    await asAuthenticated(db, viewer, async () => {
+      await db.exec(`insert into public.suppliers(name, created_by, review_status) values ('Spoof', '${admin}', 'approved')`);
+      const row = (await db.query('select created_by, review_status from public.suppliers')).rows[0];
+      assert.equal(row.created_by, viewer);
+      assert.equal(row.review_status, 'needs_review');
+      await assert.rejects(db.exec(`update public.suppliers set review_status='approved'`), {code: '42501'});
+      await assert.rejects(db.exec(`update public.suppliers set created_by='${admin}'`), {code: '42501'});
+      await db.exec(`update public.suppliers set name='Renamed'`);
+    });
+    await db.exec(`update public.suppliers set review_status='approved'`);
+    assert.equal((await db.query('select review_status from public.suppliers')).rows[0].review_status, 'approved');
+  } finally { await db.close(); }
+});
