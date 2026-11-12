@@ -398,4 +398,47 @@ $$;
 revoke all on function public.supplier_directory_decide_profile(uuid, text, text) from public, anon, authenticated;
 grant execute on function public.supplier_directory_decide_profile(uuid, text, text) to authenticated;
 
+-- Approving a new category and resolving its request are a single transaction.
+-- RLS and grants remain in force because this function is SECURITY INVOKER.
+create function public.supplier_directory_decide_category(
+  target_request uuid, decision text, note text, existing_category uuid default null
+)
+returns jsonb language plpgsql security invoker set search_path = '' as $$
+declare
+  request_row public.supplier_directory_category_requests%rowtype;
+  category_id uuid;
+  acting_user uuid := (select auth.uid());
+begin
+  if acting_user is null or decision is null or decision not in ('approved', 'linked', 'rejected')
+     or length(trim(coalesce(note, ''))) < 2 or length(coalesce(note, '')) > 2000 then
+    raise exception 'Invalid category decision' using errcode = '22023';
+  end if;
+  if (decision = 'linked' and existing_category is null)
+     or (decision <> 'linked' and existing_category is not null) then
+    raise exception 'Invalid existing category' using errcode = '22023';
+  end if;
+  select * into request_row from public.supplier_directory_category_requests
+    where id = target_request and status = 'pending' for update;
+  if not found then
+    raise exception 'Request not found, not pending, or not authorized' using errcode = '42501';
+  end if;
+  if decision = 'approved' then
+    insert into public.supplier_directory_categories(name, description, parent_id, created_by)
+      values (request_row.proposed_name, request_row.description, request_row.parent_id, acting_user)
+      returning id into category_id;
+  elsif decision = 'linked' then
+    select id into category_id from public.supplier_directory_categories where id = existing_category and active;
+    if not found then raise exception 'Category is unavailable' using errcode = '22023'; end if;
+  end if;
+  update public.supplier_directory_category_requests
+    set status = decision, decision_note = note, decided_by = acting_user, decided_at = now(),
+        resolved_category_id = category_id
+    where id = target_request and status = 'pending';
+  if not found then raise exception 'Request could not be resolved' using errcode = '42501'; end if;
+  return jsonb_build_object('status', decision, 'category_id', category_id);
+end;
+$$;
+revoke all on function public.supplier_directory_decide_category(uuid, text, text, uuid) from public, anon, authenticated;
+grant execute on function public.supplier_directory_decide_category(uuid, text, text, uuid) to authenticated;
+
 commit;
