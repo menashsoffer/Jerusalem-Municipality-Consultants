@@ -39,3 +39,14 @@ test('profile approval uses a single server-side decision operation', async () =
   assert.throws(() => api.decideProfile({userId: 'user', decision: 'rejected', note: ''}), {code: 'invalid_note'});
   assert.throws(() => api.decideProfile({userId: 'user', decision: 'admin', note: 'x'}), {code: 'invalid_decision'});
 });
+
+test('category decisions validate linked categories and use one server operation', async () => {
+  let call;
+  const api = createClient({base: 'https://example.org', apiKey: 'public', accessToken: 'token',
+    fetcher: async (url, options) => { call = {url, body: JSON.parse(options.body)}; return {ok: true}; }});
+  await api.decideCategory({requestId: 'request', decision: 'linked', note: 'קיימת קטגוריה', existingCategoryId: 'category'});
+  assert.equal(new URL(call.url).pathname, '/rest/v1/rpc/supplier_directory_decide_category');
+  assert.equal(call.body.existing_category, 'category');
+  assert.throws(() => api.decideCategory({requestId: 'request', decision: 'linked', note: 'קיים'}), {code: 'invalid_category'});
+  assert.throws(() => api.decideCategory({requestId: 'request', decision: 'approved', note: 'מאושר', existingCategoryId: 'category'}), {code: 'invalid_category'});
+});
