@@ -140,11 +140,28 @@ returns boolean language sql stable security definer set search_path = '' as $$
       and r.granted_at <= now() and r.revoked_at is null and (r.expires_at is null or r.expires_at > now())
   );
 $$;
+create function supplier_directory_private.manages_unit(target_unit uuid)
+returns boolean language sql stable security definer set search_path = '' as $$
+  select exists (
+    select 1 from public.supplier_directory_profiles p
+    join public.supplier_directory_roles r on r.user_id = p.user_id
+    join public.supplier_directory_units u on u.id = r.unit_id
+    join public.supplier_directory_units parent on parent.id = u.parent_id
+    where p.user_id = (select auth.uid()) and p.status = 'active'
+      and coalesce((select auth.jwt()) ->> 'is_anonymous', 'false') <> 'true'
+      and r.role = 'department_manager' and r.unit_id = target_unit
+      and r.granted_at <= now() and r.revoked_at is null and (r.expires_at is null or r.expires_at > now())
+      and u.kind = 'department' and u.active and u.verified
+      and parent.kind = 'administration' and parent.active and parent.verified
+  );
+$$;
 revoke all on function supplier_directory_private.active_user() from public, anon, authenticated;
 revoke all on function supplier_directory_private.is_admin() from public, anon, authenticated;
+revoke all on function supplier_directory_private.manages_unit(uuid) from public, anon, authenticated;
 grant usage on schema supplier_directory_private to authenticated;
 grant execute on function supplier_directory_private.active_user() to authenticated;
 grant execute on function supplier_directory_private.is_admin() to authenticated;
+grant execute on function supplier_directory_private.manages_unit(uuid) to authenticated;
 
 revoke all on public.supplier_directory_units, public.supplier_directory_profiles,
   public.supplier_directory_roles, public.supplier_directory_categories,
@@ -178,22 +195,32 @@ create policy directory_units_admin_update on public.supplier_directory_units fo
   using ((select supplier_directory_private.is_admin())) with check ((select supplier_directory_private.is_admin()));
 
 create policy directory_profiles_read on public.supplier_directory_profiles for select to authenticated
-  using (user_id = (select auth.uid()) or (select supplier_directory_private.is_admin()));
+  using (user_id = (select auth.uid()) or (select supplier_directory_private.is_admin())
+    or supplier_directory_private.manages_unit(unit_id));
 create policy directory_profiles_signup on public.supplier_directory_profiles for insert to authenticated
   with check (user_id = (select auth.uid()) and status = 'pending'
     and coalesce((select auth.jwt()) ->> 'is_anonymous', 'false') <> 'true'
     and exists (select 1 from public.supplier_directory_units u
       join public.supplier_directory_units parent on parent.id = u.parent_id
-      where u.id = unit_id and u.kind = 'department' and u.active and u.verified
+      where u.id = supplier_directory_profiles.unit_id and u.kind = 'department' and u.active and u.verified
         and parent.kind = 'administration' and parent.active and parent.verified));
 create policy directory_profiles_admin_update on public.supplier_directory_profiles for update to authenticated
   using ((select supplier_directory_private.is_admin()))
   with check ((select supplier_directory_private.is_admin()) and reviewed_by = (select auth.uid()));
+create policy directory_profiles_manager_decide on public.supplier_directory_profiles for update to authenticated
+  using (status = 'pending' and supplier_directory_private.manages_unit(unit_id))
+  with check (status in ('active', 'rejected') and reviewed_by = (select auth.uid())
+    and supplier_directory_private.manages_unit(unit_id));
 
 create policy directory_roles_admin_read on public.supplier_directory_roles for select to authenticated
-  using ((select supplier_directory_private.is_admin()));
+  using ((select supplier_directory_private.is_admin()) or supplier_directory_private.manages_unit(unit_id));
 create policy directory_roles_admin_insert on public.supplier_directory_roles for insert to authenticated
-  with check ((select supplier_directory_private.is_admin()) and granted_by = (select auth.uid()));
+  with check (granted_by = (select auth.uid()) and (
+    (select supplier_directory_private.is_admin())
+    or (role = 'viewer' and supplier_directory_private.manages_unit(unit_id)
+      and exists (select 1 from public.supplier_directory_profiles p
+        where p.user_id = supplier_directory_roles.user_id
+          and p.unit_id = supplier_directory_roles.unit_id and p.status = 'active'))));
 create policy directory_roles_admin_update on public.supplier_directory_roles for update to authenticated
   using ((select supplier_directory_private.is_admin())) with check ((select supplier_directory_private.is_admin()));
 
