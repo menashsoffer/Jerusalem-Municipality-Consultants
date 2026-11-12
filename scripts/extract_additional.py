@@ -1,17 +1,13 @@
-import re,json,csv
+"""Extract more registry tables into a review CSV; run with pdfplumber."""
+import re,json,csv,argparse
 from pathlib import Path
 from collections import Counter
 import pdfplumber
-ROOT=Path(__file__).resolve().parents[2]; SRC=ROOT/'sources'; rows=[]
-def clean(x):return re.sub(r'\s+',' ',str(x or '')).strip()
-def heb(x):
- out=[]
- for line in str(x or '').splitlines():
-  s=clean(line)
-  if re.search('[א-ת]',s):
-   s=s[::-1];s=re.sub(r'[A-Za-z0-9@._+/-]{2,}',lambda m:m.group()[::-1],s)
-  out.append(s)
- return clean(' '.join(out))
+from source_text import clean, heb
+parser=argparse.ArgumentParser(description='Extract additional municipal source tables')
+parser.add_argument('--sources',type=Path,required=True,help='Directory containing the source documents')
+parser.add_argument('--output',type=Path,required=True,help='Output CSV file')
+args=parser.parse_args(); SRC=args.sources; OUT=args.output; rows=[]
 def add(name,field,registry,url,page,email='',phone=''):
  if clean(name) and clean(field): rows.append({'name':clean(name),'field':clean(field),'registry':registry,'source_url':url,'source_page':page,'email':clean(email),'phone':clean(phone),'note':'חולץ אוטומטית – יש לאמת מול המקור','review_status':'needs_review'})
 url='https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf'; field=''
@@ -43,7 +39,9 @@ with pdfplumber.open(SRC/'מאגר כלכלנים- ייעוץ כלכלי.pdf') a
   for table in page.extract_tables():
    for r in table:
     if len(r)==5 and clean(r[4]).isdigit():add(heb(r[3]),'ייעוץ כלכלי','מאגר כלכלנים',url,i,'',clean(r[0]))
-with open(ROOT/'consultant_app/additional_import.csv','w',encoding='utf8',newline='') as f:
+if not rows: raise SystemExit('No rows were extracted. Check the source directory and file names.')
+OUT.parent.mkdir(parents=True,exist_ok=True)
+with open(OUT,'w',encoding='utf8',newline='') as f:
  w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
 print('total',len(rows),dict(Counter(r['registry'] for r in rows)))
 for rg in sorted(set(r['registry'] for r in rows)):

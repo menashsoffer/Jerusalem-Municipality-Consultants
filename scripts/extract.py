@@ -2,24 +2,13 @@
 from pathlib import Path
 import json,re,argparse
 import pdfplumber,openpyxl
+from source_text import clean, heb
 parser=argparse.ArgumentParser(description='Extract selected municipal source tables')
 parser.add_argument('--sources',type=Path,required=True,help='Directory containing the source documents')
 parser.add_argument('--output',type=Path,required=True,help='Output JSON file')
 args=parser.parse_args(); SRC=args.sources; OUT=args.output
 OUT.parent.mkdir(parents=True,exist_ok=True)
 records=[]
-def clean(v):
-    return re.sub(r'\s+', ' ', str(v or '')).strip()
-def heb(v):
-    lines=str(v or '').splitlines()
-    out=[]
-    for line in lines:
-        s=clean(line)
-        if re.search('[א-ת]',s):
-            s=s[::-1]
-            s=re.sub(r'[A-Za-z0-9@._+/-]{2,}',lambda m:m.group()[::-1],s)
-        out.append(s)
-    return clean(' '.join(out))
 def add(name,field,registry,url,page=None,email='',phone='',note=''):
     if not name:return
     records.append(dict(name=clean(name),field=clean(field),registry=registry,source_url=url,page=page,email=clean(email),phone=clean(phone),note=note,status='טעון אימות'))
