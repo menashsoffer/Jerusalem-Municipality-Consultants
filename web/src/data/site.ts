@@ -3,12 +3,12 @@ import { buildCatalog, type Supplier } from '../catalog-model.ts';
 import { loadAccess, type Access } from './access.ts';
 import { loadCatalog, type CatalogData } from './catalog.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
+import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
 import { DataClient } from './client.ts';
 
 export const BASE = 'https://jzsvhjkiklfnogseelbe.supabase.co';
 const PUBLIC_KEY = 'sb_publishable_XgkUnokIil-H5Qy4_VAN0A_VIUA2wwq';
 
-type LegacyInsert = PublicSchema['legacy_suppliers']['Insert'];
 type EventInsert = PublicSchema['activity_events']['Insert'];
 
 export function data(token: string): DataClient {
@@ -71,12 +71,30 @@ export async function detail(token: string, supplierId: string): Promise<Supplie
   return supplierDetail(data(token), currentCatalog, { supplierId, access: currentAccess });
 }
 
-export function legacySuppliers(token: string): Promise<PublicSchema['legacy_suppliers']['Row'][]> {
-  return data(token).list('legacy_suppliers');
+export function canAddSupplier(): boolean {
+  return (
+    !!currentAccess &&
+    !!currentCatalog &&
+    writableVersions(currentCatalog, currentAccess).length > 0
+  );
 }
 
-export function addLegacy(token: string, row: LegacyInsert): Promise<void> {
-  return data(token).insert('legacy_suppliers', row);
+export async function writeContext(token: string): Promise<WriteContext> {
+  if (!currentAccess || !currentCatalog || currentToken !== token)
+    throw new Error('יש להתחבר מחדש.');
+  return loadWriteContext(data(token), currentCatalog, currentAccess);
+}
+
+export function saveMembership(token: string, payload: Record<string, string>): Promise<string> {
+  return data(token).supplierWrite('save_supplier_membership', payload);
+}
+
+export function renameSupplier(token: string, payload: Record<string, string>): Promise<string> {
+  return data(token).supplierWrite('rename_supplier', payload);
+}
+
+export function replaceContact(token: string, payload: Record<string, string>): Promise<string> {
+  return data(token).supplierWrite('replace_supplier_contact', payload);
 }
 
 export function track(token: string, event: EventInsert): Promise<void> {

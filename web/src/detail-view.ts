@@ -1,6 +1,8 @@
 import type { SupplierDetail } from './data/supplier-detail.ts';
 import type { Json } from './database.types.ts';
-import { detail } from './data/site.ts';
+import { catalog, detail, getAccess } from './data/site.ts';
+import { setSuppliers } from './catalog-view.ts';
+import { attachEdits } from './supplier-edit.ts';
 
 function element(tag: string, value: string, cls?: string): HTMLElement {
   const node = document.createElement(tag);
@@ -226,7 +228,7 @@ function changedFields(changes: Json): string {
   ];
   return fields.join(', ');
 }
-export function render(data: SupplierDetail): void {
+export function render(data: SupplierDetail, token = ''): void {
   target('supplier-title').textContent = data.supplier.display_name;
   const content = target('supplier-content');
   content.replaceChildren();
@@ -241,13 +243,23 @@ export function render(data: SupplierDetail): void {
   contacts(content, data);
   memberships(content, data);
   history(content, data);
+  const access = getAccess();
+  if (token && access?.state === 'active' && access.editor) {
+    attachEdits(content, data, {
+      token,
+      refresh: async () => {
+        setSuppliers(await catalog(token));
+        render(await detail(token, data.supplier.id), token);
+      },
+    });
+  }
 }
 export async function open(id: string, token: string): Promise<void> {
   target('supplier-title').textContent = 'פרטי ספק';
   target('supplier-content').textContent = 'טוען פרטי ספק...';
   if (!dialog().open) dialog().showModal();
   try {
-    render(await detail(token, id));
+    render(await detail(token, id), token);
   } catch {
     target('supplier-content').textContent = 'לא ניתן לטעון את פרטי הספק. נסו שוב.';
   }
