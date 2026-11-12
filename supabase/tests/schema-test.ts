@@ -66,3 +66,43 @@ describe('migrations on an empty database', () => {
     await db.exec(row('2026-11-16', '2026-12-15'));
   });
 });
+
+describe('hierarchy guards', () => {
+  let db: PGlite;
+  before(async () => {
+    db = await migratedDatabase();
+  });
+  after(async () => {
+    await db.close();
+  });
+
+  it('keeps units and categories to two levels', async () => {
+    await db.exec(`
+      insert into public.org_units (id, name, kind) values
+        ('00000000-0000-0000-0000-0000000000a1', 'מינהל', 'administration');
+      insert into public.org_units (id, name, kind, parent_id) values
+        ('00000000-0000-0000-0000-0000000000a2', 'אגף', 'department',
+          '00000000-0000-0000-0000-0000000000a1');
+      insert into public.categories (id, name) values
+        ('00000000-0000-0000-0000-0000000000c1', 'תכנון');
+      insert into public.categories (id, name, parent_id) values
+        ('00000000-0000-0000-0000-0000000000c2', 'תנועה', '00000000-0000-0000-0000-0000000000c1')`);
+    const deepUnit = `insert into public.org_units (name, kind, parent_id)
+      values ('מדור', 'department', '00000000-0000-0000-0000-0000000000a2')`;
+    await assert.rejects(db.exec(deepUnit), /administration/);
+    const deepCategory = `insert into public.categories (name, parent_id)
+      values ('רמזורים', '00000000-0000-0000-0000-0000000000c2')`;
+    await assert.rejects(db.exec(deepCategory), /top-level/);
+  });
+
+  it('does not bring a revoked grant back', async () => {
+    await db.exec(`
+      insert into auth.users (id) values ('00000000-0000-0000-0000-0000000000b1');
+      insert into public.role_grants (id, user_id, role, revoked_at) values
+        ('00000000-0000-0000-0000-0000000000b2', '00000000-0000-0000-0000-0000000000b1',
+          'admin', now())`);
+    const revive = `update public.role_grants set revoked_at = null
+      where id = '00000000-0000-0000-0000-0000000000b2'`;
+    await assert.rejects(db.exec(revive), /revoked/);
+  });
+});

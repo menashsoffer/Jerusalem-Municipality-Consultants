@@ -11,7 +11,6 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 | שכבה | שפה | מיקום | הערות |
 |---|---|---|---|
 | סכמה, הרשאות, RLS, פונקציות DB | SQL (PostgreSQL) | `supabase/migrations/` | המקור היחיד לסכמה. אין שינוי ידני בלוח הבקרה |
-| טיוטות SQL שעוד לא אושרו | SQL | `database/drafts/` | לא מוחלות על הפרויקט החי עד שעוברות למיגרציה |
 | לוגיקה עסקית (מנוע הכללים) | TypeScript | `supabase/functions/_shared/` | קוד טהור, בלי תלויות ובלי גישה לרשת. רץ ב-Deno וב-Node |
 | נקודות קצה בשרת | TypeScript (Deno) | `supabase/functions/<שם-בקו-מפריד>/index.ts` | Edge Functions דקות שקוראות ללוגיקה מ-`_shared` |
 | האתר | TypeScript | `web/` (מקור), `docs/` (פלט לפריסה) | עד המעבר: `docs/assets/*.js` |
@@ -127,7 +126,6 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 | `docs/assets/*.js` | JavaScript בשורות ארוכות | יעבור ל-`web/` ב-TypeScript |
 | `app.py`, `index.html`, `schema.sql`, `seed.sql`, `procurement_*.sql` | אב טיפוס מקומי על SQLite | יימחק אחרי שהמנוע יעבור ל-Edge Function, והטבלאות יעברו למיגרציות |
 | `procurement/` (Python) | מנוע הכללים בגרסת Python | הוחלף ב-`supabase/functions/_shared/procurement/` (נבדק שהתוצאות זהות ב-1,716 מקרים). יימחק עם האב טיפוס |
-| `database/drafts/` | טיוטות | יעברו ל-`supabase/migrations/` אחרי בדיקה על Supabase מבודד |
 
 ESLint ו-Prettier מתעלמים מהקבצים האלה עד שיוחלפו. הרשימה נמצאת ב-`eslint.config.mjs` וב-`.prettierignore`.
 

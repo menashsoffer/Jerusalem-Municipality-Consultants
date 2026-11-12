@@ -6,7 +6,7 @@
 | חלק | מיקום | מצב |
 |---|---|---|
 | האתר (המוצר העיקרי) | `docs/` | אתר סטטי מול Supabase: התחברות מנהל, חיפוש בכ-787 שורות ספקים, הוספת ספק ויומן פעולות |
-| בסיס הנתונים ב-Supabase | `database/drafts/` | טיוטות SQL עם RLS לבקשות גישה, יחידות, קטגוריות, והגנת כתיבה לטבלת הספקים. טרם הוחלו על הפרויקט החי |
+| בסיס הנתונים ב-Supabase | `supabase/migrations/` | כל הסכמה, ההרשאות וה-RLS כמיגרציות, לפי מסמך האפיון. נבדקות ב-`supabase/tests/`. החלה על הפרויקט החי רק באישור |
 | מנוע בדיקת מסלול התקשרות | `supabase/functions/_shared/procurement/` | TypeScript. ראו `documentation/procurement-engine-he.md`. הגרסה הישנה ב-Python (`procurement/`) תימחק כשהמנוע יחובר ל-Edge Function |
 | אב טיפוס מקומי | `app.py`, `index.html`, `schema.sql` | SQLite עם 10 פרסומים ונקודת קצה למנוע. לא לפריסה |
 | סקריפטי חילוץ | `scripts/` | חילוץ טבלאות מקובצי PDF ו-Excel של העירייה לקובץ לבדיקה |
