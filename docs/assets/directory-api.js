@@ -65,6 +65,17 @@
       listMyCategoryRequests: userId => request('supplier_directory_category_requests', {params: {
         select: 'id,proposed_name,description,parent_id,status,decision_note,resolved_category_id,requested_at',
         requested_by: 'eq.' + text(userId, 1, 100, 'user'), order: 'requested_at.desc'}}),
+      listPendingCategoryRequests: () => request('supplier_directory_category_requests', {params: {
+        select: 'id,requested_by,proposed_name,description,parent_id,source_reference,requested_at',
+        status: 'eq.pending', order: 'requested_at.asc'}}),
+      decideCategory: ({requestId, decision, note, existingCategoryId}) => {
+        const id = text(requestId, 1, 100, 'request');
+        if (!['approved', 'linked', 'rejected'].includes(decision)) throw new DirectoryError('invalid_decision');
+        if ((decision === 'linked') !== Boolean(existingCategoryId)) throw new DirectoryError('invalid_category');
+        return request('rpc/supplier_directory_decide_category', {method: 'POST', body: {
+          target_request: id, decision, note: text(note, 2, 2000, 'note'),
+          existing_category: existingCategoryId ? text(existingCategoryId, 1, 100, 'category') : null}});
+      },
       submitCategoryRequest: input => {
         const body = {requested_by: text(input.userId, 1, 100, 'user'),
           proposed_name: text(input.name, 2, 200, 'name'),
