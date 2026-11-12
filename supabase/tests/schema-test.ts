@@ -61,9 +61,28 @@ describe('migrations on an empty database', () => {
     const row = (from: string, until: string) => `
       insert into public.thresholds (valid_from, valid_until, no_tender_max, zuta4_max,
         zuta6_max, source) values ('${from}', '${until}', 1, 2, 3, 'test')`;
-    await db.exec(row('2026-10-16', '2026-11-15'));
-    await assert.rejects(db.exec(row('2026-11-01', '2026-12-15')));
-    await db.exec(row('2026-11-16', '2026-12-15'));
+    await db.exec(row('2030-10-16', '2030-11-15'));
+    await assert.rejects(db.exec(row('2030-11-01', '2030-12-15')));
+    await db.exec(row('2030-11-16', '2030-12-15'));
+  });
+
+  it('covers each day from 2024 through the latest published index exactly once', async () => {
+    const result = await db.query<{ day: string; matches: number }>(`
+      select d::date::text as day, count(t.id)::int as matches
+      from generate_series('2024-01-01'::date, '2026-11-15'::date, '1 day') d
+      left join public.thresholds t on d::date between t.valid_from and t.valid_until
+      group by d having count(t.id) <> 1`);
+    assert.deepEqual(result.rows, []);
+  });
+
+  it('records a source and reproduces the calculated amounts', async () => {
+    const result = await db.query<{ valid_from: string }>(`
+      select valid_from::text from public.thresholds where source is null or trim(source) = ''
+        or (index_value is not null and (
+          no_tender_max <> round(26000 * index_value / 175.3 / 100) * 100
+          or zuta4_max <> round(63500 * index_value / 175.3 / 100) * 100
+          or zuta6_max <> round(127000 * index_value / 175.3 / 100) * 100))`);
+    assert.deepEqual(result.rows, []);
   });
 });
 
