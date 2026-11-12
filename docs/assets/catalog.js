@@ -13,6 +13,12 @@
     .map(row => clean(row.field)));
   const selectionExists = (records, registry, field) =>
     !!registry && !!field && fieldsForRegistry(records, registry).includes(field);
+  const nameKey = name => clean(name).normalize('NFKC').toLocaleLowerCase('he')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ').trim().replace(/\s+/g, ' ');
+  const possibleDuplicates = (records, name) => {
+    const key = nameKey(name);
+    return key ? records.filter(row => nameKey(row.name) === key) : [];
+  };
 
   async function loadAllSuppliers(fetcher, base, requestHeaders) {
     const records = [];
@@ -30,5 +36,5 @@
     }
   }
 
-  return Object.freeze({registryNames, fieldsForRegistry, selectionExists, loadAllSuppliers});
+  return Object.freeze({registryNames, fieldsForRegistry, selectionExists, possibleDuplicates, loadAllSuppliers});
 });
