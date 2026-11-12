@@ -37,7 +37,7 @@
       listUnits: () => request('supplier_directory_units', {params: {select: 'id,name,kind,parent_id', active: 'eq.true', verified: 'eq.true', order: 'name.asc'}}),
       getProfile: async userId => {
         const id = text(userId, 1, 100, 'user');
-        const rows = await request('supplier_directory_profiles', {params: {select: 'user_id,first_name,last_name,job_title,unit_id,status,review_note', user_id: 'eq.' + id}});
+        const rows = await request('supplier_directory_profiles', {params: {select: 'user_id,first_name,last_name,email,job_title,unit_id,status,review_note', user_id: 'eq.' + id}});
         if (rows.length > 1) throw new DirectoryError('invalid_response');
         return rows[0] || null;
       },
@@ -50,6 +50,16 @@
           purpose: text(input.purpose, 5, 1000, 'purpose')};
         if (input.phone) body.phone = text(input.phone, 1, 80, 'phone');
         return request('supplier_directory_profiles', {method: 'POST', body});
+      },
+      listPendingProfiles: () => request('supplier_directory_profiles', {params: {
+        select: 'user_id,first_name,last_name,email,job_title,phone,unit_id,purpose,created_at',
+        status: 'eq.pending', order: 'created_at.asc'}}),
+      decideProfile: ({userId, decision, note}) => {
+        const target = text(userId, 1, 100, 'user');
+        if (decision !== 'active' && decision !== 'rejected') throw new DirectoryError('invalid_decision');
+        const cleanedNote = text(note || '', decision === 'rejected' ? 2 : 0, 2000, 'note');
+        return request('rpc/supplier_directory_decide_profile', {method: 'POST', body: {
+          target_user: target, decision, note: cleanedNote || null}});
       },
       listCategories: () => request('supplier_directory_categories', {params: {select: 'id,name,description,parent_id', active: 'eq.true', order: 'name.asc'}}),
       listMyCategoryRequests: userId => request('supplier_directory_category_requests', {params: {
