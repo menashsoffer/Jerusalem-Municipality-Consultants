@@ -16,16 +16,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - run: pip install ruff==0.16.9 -r requirements-scripts.txt
+      - run: ruff format --check .
+      - run: ruff check .
       - run: python -m unittest discover -s tests -t . -v
 
-  javascript:
+  typescript:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
       - run: npm ci --ignore-scripts
+      - run: npm run format:check
+      - run: npm run lint
+      - run: npm run typecheck
       - run: node --check docs/assets/app.js
-      - run: npm run test:ui
-      - run: npm run test:database
+      - run: npm test

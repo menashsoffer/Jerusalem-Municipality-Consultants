@@ -1,48 +1,122 @@
-"""Extract more registry tables into a review CSV; run with pdfplumber."""
-import re,json,csv,argparse
-from pathlib import Path
+"""חילוץ טבלאות ממאגרים נוספים לקובץ CSV לבדיקה אנושית.
+
+הרצה: python3 scripts/extract_additional.py --sources <תיקיית קבצים> --output <קובץ.csv>
+"""
+
+import argparse
+import csv
+import re
 from collections import Counter
-import pdfplumber
-from source_text import clean, heb
-parser=argparse.ArgumentParser(description='Extract additional municipal source tables')
-parser.add_argument('--sources',type=Path,required=True,help='Directory containing the source documents')
-parser.add_argument('--output',type=Path,required=True,help='Output CSV file')
-args=parser.parse_args(); SRC=args.sources; OUT=args.output; rows=[]
-def add(name,field,registry,url,page,email='',phone=''):
- if clean(name) and clean(field): rows.append({'name':clean(name),'field':clean(field),'registry':registry,'source_url':url,'source_page':page,'email':clean(email),'phone':clean(phone),'note':'חולץ אוטומטית – יש לאמת מול המקור','review_status':'needs_review'})
-url='https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf'; field=''
-with pdfplumber.open(SRC/'מאגר-יועצים-מאושר-תחבורה ופיתוח תשתיות-לשנת-2025-2027.pdf') as pdf:
- for i,page in enumerate(pdf.pages,1):
-  for table in page.extract_tables():
-   for r in table:
-    if len(r)!=6:continue
-    if clean(r[5]) and not clean(r[3]) and 'םוחת' not in clean(r[5]): field=heb(r[5])
-    if clean(r[4]).isdigit() and clean(r[3]):add(heb(r[3]),field,'תחבורה ופיתוח תשתיות',url,i,clean(r[0]).replace(' ',''),clean(r[1]))
-url='https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf'; field=''
-with pdfplumber.open(SRC/'מאגר-יועצים-אגף-שיפור-פני-העיר.pdf') as pdf:
- for i,page in enumerate(pdf.pages,1):
-  for table in page.extract_tables():
-   for r in table:
-    if len(r)!=7:continue
-    for cell in r:
-     if cell and 'םיצעוי רגאמ' in cell: field=heb(cell).split(' - ',1)[-1]
-    if clean(r[6]).isdigit() and clean(r[5]):add(heb(r[5]),field,'אגף שיפור פני העיר',url,i,clean(r[3]).replace(' ',''),clean(r[2]))
-url='https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf'
-with pdfplumber.open(SRC/'מאגר יועצים תחומים פיזיים מינהל החינוך-2024.pdf') as pdf:
- for i,page in enumerate(pdf.pages,1):
-  for table in page.extract_tables():
-   for r in table:
-    if len(r)==5 and re.fullmatch(r'[0-9-]+',clean(r[4])) and clean(r[3]) and clean(r[1]): add(heb(r[3]),heb(r[1]),'תחומים פיזיים מינהל החינוך',url,i)
-url='https://www.jerusalem.muni.il/media/tcbhbl5i/רשימת-יועצים-כלכלנים-2023.pdf'
-with pdfplumber.open(SRC/'מאגר כלכלנים- ייעוץ כלכלי.pdf') as pdf:
- for i,page in enumerate(pdf.pages,1):
-  for table in page.extract_tables():
-   for r in table:
-    if len(r)==5 and clean(r[4]).isdigit():add(heb(r[3]),'ייעוץ כלכלי','מאגר כלכלנים',url,i,'',clean(r[0]))
-if not rows: raise SystemExit('No rows were extracted. Check the source directory and file names.')
-OUT.parent.mkdir(parents=True,exist_ok=True)
-with open(OUT,'w',encoding='utf8',newline='') as f:
- w=csv.DictWriter(f,fieldnames=list(rows[0]));w.writeheader();w.writerows(rows)
-print('total',len(rows),dict(Counter(r['registry'] for r in rows)))
-for rg in sorted(set(r['registry'] for r in rows)):
- print(rg,[(r['name'],r['field']) for r in rows if r['registry']==rg][:3])
+from pathlib import Path
+
+from pdf_tables import table_rows
+from source_text import clean, compact, heb
+
+MEDIA = "https://www.jerusalem.muni.il/media/"
+NOTE = "חולץ אוטומטית – יש לאמת מול המקור"
+# הכותרות האלה מופיעות בקובץ בסדר חזותי הפוך, כפי שהן נקראות לפני heb()
+FIELD_HEADER_REVERSED = "םוחת"
+REGISTRY_TITLE_REVERSED = "םיצעוי רגאמ"
+
+
+def row(name, field, registry, source, **contact):
+    """שורה אחת לבדיקה. source הוא זוג (קישור, עמוד)."""
+    url, page = source
+    return {
+        "name": clean(name),
+        "field": clean(field),
+        "registry": registry,
+        "source_url": url,
+        "source_page": page,
+        "email": clean(contact.get("email")),
+        "phone": clean(contact.get("phone")),
+        "note": NOTE,
+        "review_status": "needs_review",
+    }
+
+
+def transportation(src):
+    """התחום מופיע כשורת כותרת לפני הספקים שלו, ולכן נשמר בין השורות."""
+    url = MEDIA + "3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf"
+    path = src / "מאגר-יועצים-מאושר-תחבורה ופיתוח תשתיות-לשנת-2025-2027.pdf"
+    out, field = [], ""
+    for page, r in table_rows(path):
+        if len(r) != 6:
+            continue
+        if clean(r[5]) and not clean(r[3]) and FIELD_HEADER_REVERSED not in clean(r[5]):
+            field = heb(r[5])
+        if clean(r[4]).isdigit() and clean(r[3]):
+            registry = "תחבורה ופיתוח תשתיות"
+            out.append(
+                row(heb(r[3]), field, registry, (url, page), email=compact(r[0]), phone=r[1])
+            )
+    return out
+
+
+def field_from_title(cells, current):
+    """כותרת מאגר בתוך השורה מגדירה את התחום של השורות הבאות."""
+    for cell in cells:
+        if cell and REGISTRY_TITLE_REVERSED in cell:
+            current = heb(cell).split(" - ", 1)[-1]
+    return current
+
+
+def city_improvement(src):
+    url = MEDIA + "0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf"
+    path = src / "מאגר-יועצים-אגף-שיפור-פני-העיר.pdf"
+    out, field = [], ""
+    for page, r in table_rows(path):
+        if len(r) != 7:
+            continue
+        field = field_from_title(r, field)
+        if clean(r[6]).isdigit() and clean(r[5]):
+            registry = "אגף שיפור פני העיר"
+            out.append(
+                row(heb(r[5]), field, registry, (url, page), email=compact(r[3]), phone=r[2])
+            )
+    return out
+
+
+def education_physical(src):
+    url = MEDIA + "tecnwz4z/מאגר-2024.pdf"
+    path = src / "מאגר יועצים תחומים פיזיים מינהל החינוך-2024.pdf"
+    return [
+        row(heb(r[3]), heb(r[1]), "תחומים פיזיים מינהל החינוך", (url, page))
+        for page, r in table_rows(path)
+        if len(r) == 5 and re.fullmatch(r"[0-9-]+", clean(r[4])) and clean(r[3]) and clean(r[1])
+    ]
+
+
+def economists(src):
+    url = MEDIA + "tcbhbl5i/רשימת-יועצים-כלכלנים-2023.pdf"
+    path = src / "מאגר כלכלנים- ייעוץ כלכלי.pdf"
+    return [
+        row(heb(r[3]), "ייעוץ כלכלי", "מאגר כלכלנים", (url, page), phone=r[0])
+        for page, r in table_rows(path)
+        if len(r) == 5 and clean(r[4]).isdigit()
+    ]
+
+
+SOURCES = (transportation, city_improvement, education_physical, economists)
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Extract additional municipal source tables")
+    parser.add_argument("--sources", type=Path, required=True, help="Source documents directory")
+    parser.add_argument("--output", type=Path, required=True, help="Output CSV file")
+    args = parser.parse_args()
+    rows = [r for extract in SOURCES for r in extract(args.sources) if r["name"] and r["field"]]
+    if not rows:
+        raise SystemExit("No rows were extracted. Check the source directory and file names.")
+    args.output.parent.mkdir(parents=True, exist_ok=True)
+    with args.output.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=list(rows[0]))
+        writer.writeheader()
+        writer.writerows(rows)
+    print("total", len(rows), dict(Counter(r["registry"] for r in rows)))
+    for registry in sorted({r["registry"] for r in rows}):
+        print(registry, [(r["name"], r["field"]) for r in rows if r["registry"] == registry][:3])
+
+
+if __name__ == "__main__":
+    main()

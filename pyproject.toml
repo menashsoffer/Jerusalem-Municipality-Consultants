@@ -1,0 +1,17 @@
+# Python is used only for the local extraction scripts (coding standards, section 9).
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+# Legacy SQLite prototype and Python engine (section 10); removed when the TypeScript engine is wired.
+extend-exclude = ["app.py", "procurement/", "tests/test_app.py", "tests/test_engine.py"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "C90", "N", "SIM", "RUF"]
+ignore = ["RUF001", "RUF002", "RUF003"]  # Hebrew text in strings and comments
+
+[tool.ruff.lint.mccabe]
+max-complexity = 10
+
+[tool.ruff.lint.per-file-ignores]
+# Embedded SQL test script; line length follows the SQL, not Python.
+"database/tests/build_rollback_test.py" = ["E501"]

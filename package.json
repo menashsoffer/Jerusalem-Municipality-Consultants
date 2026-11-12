@@ -1,11 +1,29 @@
 {
   "name": "jerusalem-consultants-development",
   "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
   "scripts": {
+    "typecheck": "tsc -p .",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "test": "npm run test:ts && npm run test:ui && npm run test:database",
+    "test:ts": "node --test \"supabase/functions/tests/*-test.ts\"",
     "test:ui": "node --test tests/*.test.cjs",
-    "test:database": "python3 database/tests/build_rollback_test.py && node --test tests/postgres-rls.test.mjs"
+    "test:database": "python3 database/tests/build_rollback_test.py && node --test tests/postgres-rls.test.mjs",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm test"
   },
   "devDependencies": {
-    "@electric-sql/pglite": "0.5.8"
+    "@electric-sql/pglite": "0.5.8",
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.5",
+    "eslint": "10.14.0",
+    "globals": "17.14.0",
+    "prettier": "3.10.1",
+    "typescript": "5.9.3",
+    "typescript-eslint": "8.72.2"
   }
 }

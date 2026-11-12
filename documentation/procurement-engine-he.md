@@ -12,7 +12,7 @@
 - `blocked`: הבקשה במתכונתה אינה אפשרית, למשל הגדלה מעל התקרה.
 השדה `splitting_checked` אומר אם בוצעה בדיקת פיצול. בנקודת הקצה היא מתבצעת כשמעבירים `subject_key`.
 
-## בדיקות שקיימות בקוד (`procurement/engine.py`)
+## בדיקות שקיימות בקוד (`supabase/functions/_shared/procurement/`)
 | בדיקה | תקנה | מה נבדק |
 |---|---|---|
 | מסלול לפי שווי | 3(3), 8(ד), 197 | פטור, מכרז זוטא עם 4 או 6 פניות, מכרז פומבי |
@@ -38,8 +38,8 @@
 - `contract_changes`: שווי מקורי, הגדלות והמשכים, לחישוב אחוז ההגדלה המצטבר.
 
 ## שימוש
-- בדיקות: `python3 -m unittest discover -s tests -t .`
-- דרך השרת המקומי: `/api/route-check?value=200000&vat=0&date=2026-11-12&subject_key=cleaning`
+- בדיקות: `npm run test:ts`
+- דרך השרת המקומי (אב טיפוס ישן ב-Python, עד שתהיה Edge Function): `/api/route-check?value=200000&vat=0&date=2026-11-12&subject_key=cleaning`
 - עם פטור: `/api/route-check?value=900000&exemption=3(8)&fact=professional_work`
 
 ## מה עוד לא קיים

@@ -8,10 +8,10 @@ project: use an isolated test project or a disposable local Supabase instance.
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-MIGRATION = ROOT / 'drafts/202611120001_directory_access.sql'
-OUTPUT = ROOT / 'tests/generated_access_rollback.sql'
+MIGRATION = ROOT / "drafts/202611120001_directory_access.sql"
+OUTPUT = ROOT / "tests/generated_access_rollback.sql"
 
-TEST = r'''
+TEST = r"""
 -- Test fixtures refer to an existing auth identity but modify only new tables.
 do $$
 declare uid uuid;
@@ -87,17 +87,17 @@ end $$;
 reset role;
 rollback;
 select 'rollback test passed; all fixtures reverted' as result;
-'''
+"""
 
 
 def main():
-    migration = MIGRATION.read_text(encoding='utf-8')
-    if not migration.rstrip().endswith('commit;'):
-        raise ValueError('Unexpected migration ending')
-    sql = migration.rstrip()[:-len('commit;')] + TEST
-    OUTPUT.write_text(sql, encoding='utf-8')
-    print(f'Generated test SQL at {OUTPUT}; no changes were made to a database.')
+    migration = MIGRATION.read_text(encoding="utf-8")
+    if not migration.rstrip().endswith("commit;"):
+        raise ValueError("Unexpected migration ending")
+    sql = migration.rstrip()[: -len("commit;")] + TEST
+    OUTPUT.write_text(sql, encoding="utf-8")
+    print(f"Generated test SQL at {OUTPUT}; no changes were made to a database.")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
