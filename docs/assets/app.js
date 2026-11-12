@@ -9,6 +9,7 @@ let source=[],session=null,user=null;
 function text(tag,value,cls){const e=document.createElement(tag);e.textContent=value;if(cls)e.className=cls;return e}
 function headers(token){return {'apikey':PUBLIC_KEY,'Authorization':'Bearer '+(token||PUBLIC_KEY),'Content-Type':'application/json'}}
 function track(event_type,details={}){if(!session||!user)return;fetch(BASE+'/rest/v1/activity_events',{method:'POST',headers:{...headers(session.token),'Prefer':'return=minimal'},body:JSON.stringify({actor_id:user.id,event_type,details})}).catch(()=>{});}
+function takeAuthError(){const url=new URL(location.href), fragment=new URLSearchParams(url.hash.slice(1));const error=url.searchParams.get('error')||fragment.get('error');const code=url.searchParams.get('error_code')||fragment.get('error_code');if(!error&&!code)return '';for(const key of ['error','error_code','error_description']){url.searchParams.delete(key);fragment.delete(key)}url.hash=fragment.toString();history.replaceState(null,'',url.pathname+url.search+url.hash);sessionStorage.removeItem(PKCE_KEY);return code==='bad_oauth_state'||code==='flow_state_expired'||code==='otp_expired'?'תוקף ניסיון ההתחברות פג. יש להתחיל התחברות חדשה.':'ההתחברות לא הושלמה. יש להתחיל מחדש או לפנות למנהל המערכת.'}
 function takeSession(){const p=new URLSearchParams(location.hash.slice(1));if(p.has('access_token')){const token=p.get('access_token');const exp=Date.now()+Number(p.get('expires_in')||3600)*1000;sessionStorage.setItem(SESSION_KEY,JSON.stringify({token,exp}));history.replaceState(null,'',location.pathname+location.search)}try{const s=JSON.parse(sessionStorage.getItem(SESSION_KEY)||'null');return s&&s.exp>Date.now()?s:null}catch{return null}}
 async function googleSignIn(){
   const bytes=crypto.getRandomValues(new Uint8Array(32));
@@ -34,7 +35,47 @@ async function exchangeGoogleCode(){
 function options(){const selected=registry.value;registry.replaceChildren(new Option('כל המאגרים',''));[...new Set(source.map(x=>x.registry).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he')).forEach(v=>registry.add(new Option(v,v)));registry.value=selected;const selectedField=fieldFilter.value;fieldFilter.replaceChildren(new Option('כל התחומים',''));[...new Set(source.filter(x=>!registry.value||x.registry===registry.value).map(x=>x.field).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'he')).forEach(v=>fieldFilter.add(new Option(v,v)));fieldFilter.value=[...fieldFilter.options].some(o=>o.value===selectedField)?selectedField:''}
 function render(){const q=search.value.trim().toLocaleLowerCase('he');const rows=source.filter(x=>(!registry.value||x.registry===registry.value)&&(!fieldFilter.value||x.field===fieldFilter.value)&&[x.name,x.field,x.registry].some(v=>(v||'').toLocaleLowerCase('he').includes(q)));result.replaceChildren();$('#count').textContent=`${rows.length} רשומות · ספק עשוי להופיע בכמה תחומים`;$('#empty').hidden=rows.length>0;for(const x of rows){const card=text('article','','card');card.append(text('h3',x.name),text('p',x.field||'תחום לא צוין','field'),text('p',x.registry||'מאגר לא צוין','details'));if(x.phone)card.append(text('p','טלפון: '+x.phone,'details'));if(x.email)card.append(text('p','דוא״ל: '+x.email,'details'));if(x.note)card.append(text('p',x.note,'details'));const footer=text('footer',x.source_url?'חולץ מהמקור · טעון אימות':'הוזן ידנית · טעון אימות');if(x.source_url){try{const url=new URL(x.source_url);if(url.protocol==='https:'){const a=text('a','פתיחת המקור'+(x.page||x.source_page?' · עמוד '+(x.page||x.source_page):''));a.href=url.href;a.target='_blank';a.rel='noopener noreferrer';footer.append(document.createTextNode(' · '),a)}}catch{}}card.append(footer);result.append(card)}}
 async function loadData(){if(!session)throw Error('auth');if(typeof SupplierCatalog!=='undefined'){source=await SupplierCatalog.loadAllSuppliers(fetch,BASE,headers(session.token))}else{const response=await fetch(BASE+'/rest/v1/suppliers?select=*&order=id.asc',{headers:headers(session.token)});if(!response.ok)throw Error('database');source=await response.json();if(!Array.isArray(source))throw Error('format')}options();render()}
-async function init(){try{await exchangeGoogleCode()}catch{$('#login-message').textContent='ההתחברות לא הושלמה. יש לנסות שוב.'}session=takeSession();if(session){try{const res=await fetch(BASE+'/auth/v1/user',{headers:headers(session.token)});if(!res.ok)throw Error('auth');user=await res.json();if(user.app_metadata?.role!=='supplier_admin')throw Error('role');await loadData();$('#login-open').hidden=true;$('#logout').hidden=false;$('#private-content').hidden=false;track('page_view',{page:location.pathname});return}catch{session=null;user=null;sessionStorage.removeItem(SESSION_KEY);$('#login-message').textContent='לא ניתן לאמת הרשאה. יש להתחבר מחדש או לפנות למנהל המערכת.'}}loginDialog.showModal()}
+async function init(){
+  const authError=takeAuthError();
+  if(authError) $('#login-message').textContent=authError;
+  try { await exchangeGoogleCode(); } catch { $('#login-message').textContent='ההתחברות לא הושלמה. יש לנסות שוב.'; }
+  session=takeSession();
+  if(!session){loginDialog.showModal();return;}
+  try {
+    const response=await fetch(BASE+'/auth/v1/user',{headers:headers(session.token)});
+    if(!response.ok) throw Error('auth');
+    user=await response.json();
+    if(!user.id) throw Error('auth');
+  } catch {
+    session=null;user=null;sessionStorage.removeItem(SESSION_KEY);
+    $('#login-message').textContent='לא ניתן לאמת את החשבון. יש להתחבר מחדש.';
+    loginDialog.showModal();return;
+  }
+  $('#login-open').hidden=true;$('#logout').hidden=false;
+  const api=DirectoryApi.createClient({base:BASE,apiKey:PUBLIC_KEY,accessToken:session.token});
+  const context={api,user,forms:DirectoryForms};
+  await DirectoryWorkflow.initialize({api,user,
+    views:{
+      enrollment:()=>DirectoryEnrollment.mount({...context,container:$('#enrollment')}),
+      categories:()=>DirectoryCategoryRequests.mount({...context,container:$('#category-requests')}),
+      profileReview:()=>DirectoryReview.mountProfiles({api,container:$('#profile-review')}),
+      categoryReview:()=>DirectoryReview.mountCategories({api,container:$('#category-review')}),
+      loadSuppliers:async()=>{await loadData();track('page_view',{page:location.pathname});}
+    },
+    ui:{
+      reset:()=>{$('#workflow-area').hidden=false;$('#private-content').hidden=true;$('#add-open').hidden=true;},
+      showError:message=>{$('#workflow-error').textContent=message;},
+      showEnrollment:()=>{},
+      showActive:permissions=>{
+        $('#private-content').hidden=false;$('#category-panel').hidden=false;
+        $('#profile-review-panel').hidden=!permissions.canReviewProfiles;
+        $('#category-review-panel').hidden=!permissions.canReviewCategories;
+        $('#add-open').hidden=!permissions.canAddSupplier;
+      },
+      showSupplierError:message=>{$('#error').textContent=message;$('#error').hidden=false;}
+    }
+  });
+}
 $('#google-login')?.addEventListener('click',()=>googleSignIn().catch(()=>{$('#login-message').textContent='לא ניתן להתחבר באמצעות Google כעת.'}));
 let searchTimer;search.addEventListener('input',()=>{render();clearTimeout(searchTimer);searchTimer=setTimeout(()=>{const term=search.value.trim().slice(0,200);if(term)track('search',{term})},900)});registry.addEventListener('change',()=>{options();render();track('filter',{registry:registry.value})});fieldFilter.addEventListener('change',()=>{render();track('filter',{field:fieldFilter.value})});$('#reset').addEventListener('click',()=>{search.value='';registry.value='';fieldFilter.value='';options();render()});$('#login-open').addEventListener('click',()=>loginDialog.showModal());$('#login-close').addEventListener('click',()=>loginDialog.close());$('#logout').addEventListener('click',()=>{sessionStorage.removeItem(SESSION_KEY);location.reload()});$('#login-form').addEventListener('submit',async e=>{e.preventDefault();const msg=$('#login-message');msg.textContent='שולח קישור...';const email=String(new FormData(e.currentTarget).get('email')||'').trim();try{const res=await fetch(BASE+'/auth/v1/otp?redirect_to='+encodeURIComponent(location.origin+location.pathname),{method:'POST',headers:headers(),body:JSON.stringify({email,create_user:false})});if(!res.ok)throw Error('auth');msg.textContent='אם החשבון מורשה, קישור כניסה נשלח לדוא״ל.'}catch{msg.textContent='לא ניתן לשלוח קישור כעת. בדקו את פרטי החשבון ונסו שוב.'}});
 function fillAddFields(){const select=$('#add-field');if(!select)return;const selected=select.value, reg=$('#add-registry').value;select.replaceChildren(new Option(reg?'בחרו תחום':'בחרו תחילה מאגר',''));if(reg){SupplierCatalog.fieldsForRegistry(source,reg).forEach(value=>select.add(new Option(value,value)))}select.disabled=!reg;select.value=[...select.options].some(option=>option.value===selected)?selected:''}
