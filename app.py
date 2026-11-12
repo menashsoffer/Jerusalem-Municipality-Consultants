@@ -1,6 +1,7 @@
 """Local prototype for browsing municipal consultant registries."""
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 import sqlite3, json, os
+from contextlib import closing
 from urllib.parse import urlparse, parse_qs
 from pathlib import Path
 from datetime import date
@@ -11,12 +12,27 @@ ROOT = Path(__file__).resolve().parent
 DB = Path(os.environ.get('CONSULTANTS_DB', ROOT / 'consultants.sqlite3'))
 
 def connect():
+    """חיבור חדש לכל בקשה. foreign_keys חל לכל חיבור בנפרד ולכן מופעל כאן."""
     db = sqlite3.connect(DB)
     db.row_factory = sqlite3.Row
+    db.execute('PRAGMA foreign_keys = ON')
     return db
 
+def like_pattern(text):
+    """מחרוזת חיפוש בתוך LIKE ... ESCAPE '!', כש-%, _ ו-! נחשבים לתווים רגילים."""
+    return '%' + text.replace('!', '!!').replace('%', '!%').replace('_', '!_') + '%'
+
+def flag(value):
+    """פרמטר כן/לא מה-URL. ערך לא מוכר נדחה במקום להתפרש בשקט כ'לא'."""
+    v = (value or '').strip().lower()
+    if v in ('1', 'true', 'yes'):
+        return True
+    if v in ('0', 'false', 'no'):
+        return False
+    raise ValueError('vat חייב להיות 1 או 0')
+
 def init():
-    with connect() as db:
+    with closing(connect()) as db, db:
         db.executescript((ROOT / 'schema.sql').read_text(encoding='utf-8'))
         db.executescript((ROOT / 'seed.sql').read_text(encoding='utf-8'))
         db.executescript((ROOT / 'procurement_schema.sql').read_text(encoding='utf-8'))
@@ -30,11 +46,11 @@ def route_check(params):
     one = lambda k, d=None: params.get(k, [d])[0]
     on = date.fromisoformat(one('date') or date.today().isoformat())
     subject_key = one('subject_key')
-    with connect() as db:
+    with closing(connect()) as db, db:
         table = load_thresholds(db)
         related = related_request_values(db, subject_key, on) if subject_key else None
     d = check_new_contract(float(one('value')), on, table,
-                           value_includes_vat=one('vat', '1') == '1', exemption=one('exemption') or None,
+                           value_includes_vat=flag(one('vat', '1')), exemption=one('exemption') or None,
                            facts={f: True for f in params.get('fact', [])}, related_values=related)
     return d.as_dict()
 
@@ -45,8 +61,10 @@ class Handler(BaseHTTPRequestHandler):
             data = (ROOT / 'index.html').read_bytes(); kind = 'text/html; charset=utf-8'
         elif u.path == '/api/registries':
             q = parse_qs(u.query).get('q', [''])[0].strip()
-            with connect() as db:
-                rows = db.execute('SELECT name, administration, department, published_on, source_url FROM registries WHERE name LIKE ? OR administration LIKE ? OR department LIKE ? ORDER BY published_on DESC', (f'%{q}%',)*3).fetchall()
+            with closing(connect()) as db, db:
+                rows = db.execute("SELECT name, administration, department, published_on, source_url FROM registries "
+                                  "WHERE name LIKE ?1 ESCAPE '!' OR administration LIKE ?1 ESCAPE '!' OR department LIKE ?1 ESCAPE '!' "
+                                  "ORDER BY published_on DESC", (like_pattern(q),)).fetchall()
             data = json.dumps([dict(r) for r in rows], ensure_ascii=False).encode(); kind = 'application/json; charset=utf-8'
         elif u.path == '/api/route-check':
             try:

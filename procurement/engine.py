@@ -12,6 +12,7 @@
 """
 from __future__ import annotations
 
+import math
 from dataclasses import dataclass, field
 from datetime import date, timedelta
 from typing import Iterable, Optional
@@ -71,6 +72,17 @@ def thresholds_for(day: date, table: Iterable[Thresholds]) -> Thresholds:
     if not candidates:
         raise ValueError(f"אין טבלת ספים בתוקף ליום {day.isoformat()}")
     return max(candidates, key=lambda t: t.effective_from)
+
+
+def require_amount(value: float, name: str, *, positive: bool = False) -> float:
+    """סכום חייב להיות מספר סופי ולא שלילי (או חיובי ממש). NaN ואינסוף נדחים."""
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        raise ValueError(f"{name} חייב להיות מספר") from None
+    if not math.isfinite(v) or v < 0 or (positive and v == 0):
+        raise ValueError(f"{name} חייב להיות מספר סופי {'חיובי' if positive else 'שאינו שלילי'}")
+    return v
 
 
 def comparable_value(value: float, value_includes_vat: bool, compare_incl_vat: bool = True,
@@ -179,6 +191,7 @@ def check_new_contract(value: float, on: date, table: Iterable[Thresholds], *,
     None פירושו שהבדיקה לא בוצעה, והתוצאה תאמר זאת במפורש.
     """
     facts = facts or {}
+    value = require_amount(value, "value")
     t = thresholds_for(on, table)
     v = comparable_value(value, value_includes_vat, compare_incl_vat, vat_rate)
     d = _decide(v, t, exemption, facts)
@@ -272,6 +285,9 @@ def check_increase(*, kind: str, base_amount: float, previous_increases: float, 
     המועצה קבעה שמכרז לא יביא תועלת (3(7)(ב)).
     ההגדלות נספרות במצטבר. זו קריאה שמרנית: התקנה אינה מתירה לעקוף את התקרה בכמה הגדלות קטנות.
     """
+    base_amount = require_amount(base_amount, "base_amount", positive=True)
+    previous_increases = require_amount(previous_increases, "previous_increases")
+    new_increase = require_amount(new_increase, "new_increase")
     if kind == "existing_item":
         cap, reg = 0.50, "3(7)(א)"
     elif kind == "added_items":
@@ -280,7 +296,7 @@ def check_increase(*, kind: str, base_amount: float, previous_increases: float, 
         raise ValueError("kind חייב להיות existing_item או added_items")
 
     cumulative = previous_increases + new_increase
-    pct = cumulative / base_amount if base_amount else float("inf")
+    pct = cumulative / base_amount
     d = Decision(f"increase_{kind}", reg, "ועדת הרחבות והגדלות לפי נוהל העירייה",
                  requirements=["תיעוד שווי החוזה המקורי ושל כל הגדלה קודמת",
                                "החלטה מנומקת לפני ביצוע ההגדלה"],

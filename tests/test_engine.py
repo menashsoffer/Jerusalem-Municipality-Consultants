@@ -120,7 +120,23 @@ class NewContractTests(unittest.TestCase):
         self.assertTrue(d.warnings)
 
 
+    def test_invalid_values_rejected(self):
+        for bad in (float("nan"), float("inf"), -1, "abc", None):
+            with self.subTest(value=bad), self.assertRaises(ValueError):
+                self.route(bad)
+        self.assertTrue(self.route(0).allowed)
+
+
 class IncreaseTests(unittest.TestCase):
+    def test_invalid_amounts_rejected(self):
+        bad_calls = [dict(base_amount=0, previous_increases=0, new_increase=1),
+                     dict(base_amount=100, previous_increases=-1, new_increase=1),
+                     dict(base_amount=100, previous_increases=0, new_increase=-500),
+                     dict(base_amount=100, previous_increases=0, new_increase=float("nan"))]
+        for kw in bad_calls:
+            with self.subTest(**kw), self.assertRaises(ValueError):
+                check_increase(kind="existing_item", **kw)
+
     def test_existing_item_cap_is_cumulative(self):
         self.assertTrue(check_increase(kind="existing_item", base_amount=100, previous_increases=0, new_increase=50).allowed)
         d = check_increase(kind="existing_item", base_amount=100, previous_increases=30, new_increase=30)
@@ -197,6 +213,9 @@ class StoreTests(unittest.TestCase):
         db.execute("INSERT INTO engagement_requests(requested_on, subject, subject_key, estimated_value, value_includes_vat)"
                    " VALUES ('2026-11-05', 'גינון', 'garden', 100000, 0)")
         self.assertAlmostEqual(related_request_values(db, "garden", DAY)[0], 118_000)
+        db.execute("INSERT INTO engagement_requests(requested_on, subject, subject_key, estimated_value, value_includes_vat, status)"
+                   " VALUES ('2026-11-06', 'גינון', 'garden', 70000, 1, 'rejected')")
+        self.assertEqual(len(related_request_values(db, "garden", DAY)), 1)
 
 
 if __name__ == "__main__":

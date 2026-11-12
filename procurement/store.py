@@ -21,10 +21,11 @@ def related_request_values(db: sqlite3.Connection, subject_key: str, around: dat
     """שווי בקשות עם אותו מפתח נושא בחלון זמן, מומר לבסיס המע"מ של ההשוואה.
 
     חלון ברירת המחדל (90 יום) הוא הנחת עבודה, לא הוראת דין.
+    בקשות שבוטלו או נדחו אינן נספרות. טיוטות והגשות נספרות, כי הן התקשרויות מתוכננות.
     """
     rows = db.execute(
         "SELECT id, estimated_value, value_includes_vat FROM engagement_requests WHERE subject_key = ? "
-        "AND status != 'cancelled' AND abs(julianday(requested_on) - julianday(?)) <= ?",
+        "AND status NOT IN ('cancelled', 'rejected') AND abs(julianday(requested_on) - julianday(?)) <= ?",
         (subject_key, around.isoformat(), days),
     ).fetchall()
     return [comparable_value(r[1], bool(r[2]), compare_incl_vat, vat_rate) for r in rows if r[0] != exclude_id]
