@@ -5,7 +5,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 // Legacy code listed in section 10 of the standards. Remove entries as files are replaced.
-const legacy = ['docs/assets/**', 'index.html', 'tests/*.cjs', 'tests/*.mjs'];
+const legacy = ['docs/assets/**', 'index.html', 'tests/*.cjs'];
 
 export default defineConfig(
   globalIgnores(['node_modules/**', ...legacy]),
@@ -41,7 +41,7 @@ export default defineConfig(
     },
   },
   {
-    files: ['supabase/functions/tests/**/*.ts'],
+    files: ['supabase/functions/tests/**/*.ts', 'supabase/tests/**/*.ts'],
     rules: {
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': 'off',
