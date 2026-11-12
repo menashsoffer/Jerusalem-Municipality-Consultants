@@ -6,15 +6,18 @@
     "node": ">=22.18"
   },
   "scripts": {
-    "typecheck": "tsc -p .",
+    "typecheck": "tsc -p . && tsc -p web",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "npm run test:ts && npm run test:supabase && npm run test:ui",
     "test:ts": "node --test \"supabase/functions/tests/*-test.ts\"",
     "test:ui": "node --test tests/*.test.cjs",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm test",
-    "test:supabase": "node --test \"supabase/tests/*-test.ts\""
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run types:db:check && npm test",
+    "test:supabase": "node --test \"supabase/tests/*-test.ts\"",
+    "build:web": "vite build",
+    "types:db": "node scripts/schema/generate-types.ts",
+    "types:db:check": "node scripts/schema/generate-types.ts --check"
   },
   "devDependencies": {
     "@electric-sql/pglite": "0.5.8",
@@ -24,6 +27,7 @@
     "globals": "17.14.0",
     "prettier": "3.10.1",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.72.2"
+    "typescript-eslint": "8.72.2",
+    "vite": "^8.3.8"
   }
 }
