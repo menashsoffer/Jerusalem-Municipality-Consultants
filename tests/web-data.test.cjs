@@ -29,3 +29,14 @@ test('a change affecting no visible rows is not reported as successful', async (
   const client = new DataClient({baseUrl: 'https://db.test', publicKey: 'key', token: 'token', fetcher});
   await assert.rejects(client.update('suppliers', {id: 'eq.nope'}, {display_name: 'שם'}), /לא ניתן לאמת/);
 });
+
+test('calls browser fetch without a client object as its receiver', async () => {
+  const {DataClient} = await api;
+  const fetcher = async function () {
+    'use strict';
+    assert.equal(this, undefined);
+    return Response.json([]);
+  };
+  const client = new DataClient({baseUrl: 'https://db.test', publicKey: 'key', token: 'token', fetcher});
+  assert.deepEqual(await client.list('suppliers'), []);
+});

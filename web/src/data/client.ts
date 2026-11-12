@@ -60,7 +60,8 @@ export class DataClient {
       headers.set(key, value);
     });
     try {
-      response = await this.fetcher(`${this.root}/${path}`, {
+      const fetcher = this.fetcher;
+      response = await fetcher(`${this.root}/${path}`, {
         ...init,
         headers,
       });
