@@ -1,6 +1,5 @@
 # Legacy code (coding standards, section 10). Remove entries as files are replaced.
 docs/assets/
-index.html
 docs/index.html
 tests/*.cjs
 # Generated or third-party

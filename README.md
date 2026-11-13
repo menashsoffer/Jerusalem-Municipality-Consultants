@@ -7,15 +7,13 @@
 |---|---|---|
 | האתר (המוצר העיקרי) | `web/` (מקור), `docs/` (תוצר) | אתר סטטי מול Supabase: התחברות מנהל, חיפוש בכ-787 שורות ספקים, הוספת ספק ויומן פעולות |
 | בסיס הנתונים ב-Supabase | `supabase/migrations/` | כל הסכמה, ההרשאות וה-RLS כמיגרציות, לפי מסמך האפיון. נבדקות ב-`supabase/tests/`. החלה על הפרויקט החי רק באישור |
-| מנוע בדיקת מסלול התקשרות | `supabase/functions/_shared/procurement/` | TypeScript. ראו `documentation/procurement-engine-he.md`. הגרסה הישנה ב-Python (`procurement/`) תימחק כשהמנוע יחובר ל-Edge Function |
-| אב טיפוס מקומי | `app.py`, `index.html`, `schema.sql` | SQLite עם 10 פרסומים ונקודת קצה למנוע. לא לפריסה |
+| מנוע בדיקת מסלול התקשרות | `supabase/functions/_shared/procurement/` | TypeScript. ראו `documentation/procurement-engine-he.md` |
 | סקריפטי חילוץ | `scripts/` | חילוץ טבלאות מקובצי PDF ו-Excel של העירייה לקובץ לבדיקה |
 
 הסכמה והמדיניות של טבלת `suppliers` הקיימת ב-Supabase עדיין לא נמצאות בריפו. יש לייצא אותן ל-`database/` לפני שינויים נוספים בהרשאות.
 
 ## הרצה ובדיקות
 - אתר: לאחר `npm ci --ignore-scripts`, להריץ `npm run build:web`, ואז לפתוח את `docs/index.html` דרך שרת סטטי (למשל `python3 -m http.server -d docs`). ההתחברות דורשת חשבון מורשה ב-Supabase.
-- אב טיפוס מקומי: `python3 app.py` ואז http://127.0.0.1:8000. מיקום בסיס הנתונים ניתן לשינוי ב-`CONSULTANTS_DB`.
 - טיפוסי הטבלאות והתצוגות ב־`web/src/database.types.ts` נוצרים מהמיגרציות במסד בדיקות מקומי באמצעות `npm run types:db`. בדיקת `npm run types:db:check` מזהה אי־התאמה. טיפוסי פונקציות וקשרים טרם נוצרים.
 - תוצר `docs/` נשמר במאגר עבור GitHub Pages; תהליך הבדיקות בונה מחדש ומוודא שהתוצר מעודכן.
 - נדרש Node 22.18 ומעלה ו-Python 3.12.

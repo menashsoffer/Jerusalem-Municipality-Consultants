@@ -2,8 +2,6 @@
 [tool.ruff]
 target-version = "py312"
 line-length = 100
-# Legacy SQLite prototype and Python engine (section 10); removed when the TypeScript engine is wired.
-extend-exclude = ["app.py", "procurement/", "tests/test_app.py", "tests/test_engine.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "C90", "N", "SIM", "RUF"]

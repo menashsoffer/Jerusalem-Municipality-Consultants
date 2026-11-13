@@ -124,8 +124,6 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 | קוד | מצב | מה יקרה |
 |---|---|---|
 | `docs/assets/*.js` | JavaScript בשורות ארוכות | יעבור ל-`web/` ב-TypeScript |
-| `app.py`, `index.html`, `schema.sql`, `seed.sql`, `procurement_*.sql` | אב טיפוס מקומי על SQLite | יימחק אחרי שהמנוע יעבור ל-Edge Function, והטבלאות יעברו למיגרציות |
-| `procurement/` (Python) | מנוע הכללים בגרסת Python | הוחלף ב-`supabase/functions/_shared/procurement/` (נבדק שהתוצאות זהות ב-1,716 מקרים). יימחק עם האב טיפוס |
 
 ESLint ו-Prettier מתעלמים מהקבצים האלה עד שיוחלפו. הרשימה נמצאת ב-`eslint.config.mjs` וב-`.prettierignore`.
 

@@ -5,7 +5,7 @@ import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
 // Legacy code listed in section 10 of the standards. Remove entries as files are replaced.
-const legacy = ['docs/assets/**', 'index.html', 'tests/*.cjs'];
+const legacy = ['docs/assets/**', 'tests/*.cjs'];
 
 export default defineConfig(
   globalIgnores(['node_modules/**', 'web/src/database.types.ts', ...legacy]),
