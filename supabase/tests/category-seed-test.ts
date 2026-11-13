@@ -9,6 +9,8 @@ import { applyMigrations, count, migratedDatabase } from './pglite.ts';
 const PRIOR = '20261113020000_registry_field_categories.sql';
 const SEED = '20261113021000_seed_categories.sql';
 const DUPLICATE = '3dfb2369-695b-47ed-9a52-d255a245bfa3';
+const KEPT = 'e744ea22-d6d2-4f2f-9ca6-1c77cf148f15';
+const LATER = '50000000-0000-0000-0000-0000000000ff';
 const MANUAL = '40000000-0000-0000-0000-000000000001';
 interface Field {
   id: string;
@@ -49,16 +51,6 @@ describe('reviewed category seed', () => {
   });
   after(async () => db.close());
 
-  it('refuses the uncleaned duplicate and leaves data unchanged', async () => {
-    await db.query(
-      'insert into public.registry_fields (id, registry_id, source_text) values ($1, $2, $3)',
-      [DUPLICATE, fields[0]?.registry_id, 'duplicate source field'],
-    );
-    await assert.rejects(applyMigrations(db, { after: PRIOR, until: SEED }), /cleanup is required/);
-    assert.equal(await count(db, 'select 1 from public.categories'), 1);
-    await db.query('delete from public.registry_fields where id = $1', [DUPLICATE]);
-  });
-
   it('refuses a changed snapshot before adding categories', async () => {
     const first = fields[0];
     assert.ok(first);
@@ -74,9 +66,23 @@ describe('reviewed category seed', () => {
     ]);
   });
 
-  it('adds the reviewed links while preserving existing manual mappings', async () => {
+  it('ignores source fields added after the snapshot', async () => {
+    await db.query(
+      'insert into public.registry_fields (id, registry_id, source_text) values ($1, $2, $3)',
+      [LATER, fields[0]?.registry_id, 'field loaded later'],
+    );
     await applyMigrations(db, { after: PRIOR, until: SEED });
-    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 202);
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.registry_field_categories where registry_field_id = '${LATER}'`,
+      ),
+      0,
+    );
+  });
+
+  it('adds the proposed links while preserving existing manual mappings', async () => {
+    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 208);
     assert.equal(
       await count(
         db,
@@ -90,6 +96,18 @@ describe('reviewed category seed', () => {
       36,
     );
     await applyMigrations(db, { after: PRIOR, until: SEED });
-    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 202);
+    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 208);
+  });
+
+  it('gives the extraction duplicate the same categories as the field it duplicates', async () => {
+    const links = (field: string) =>
+      db.query<{ category_id: string }>(
+        `select category_id from public.registry_field_categories
+         where registry_field_id = $1 order by category_id`,
+        [field],
+      );
+    const [duplicate, kept] = await Promise.all([links(DUPLICATE), links(KEPT)]);
+    assert.equal(kept.rows.length, 6);
+    assert.deepEqual(duplicate.rows, kept.rows);
   });
 });

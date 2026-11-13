@@ -1,5 +1,5 @@
--- Reviewed mapping based on the 13 November 2026 source-field snapshot.
--- Apply only after the source-field cleanup and together with website support.
+-- Proposed mapping based on the 13 November 2026 source-field snapshot, pending review
+-- against the source documents. Apply only together with website support.
 create temporary table category_seed_mapping (
   field_id uuid not null, root_name text not null, child_name text not null,
   primary key (field_id, root_name, child_name)
@@ -207,24 +207,27 @@ insert into category_seed_mapping values
   ('22793a0a-5738-48c7-adfa-08c6aa6a19f8', 'בטיחות ונגישות', 'כיבוי אש'),
   ('41502fcd-fb84-4b73-b428-7d6a18b0df13', 'אדריכלות ועיצוב', 'תכנון מוסדות חינוך');
 
--- Empty test databases do not contain this data. Once any snapshot field exists,
--- refuse a partial, changed, or not-yet-cleaned dataset rather than guessing.
+-- 3dfb2369 is an extraction duplicate of e744ea22 ("חניי ה" for "חנייה"). Until the two
+-- fields are merged, both receive the same categories so no supplier drops out of a filter.
+insert into category_seed_mapping
+select '3dfb2369-695b-47ed-9a52-d255a245bfa3', root_name, child_name from category_seed_mapping
+where field_id = 'e744ea22-d6d2-4f2f-9ca6-1c77cf148f15';
+
+-- Empty test databases do not contain this data. Once any mapped field exists, every
+-- mapped field must match the snapshot exactly. Fields added later are ignored.
 do $$
 declare
   present integer;
+  fingerprint text;
 begin
-  select count(*) into present from public.registry_fields f
-    where f.id in (select field_id from category_seed_mapping)
-       or f.id in ('3dfb2369-695b-47ed-9a52-d255a245bfa3',
-         '4a507601-3355-49a6-9096-8d86639ddad4');
-  if present = 0 then return; end if;
-  if exists (select 1 from public.registry_fields
-      where id = '3dfb2369-695b-47ed-9a52-d255a245bfa3') then
-    raise exception 'Source-field cleanup is required before category seeding';
-  end if;
-  if (select count(*) from public.registry_fields) <> 125 or (select md5(string_agg(
+  select count(*), md5(string_agg(
       f.id::text || chr(31) || f.registry_id::text || chr(31) || f.source_text,
-      chr(30) order by f.id)) from public.registry_fields f) <> '74b33ac9e271c300d8d1edf9ffda78a6' then
+      chr(30) order by f.id))
+    into present, fingerprint
+    from public.registry_fields f
+    where f.id in (select field_id from category_seed_mapping);
+  if present = 0 then return; end if;
+  if present <> 125 or fingerprint <> '1cdae7ae3c85266906b786ef75629b83' then
     raise exception 'Source-field snapshot differs; review category seed before applying';
   end if;
   if exists (select 1 from category_seed_mapping m
