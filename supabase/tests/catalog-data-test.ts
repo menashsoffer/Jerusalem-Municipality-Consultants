@@ -5,6 +5,7 @@ import type { PGlite } from '@electric-sql/pglite';
 
 import { buildCatalog } from '../../web/src/catalog-model.ts';
 import { loadCatalog } from '../../web/src/data/catalog.ts';
+import { supplierDetail } from '../../web/src/data/supplier-detail.ts';
 import { DataClient } from '../../web/src/data/client.ts';
 import { ACCESS_FIXTURE, SUPPLIER, USERS, VERSION } from './access-fixture.ts';
 import { as, migratedDatabase } from './pglite.ts';
@@ -19,6 +20,7 @@ const ALLOWED = new Set([
   'categories',
   'org_units',
   'supplier_contacts',
+  'supplier_identifiers',
   'source_documents',
 ]);
 function clientFor(db: PGlite): DataClient {
@@ -26,7 +28,12 @@ function clientFor(db: PGlite): DataClient {
     const url = new URL(input instanceof Request ? input.url : input);
     const table = url.pathname.split('/').at(-1) ?? '';
     if (!ALLOWED.has(table)) return new Response(null, { status: 404 });
-    const where = table === 'suppliers' ? "where status <> 'merged'" : '';
+    const where =
+      table === 'suppliers'
+        ? "where status <> 'merged'"
+        : table === 'supplier_contacts' && url.searchParams.get('status') === 'eq.current'
+          ? "where status = 'current'"
+          : '';
     const result = await db.query(
       `select * from public.${table} ${where} order by id
       limit $1::int offset $2::int`,
@@ -65,5 +72,35 @@ describe('new catalog respects database visibility', () => {
         assert.equal(rows[0]?.memberships.length, expected);
       });
     }
+  });
+
+  it('shows only current contact details in the catalog and supplier details', async () => {
+    await db.exec(`insert into public.supplier_contacts (supplier_id, kind, value, status) values
+      ('${SUPPLIER}', 'phone', '0501111111', 'outdated'),
+      ('${SUPPLIER}', 'phone', '0502222222', 'current'),
+      ('${SUPPLIER}', 'email', 'disputed@example.test', 'disputed')`);
+    await as(db, USERS.editor, async () => {
+      const client = clientFor(db);
+      const cached = await loadCatalog(client);
+      assert.deepEqual(
+        buildCatalog(cached)[0]?.contacts.map((contact) => contact.value),
+        ['0502222222'],
+      );
+      const detail = await supplierDetail(client, cached, {
+        supplierId: SUPPLIER,
+        access: {
+          state: 'active',
+          member: true,
+          admin: false,
+          editor: true,
+          manager: false,
+          grants: [],
+        },
+      });
+      assert.deepEqual(
+        detail.contacts.map((contact) => contact.value),
+        ['0502222222'],
+      );
+    });
   });
 });
