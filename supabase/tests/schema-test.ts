@@ -61,9 +61,9 @@ describe('migrations on an empty database', () => {
     const row = (from: string, until: string) => `
       insert into public.thresholds (valid_from, valid_until, no_tender_max, zuta4_max,
         zuta6_max, source) values ('${from}', '${until}', 1, 2, 3, 'test')`;
-    await db.exec(row('2026-10-16', '2026-11-15'));
-    await assert.rejects(db.exec(row('2026-11-01', '2026-12-15')));
-    await db.exec(row('2026-11-16', '2026-12-15'));
+    await db.exec(row('2030-10-16', '2030-11-15'));
+    await assert.rejects(db.exec(row('2030-11-01', '2030-12-15')));
+    await db.exec(row('2030-11-16', '2030-12-15'));
   });
 });
 
