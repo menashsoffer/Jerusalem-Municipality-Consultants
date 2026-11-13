@@ -30,14 +30,14 @@
 
 ## הגדרה חד פעמית (דורשת את בעל המוצר)
 
-1. **פרויקט בדיקה.** הפרויקט החי נפתח דרך Vercel, ולכן גם השני נפתח שם או ב-supabase.com באותו ארגון. צריך לבדוק שהתוכנית מאפשרת פרויקט נוסף בלי תשלום.
+1. **פרויקט בדיקה.** נפתח ב-13.11.2026: `jerusalem-consultants-staging` (`hmophbeqelaycjdvgkys`), באותו ארגון ובתוכנית החינמית.
 2. **מקור הפרסום של GitHub Pages.** ב-Settings, ואז Pages, משנים את Source ל-"GitHub Actions". חייב לקרות לפני המיזוג שמוחק את `docs/`, אחרת האתר יפסיק להתעדכן.
 3. **סביבות ב-GitHub** (Settings, ואז Environments):
-   - `staging`: הסודות `SUPABASE_ACCESS_TOKEN`, `SUPABASE_DB_PASSWORD` (של פרויקט הבדיקה) והמשתנה `SUPABASE_PROJECT_REF`.
-   - `production-plan` ו-`production`: אותם שמות עם הערכים של הפרויקט החי. ב-`production` מסמנים Required reviewers ומוסיפים את בעל המוצר.
+   - `staging`: הסוד `SUPABASE_ACCESS_TOKEN` והמשתנה `SUPABASE_PROJECT_REF` = `hmophbeqelaycjdvgkys`.
+   - `production-plan` ו-`production`: אותו סוד, והמשתנה `SUPABASE_PROJECT_REF` = `jzsvhjkiklfnogseelbe`. ב-`production` מסמנים Required reviewers ומוסיפים את בעל המוצר.
    - `github-pages`: נוצרת לבד בפרסום הראשון. אפשר להוסיף לה Required reviewers.
    - משתנה ברמת הריפו `PRODUCTION_PROJECT_REF` = `jzsvhjkiklfnogseelbe`. התהליך מסרב לרוץ אם סביבת הבדיקה מצביעה עליו בטעות.
-4. **אסימון גישה.** `SUPABASE_ACCESS_TOKEN` נוצר ב-supabase.com תחת Account, ואז Access Tokens.
+4. **אסימון גישה.** `SUPABASE_ACCESS_TOKEN` נוצר ב-supabase.com תחת Account, ואז Access Tokens. סיסמת המסד לא נדרשת: ה-CLI מתחבר עם האסימון דרך תפקיד זמני.
 
 סודות של פונקציות (גיידסטאר, OCR) נשמרים בכל פרויקט Supabase בנפרד ולא ב-GitHub.
 
