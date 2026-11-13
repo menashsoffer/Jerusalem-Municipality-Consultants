@@ -1,19 +1,24 @@
 -- Threshold calculator. Regulation 2: each base amount is multiplied by the
 -- ratio between the current consumer price index and the base index, and
--- rounded to the nearest 100. The same formula lives in
+-- rounded to the nearest 100. The amounts that start on the 16th of a month use
+-- the index of the previous month, which the statistics bureau publishes on the
+-- 15th. Its API gives the index on the 1985 base:
+-- api.cbs.gov.il/index/data/price?id=120010&coef=true (prevBase "1985 ממוצע").
+-- The same formula lives in
 -- supabase/functions/_shared/procurement/amounts.ts; a test keeps the two equal.
 
 -- Known rows, copied from the prototype's seed. Each is in force until the
 -- day before the next update day.
 insert into public.thresholds
-  (valid_from, valid_until, no_tender_max, zuta4_max, zuta6_max, source, is_official)
+  (valid_from, valid_until, no_tender_max, zuta4_max, zuta6_max, index_value, source,
+    is_official)
 values
-  ('2021-10-16', '2021-11-15', 145500, 355300, 710600,
+  ('2021-10-16', '2021-11-15', 145500, 355300, 710600, null,
     'נוסח התקנות (סכומים לאוקטובר 2021)', true),
-  ('2025-03-16', '2025-04-15', 164500, 401700, 803500,
-    'טבלת משרד WDZF לפי מדד פברואר 2025. לא פרסום רשמי', false),
-  ('2026-10-16', '2026-11-15', 170700, 416800, 833600,
-    'חישוב לפי מדד ספטמבר 2026. ייתכן הפרש של 100 ש"ח', false);
+  ('2025-03-16', '2025-04-15', 164500, 401700, 803500, 1109.0577,
+    'חישוב לפי מדד פברואר 2025 של הלמ"ס. לא פרסום רשמי', false),
+  ('2026-10-16', '2026-11-15', 170700, 416800, 833600, 1150.5791,
+    'חישוב לפי מדד ספטמבר 2026 של הלמ"ס. לא פרסום רשמי', false);
 
 -- Round half to even, to the nearest 100, as the amounts are published.
 create function private.indexed_amount(base_amount numeric, index_ratio numeric)

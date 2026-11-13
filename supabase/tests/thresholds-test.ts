@@ -32,6 +32,20 @@ describe('threshold calculator', () => {
     });
   });
 
+  it('reproduces the stored rows from the published indexes', async () => {
+    const cases: [number, string[]][] = [
+      [1109.0577, ['164500', '401700', '803500']],
+      [1150.5791, ['170700', '416800', '833600']],
+    ];
+    for (const [index, amounts] of cases) {
+      const result = await db.query<Amounts>(
+        `select * from public.calculate_thresholds(${String(index)})`,
+      );
+      const row = result.rows[0];
+      assert.deepEqual([row?.no_tender_max, row?.zuta4_max, row?.zuta6_max], amounts);
+    }
+  });
+
   it('matches the TypeScript engine across a range of indexes', async () => {
     for (let index = 900; index <= 1400; index += 0.7) {
       const value = Number(index.toFixed(1));
