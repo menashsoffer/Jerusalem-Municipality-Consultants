@@ -2,7 +2,7 @@
 
 המסמך מחייב כל קוד חדש בריפו, שנכתב בידי אדם או בידי סוכן AI. כלל שאפשר לאכוף אוטומטית נאכף ב-CI, וההגדרות נמצאות בקבצים שמצוינים לצידו. קוד ישן שעדיין לא עומד בכללים מסומן ברשימת "קוד ישן" בסוף המסמך, ומתוקן כשנוגעים בו.
 
-עודכן: 12.11.2026. המקורות מופיעים בסוף המסמך.
+עודכן: 13.11.2026. המקורות מופיעים בסוף המסמך.
 
 ## 1. ארכיטקטורה ושפות
 
@@ -13,12 +13,12 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 | סכמה, הרשאות, RLS, פונקציות DB | SQL (PostgreSQL) | `supabase/migrations/` | המקור היחיד לסכמה. אין שינוי ידני בלוח הבקרה |
 | לוגיקה עסקית (מנוע הכללים) | TypeScript | `supabase/functions/_shared/` | קוד טהור, בלי תלויות ובלי גישה לרשת. רץ ב-Deno וב-Node |
 | נקודות קצה בשרת | TypeScript (Deno) | `supabase/functions/<שם-בקו-מפריד>/index.ts` | Edge Functions דקות שקוראות ללוגיקה מ-`_shared` |
-| האתר | TypeScript | `web/` (מקור), `docs/` (פלט לפריסה) | עד המעבר: `docs/assets/*.js` |
-| חילוץ נתונים מ-PDF ו-Excel | Python 3.12 | `scripts/` | כלי עבודה מקומי בלבד. לא חלק מהמערכת הרצה |
+| האתר | TypeScript, React | `web/` (מקור), `docs/` (פלט לפריסה, עד המעבר לפריסה דרך Actions) | ראו החלטות 0001 ו-0003. עד המעבר: `docs/assets/*.js` |
+| חילוץ נתונים ו-OCR מ-PDF ו-Excel | Python 3.12 | `scripts/` (יעבור ל-`pipeline/`) | עבודת אצווה, מקומית או ב-GitHub Actions. כותבת לטבלאות הביניים בלבד. ראו החלטות 0004 ו-0005 |
 | בדיקות | כמו הקוד הנבדק | `supabase/functions/tests/<נושא>-test.ts` ל-TypeScript (המוסכמה של Supabase), `tests/` ל-Python ול-RLS | ראו סעיף 6 |
 | תיעוד | Markdown בעברית | `documentation/`, `README.md` | |
 
-אין שפות או מסגרות נוספות בלי החלטה מתועדת ב-`documentation/decisions/`. Python לא ישמש לקוד שרץ במערכת. אין שרת נוסף מחוץ ל-Supabase ול-GitHub Pages.
+אין שפות או מסגרות נוספות בלי החלטה מתועדת ב-`documentation/decisions/`. ההחלטות שהתקבלו עד כה נמצאות שם, והרקע להן ב-`documentation/architecture-plan-he.md`. Python לא ישמש לקוד שרץ מול משתמש. אין שרת נוסף מחוץ ל-Supabase ול-GitHub Pages. עבודות אצווה כבדות רצות ב-GitHub Actions.
 
 ## 2. גודל וצורה
 
