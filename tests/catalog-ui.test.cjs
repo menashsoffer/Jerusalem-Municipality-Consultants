@@ -5,30 +5,28 @@ const {JSDOM} = require('jsdom');
 
 test('approved viewer searches the new catalog without a legacy admin claim', async () => {
   const html = fs.readFileSync('web/index.html', 'utf8');
-  const script = fs.readFileSync('web/public/assets/app.js', 'utf8');
-  const dom = new JSDOM(html, {url:'https://example.test/', runScripts:'outside-only'});
+  const dom = new JSDOM(html, {url:'https://example.test/'});
   const {window} = dom;
   global.document = window.document;
   global.Option = window.Option;
   try {
     const view = await import('../web/src/catalog-view.ts');
-    window.CatalogView = view;
+    const {start} = await import('../web/src/app/app.ts');
     let opened = null;
-    window.SupplierDetails = {open: async (id, token) => { opened = {id, token}; }, close: () => {}};
-    window.SupplierWrite = {bind: () => {}, open: async () => {}};
-    window.SupplierCatalog = await import('../web/src/catalog.ts');
-    window.SiteData = {
+    const site = {
       BASE:'https://example.test', canAddSupplier: () => false,
       currentUser: async () => ({ok:true, json:async () => ({id:'viewer',app_metadata:{}})}),
       access: async () => ({state:'active', member:true, admin:false}),
       catalog: async () => [{id:'s1', name:'שם נוכחי', aliases:['שם קודם'], verified:true,
         memberships:[], contacts:[]}],
-      track: async () => {},
+      track: async () => {}, exchangeCode: async () => ({ok:false}), sendLink: async () => ({ok:true}),
     };
     window.sessionStorage.setItem('consultants-session-v1', JSON.stringify({token:'x',exp:Date.now()+60000}));
-    window.eval(script);
-    await new Promise(resolve => setImmediate(resolve));
-    await new Promise(resolve => setImmediate(resolve));
+    await start({
+      win: window, site, view,
+      details: {open: async (id, token) => { opened = {id, token}; }, close: () => {}},
+      write: {bind: () => {}, open: async () => {}},
+    });
     assert.equal(window.document.querySelector('#private-content').hidden, false);
     assert.equal(window.document.querySelector('#results').querySelectorAll('.card').length, 1);
     const input = window.document.querySelector('#query');
