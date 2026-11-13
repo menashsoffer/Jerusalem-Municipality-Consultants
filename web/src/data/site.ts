@@ -5,9 +5,10 @@ import { loadCatalog, type CatalogData } from './catalog.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
 import { DataClient } from './client.ts';
+import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './environment.ts';
 
-export const BASE = 'https://jzsvhjkiklfnogseelbe.supabase.co';
-const PUBLIC_KEY = 'sb_publishable_XgkUnokIil-H5Qy4_VAN0A_VIUA2wwq';
+export const BASE = SUPABASE_URL;
+const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
 
 type EventInsert = PublicSchema['activity_events']['Insert'];
 
