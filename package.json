@@ -16,6 +16,7 @@
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run types:db:check && npm test",
     "test:supabase": "node --test \"supabase/tests/*-test.ts\"",
     "build:web": "vite build",
+    "dev:web": "vite",
     "types:db": "node scripts/schema/generate-types.ts",
     "types:db:check": "node scripts/schema/generate-types.ts --check"
   },

@@ -1,10 +1,8 @@
 # Legacy code (coding standards, section 10). Remove entries as files are replaced.
-docs/assets/
-index.html
-docs/index.html
 tests/*.cjs
 # Generated or third-party
 node_modules/
+dist/
 package-lock.json
 # Prose is reviewed by hand; Prettier reflows Hebrew tables badly
 *.md
