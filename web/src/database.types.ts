@@ -1072,6 +1072,13 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "threshold_coverage": {
+    Row: {
+      "covered_until": string | null;
+      "covered_today": boolean | null;
+      "days_left": number | null;
+    };
+  };
   "thresholds": {
     Row: {
       "id": string;
