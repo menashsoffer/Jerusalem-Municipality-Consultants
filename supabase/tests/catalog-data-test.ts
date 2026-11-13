@@ -61,8 +61,8 @@ describe('new catalog respects database visibility', () => {
     ] as const) {
       await as(db, user, async () => {
         const rows = buildCatalog(await loadCatalog(clientFor(db)));
-        assert.equal(rows.length, 1);
-        assert.equal(rows[0]?.memberships.length, expected);
+        assert.equal(rows.length, expected);
+        if (expected) assert.equal(rows[0]?.memberships.length, 1);
       });
     }
   });
