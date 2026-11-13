@@ -39,6 +39,17 @@ test('builds one supplier per entity, retaining aliases, memberships and invalid
   assert.equal(first.memberships[0].source, 'https://example.test/source');
 });
 
+test('omits suppliers when their memberships are inaccessible or unresolved', async () => {
+  const {buildCatalog} = await model;
+  const data = fixture();
+  data.suppliers.push({id:'hidden', display_name:'hidden', status:'active', review_status:'needs_review'});
+  data.suppliers.push({id:'broken', display_name:'broken', status:'active', review_status:'needs_review'});
+  data.memberships.push({supplier_id:'broken', registry_version_id:'missing', registry_field_id:null, review_status:'needs_review'});
+  const rows = buildCatalog(data);
+  assert.equal(rows.some(row => row.id === 'hidden' || row.id === 'broken'), false);
+  assert.equal(rows.length, 533);
+});
+
 test('searches alternate names and matches combined filters on the same membership', async () => {
   const {buildCatalog} = await model;
   const {filterCatalog} = await filtering;
