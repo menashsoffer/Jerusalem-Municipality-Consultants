@@ -35,7 +35,7 @@ export async function loadCatalog(client: DataClient): Promise<CatalogData> {
     client.list('registries'),
     client.list('registry_fields'),
     client.list('org_units'),
-    client.list('supplier_contacts'),
+    client.list('supplier_contacts', { status: 'eq.current' }),
     client.list('source_documents'),
     client.list('categories', { active: 'eq.true' }),
   ]);
