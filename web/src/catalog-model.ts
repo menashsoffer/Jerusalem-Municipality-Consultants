@@ -119,26 +119,31 @@ export function buildCatalog(data: CatalogData): Supplier[] {
     (row) => row.supplier_id,
   );
   const contacts = groupBy(data.contacts, (row) => row.supplier_id);
-  return data.suppliers
-    .filter((row) => row.status !== 'merged')
-    .map((row) => ({
-      id: row.id,
-      name: row.display_name,
-      verified: row.review_status === 'verified',
-      aliases: [
-        ...(names.get(row.id) ?? []).map((name) => name.name),
-        ...(memberships.get(row.id) ?? []).flatMap((item) =>
-          item.name_as_published ? [item.name_as_published] : [],
-        ),
-      ],
-      memberships: (memberships.get(row.id) ?? [])
-        .map((item) => member(item, refs))
-        .filter((item): item is Membership => item !== null),
-      contacts: (contacts.get(row.id) ?? []).map((item) => ({
-        kind: item.kind,
-        value: item.value,
-        valid: item.is_valid,
-      })),
-    }))
-    .sort((a, b) => a.name.localeCompare(b.name, 'he'));
+  return (
+    data.suppliers
+      .filter((row) => row.status !== 'merged')
+      .map((row) => ({
+        id: row.id,
+        name: row.display_name,
+        verified: row.review_status === 'verified',
+        aliases: [
+          ...(names.get(row.id) ?? []).map((name) => name.name),
+          ...(memberships.get(row.id) ?? []).flatMap((item) =>
+            item.name_as_published ? [item.name_as_published] : [],
+          ),
+        ],
+        memberships: (memberships.get(row.id) ?? [])
+          .map((item) => member(item, refs))
+          .filter((item): item is Membership => item !== null),
+        contacts: (contacts.get(row.id) ?? []).map((item) => ({
+          kind: item.kind,
+          value: item.value,
+          valid: item.is_valid,
+        })),
+      }))
+      // A supplier whose memberships are hidden by access rules must not be
+      // displayed without the registry and source needed to interpret it.
+      .filter((supplier) => supplier.memberships.length > 0)
+      .sort((a, b) => a.name.localeCompare(b.name, 'he'))
+  );
 }
