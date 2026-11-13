@@ -650,6 +650,32 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "registry_field_categories": {
+    Row: {
+      "id": string;
+      "registry_field_id": string;
+      "category_id": string;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "registry_field_id": string;
+      "category_id": string;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "registry_field_id"?: string;
+      "category_id"?: string;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "registry_fields": {
     Row: {
       "id": string;
