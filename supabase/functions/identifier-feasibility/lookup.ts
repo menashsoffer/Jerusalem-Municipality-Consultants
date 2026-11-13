@@ -1,3 +1,5 @@
+import { probeGuideStar, type Credentials } from './guidestar.ts';
+
 const RESOURCE = 'f004176c-b85f-4542-8901-7b3176f9a054';
 const ENDPOINT = 'https://data.gov.il/api/3/action/datastore_search';
 const MAX_NAMES = 10;
@@ -44,8 +46,12 @@ export async function lookupCompany(name: string, fetcher: typeof fetch): Promis
   }
 }
 
-export async function probe(names: string[], fetcher: typeof fetch): Promise<unknown> {
+export async function probe(
+  names: string[],
+  fetcher: typeof fetch,
+  credentials: Credentials | null = null,
+): Promise<unknown> {
   const companies: unknown[] = [];
   for (const name of names) companies.push(await lookupCompany(name, fetcher));
-  return { companies, guidestar: { available: false, reason: 'API access not yet established' } };
+  return { companies, guidestar: await probeGuideStar(names, credentials, fetcher) };
 }

@@ -1,6 +1,8 @@
 import { parseNames, probe } from './lookup.ts';
 
-declare const Deno: { serve: (handler: (request: Request) => Promise<Response>) => void };
+declare const Deno: {
+  serve: (handler: (request: Request) => Promise<Response>) => void;
+};
 
 export async function handle(request: Request, fetcher: typeof fetch = fetch): Promise<Response> {
   if (request.method !== 'POST')
