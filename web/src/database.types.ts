@@ -1270,3 +1270,14 @@ export interface PublicSchema {
     };
   };
 }
+
+export interface PublicFunctions {
+  catalog_snapshot: {
+    Args: { known_version?: string | null };
+    Returns: Json;
+  };
+  supplier_detail: {
+    Args: { supplier_id: string };
+    Returns: Json;
+  };
+}
