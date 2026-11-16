@@ -1,0 +1,15 @@
+@layer features {
+  .card {
+    padding: var(--space-lg);
+    margin-block: var(--space-xl);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+    margin-block-start: var(--space-lg);
+  }
+}
