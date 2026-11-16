@@ -127,7 +127,10 @@ it('shows the viewer catalog, searches precomputed aliases and opens supplier de
     assert.match(dom.el('#results').textContent, /שם נוכחי/);
     (dom.el('.supplier-detail-open') as HTMLButtonElement).click();
     assert.equal(opened, '40000000-0000-0000-0000-000000000001');
+    await site.loadSnapshot(TOKEN);
     dom.window.dispatchEvent(new dom.window.Event('pagehide'));
+    assert.equal(batches.filter((event) => event.event_type === 'page_view').length, 1);
+    assert.equal(batches.filter((event) => event.event_type === 'catalog_load').length, 2);
     const measured = batches.find((event) => event.event_type === 'catalog_load');
     assert.deepEqual(Object.keys(measured?.details ?? {}).sort(), [
       'model_ms',

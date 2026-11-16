@@ -79,7 +79,10 @@ function showSnapshot(page: Page, state: CatalogState): void {
   page.el('#add-open').hidden = state.refreshing || !page.deps.site.canAddSupplier();
   if (!state.refreshing) {
     page.track('catalog_load', { ...state.timings, render_ms: page.deps.view.renderDuration() });
-    page.track('page_view', { page: page.deps.win.location.pathname });
+    if (!page.state.viewed) {
+      page.state.viewed = true;
+      page.track('page_view', { page: page.deps.win.location.pathname });
+    }
   }
 }
 

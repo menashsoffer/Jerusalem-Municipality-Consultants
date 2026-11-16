@@ -68,6 +68,11 @@ describe('versioned IndexedDB catalog cache', () => {
     assert.equal(fresh[1].refreshing, false);
     assert.equal(fresh[1].suppliers, fresh[0].suppliers, 'unchanged reuses the model');
     assert.equal(fresh[1].access?.member, true);
+    const reused = await again.load(
+      client(() => Response.json(response({ unchanged: true, catalog: undefined }))),
+      TOKEN,
+    );
+    assert.equal(reused.timings.model_ms, '0');
   });
 
   it('partitions by user, replaces changed data, and revalidates using the in-memory version', async () => {

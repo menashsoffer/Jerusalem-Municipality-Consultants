@@ -87,7 +87,8 @@ export class SnapshotLoader {
 
   private async cached(userId: string | null): Promise<CatalogState | null> {
     if (!userId) return null;
-    if (this.current?.userId === userId && this.wire) return this.current;
+    if (this.current?.userId === userId && this.wire)
+      return { ...this.current, timings: { request_ms: '0', model_ms: '0' } };
     const entry = await this.cache.read(userId);
     if (!entry) return null;
     try {

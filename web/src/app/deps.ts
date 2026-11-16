@@ -36,11 +36,12 @@ export interface AppDeps {
 export interface AppState {
   session: Session | null;
   userId: string | null;
+  viewed: boolean;
 }
 
 export class Page {
   readonly deps: AppDeps;
-  readonly state: AppState = { session: null, userId: null };
+  readonly state: AppState = { session: null, userId: null, viewed: false };
   private events: EventBatcher | null = null;
 
   constructor(deps: AppDeps) {
