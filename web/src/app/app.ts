@@ -1,6 +1,7 @@
 /* Page startup: sign-in, access check, then the catalog from the normalized supplier model. */
 import type { Access } from '../data/access.ts';
 import { Page, type AppDeps } from './deps.ts';
+import { installDialogFallbacks } from './dialogs.ts';
 import { bindAuth, bindCatalog, bindTracking } from './events.ts';
 import { exchangeGoogleCode, SESSION_KEY, takeAuthError, takeSession } from './session.ts';
 
@@ -94,6 +95,7 @@ async function init(page: Page): Promise<void> {
 /** Wires the page and starts sign-in. Resolves once the first screen is shown. */
 export function start(deps: AppDeps): Promise<void> {
   const page = new Page(deps);
+  installDialogFallbacks(deps.win);
   bindCatalog(page);
   bindAuth(page);
   bindTracking(page);

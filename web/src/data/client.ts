@@ -31,6 +31,9 @@ class UnconfirmedChange extends Error {
   }
 }
 
+/** A request that has not answered by then fails, so the page never shows "loading" forever. */
+export const REQUEST_TIMEOUT_MS = 20_000;
+
 export interface ClientOptions {
   baseUrl: string;
   publicKey: string;
@@ -64,6 +67,7 @@ export class DataClient {
       response = await fetcher(`${this.root}/${path}`, {
         ...init,
         headers,
+        signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
     } catch {
       throw new DataError(0);

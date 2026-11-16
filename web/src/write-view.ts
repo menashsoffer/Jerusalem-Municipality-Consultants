@@ -1,4 +1,5 @@
 import { duplicates } from './duplicates.ts';
+import { identifierPairMessage, syncInvalidState } from './form-validation.ts';
 import { saveMembership, writeContext } from './data/site.ts';
 import type { WriteContext } from './data/write-context.ts';
 
@@ -47,6 +48,7 @@ function choice(id: string, text: string): HTMLLabelElement {
   radio.type = 'radio';
   radio.name = 'supplier_choice';
   radio.value = id;
+  radio.required = true;
   label.append(radio, document.createTextNode(text));
   return label;
 }
@@ -63,6 +65,13 @@ function updateDuplicates(): void {
     );
   }
   if (matches.length) list.append(choice('new', 'יצירת ספק חדש בכל זאת'));
+}
+/** Lets the browser flag the identifier field itself when only half of the pair is filled. */
+function checkIdentifierPair(): void {
+  const identifier = input('add-identifier');
+  identifier.setCustomValidity(
+    identifierPairMessage(select('add-id-scheme').value, identifier.value),
+  );
 }
 function formText(data: FormData, key: string): string {
   const value = data.get(key);
@@ -89,8 +98,8 @@ function values(): Record<string, string> {
   if (!target('duplicate-choices').hidden && !selected)
     throw new Error('יש לבחור ספק קיים או יצירה חדשה.');
   if (selected && selected !== 'new') result.supplier_id = selected;
-  if (!!result.identifier !== !!result.identifier_scheme)
-    throw new Error('יש למלא גם סוג מזהה וגם מספר, או להשאיר את שניהם ריקים.');
+  const pair = identifierPairMessage(result.identifier_scheme ?? '', result.identifier ?? '');
+  if (pair) throw new Error(pair);
   return result;
 }
 async function submit(event: Event): Promise<void> {
@@ -120,12 +129,14 @@ async function submit(event: Event): Promise<void> {
 }
 export function bind(refresh: () => Promise<void>): void {
   onSaved = refresh;
-  target('add-close').addEventListener('click', () => {
-    dialog().close();
-  });
+  syncInvalidState(form());
   select('add-version').addEventListener('change', fields);
+  select('add-id-scheme').addEventListener('change', checkIdentifierPair);
   input('add-name').addEventListener('input', updateDuplicates);
-  input('add-identifier').addEventListener('input', updateDuplicates);
+  input('add-identifier').addEventListener('input', () => {
+    checkIdentifierPair();
+    updateDuplicates();
+  });
   form().addEventListener('submit', (event) => {
     void submit(event);
   });
@@ -134,6 +145,7 @@ export async function open(sessionToken: string): Promise<void> {
   token = sessionToken;
   context = null;
   form().reset();
+  checkIdentifierPair();
   target('supplier-add-error').textContent = 'טוען מאגרים...';
   (target('supplier-save') as HTMLButtonElement).disabled = true;
   if (!dialog().open) dialog().showModal();

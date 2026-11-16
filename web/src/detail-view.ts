@@ -264,6 +264,3 @@ export async function open(id: string, token: string): Promise<void> {
     target('supplier-content').textContent = 'לא ניתן לטעון את פרטי הספק. נסו שוב.';
   }
 }
-export function close(): void {
-  dialog().close();
-}

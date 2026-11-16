@@ -9,6 +9,7 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
   const {window} = dom;
   global.document = window.document;
   global.Option = window.Option;
+  window.fetch = async () => new Response(null);
   try {
     const view = await import('../web/src/catalog-view.ts');
     const {start} = await import('../web/src/app/app.ts');
@@ -19,7 +20,7 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
       access: async () => ({state:'active', member:true, admin:false}),
       catalog: async () => [{id:'s1', name:'שם נוכחי', aliases:['שם קודם'], verified:true,
         memberships:[], contacts:[]}],
-      track: async () => {}, exchangeCode: async () => ({ok:false}), sendLink: async () => ({ok:true}),
+      eventRequest: () => ({url:'https://example.test/events', init:{}}), exchangeCode: async () => ({ok:false}), sendLink: async () => ({ok:true}),
     };
     window.sessionStorage.setItem('consultants-session-v1', JSON.stringify({token:'x',exp:Date.now()+60000}));
     await start({
@@ -38,6 +39,8 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
     window.document.querySelector('.supplier-detail-open').click();
     assert.deepEqual(opened, {id:'s1', token:'x'});
   } finally {
+    window.document.querySelector('#query').value = ''; // the delayed search event sends nothing
+    window.dispatchEvent(new window.Event('pagehide'));
     window.close();
     delete global.document;
     delete global.Option;
