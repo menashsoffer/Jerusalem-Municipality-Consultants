@@ -51,6 +51,30 @@ describe('reviewed category seed', () => {
   });
   after(async () => db.close());
 
+  it('stops on conflicting memberships and preserves both records', async () => {
+    const field = fields.find((item) => item.id === DUPLICATE);
+    assert.ok(field);
+    await db.exec(`insert into public.registry_versions (id, registry_id)
+      values ('60000000-0000-0000-0000-000000000001', '${field.registry_id}');
+      insert into public.suppliers (id, display_name)
+      values ('60000000-0000-0000-0000-000000000002', 'Test supplier');
+      insert into public.memberships (supplier_id, registry_version_id, registry_field_id)
+      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${DUPLICATE}'),
+             ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${KEPT}')`);
+    await assert.rejects(
+      applyMigrations(db, { after: PRIOR, until: SEED }),
+      /Conflicting memberships/,
+    );
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.memberships where registry_field_id in ('${DUPLICATE}', '${KEPT}')`,
+      ),
+      2,
+    );
+    await db.exec(`delete from public.memberships where registry_field_id = '${KEPT}'`);
+  });
+
   it('refuses a changed snapshot before adding categories', async () => {
     const first = fields[0];
     assert.ok(first);
@@ -82,7 +106,7 @@ describe('reviewed category seed', () => {
   });
 
   it('adds the proposed links while preserving existing manual mappings', async () => {
-    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 208);
+    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 202);
     assert.equal(
       await count(
         db,
@@ -96,18 +120,31 @@ describe('reviewed category seed', () => {
       36,
     );
     await applyMigrations(db, { after: PRIOR, until: SEED });
-    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 208);
+    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 202);
   });
 
-  it('gives the extraction duplicate the same categories as the field it duplicates', async () => {
-    const links = (field: string) =>
-      db.query<{ category_id: string }>(
-        `select category_id from public.registry_field_categories
-         where registry_field_id = $1 order by category_id`,
-        [field],
-      );
-    const [duplicate, kept] = await Promise.all([links(DUPLICATE), links(KEPT)]);
-    assert.equal(kept.rows.length, 6);
-    assert.deepEqual(duplicate.rows, kept.rows);
+  it('consolidates the duplicate before seeding and keeps the six proposed links', async () => {
+    assert.equal(
+      await count(db, `select 1 from public.registry_fields where id = '${DUPLICATE}'`),
+      0,
+    );
+    assert.equal(
+      await count(db, `select 1 from public.memberships where registry_field_id = '${KEPT}'`),
+      1,
+    );
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.audit_log where table_name = 'registry_fields' and row_id = '${DUPLICATE}' and operation = 'DELETE'`,
+      ),
+      1,
+    );
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.registry_field_categories where registry_field_id = '${KEPT}'`,
+      ),
+      6,
+    );
   });
 });

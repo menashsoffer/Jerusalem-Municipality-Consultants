@@ -207,12 +207,6 @@ insert into category_seed_mapping values
   ('22793a0a-5738-48c7-adfa-08c6aa6a19f8', 'בטיחות ונגישות', 'כיבוי אש'),
   ('41502fcd-fb84-4b73-b428-7d6a18b0df13', 'אדריכלות ועיצוב', 'תכנון מוסדות חינוך');
 
--- 3dfb2369 is an extraction duplicate of e744ea22 ("חניי ה" for "חנייה"). Until the two
--- fields are merged, both receive the same categories so no supplier drops out of a filter.
-insert into category_seed_mapping
-select '3dfb2369-695b-47ed-9a52-d255a245bfa3', root_name, child_name from category_seed_mapping
-where field_id = 'e744ea22-d6d2-4f2f-9ca6-1c77cf148f15';
-
 -- Empty test databases do not contain this data. Once any mapped field exists, every
 -- mapped field must match the snapshot exactly. Fields added later are ignored.
 do $$
@@ -227,7 +221,7 @@ begin
     from public.registry_fields f
     where f.id in (select field_id from category_seed_mapping);
   if present = 0 then return; end if;
-  if present <> 125 or fingerprint <> '1cdae7ae3c85266906b786ef75629b83' then
+  if present <> 124 or fingerprint <> '10aa3f46b974d4b66b65162868629463' then
     raise exception 'Source-field snapshot differs; review category seed before applying';
   end if;
   if exists (select 1 from category_seed_mapping m
