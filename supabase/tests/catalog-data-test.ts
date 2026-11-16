@@ -17,6 +17,7 @@ const ALLOWED = new Set([
   'registry_versions',
   'registries',
   'registry_fields',
+  'registry_field_categories',
   'categories',
   'org_units',
   'supplier_contacts',

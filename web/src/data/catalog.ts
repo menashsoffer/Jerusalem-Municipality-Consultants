@@ -9,6 +9,7 @@ export interface CatalogData {
   versions: Row<'registry_versions'>[];
   registries: Row<'registries'>[];
   fields: Row<'registry_fields'>[];
+  fieldCategories: Row<'registry_field_categories'>[];
   categories: Row<'categories'>[];
   units: Row<'org_units'>[];
   contacts: Row<'supplier_contacts'>[];
@@ -23,6 +24,7 @@ export async function loadCatalog(client: DataClient): Promise<CatalogData> {
     versions,
     registries,
     fields,
+    fieldCategories,
     units,
     contacts,
     documents,
@@ -34,6 +36,7 @@ export async function loadCatalog(client: DataClient): Promise<CatalogData> {
     client.list('registry_versions'),
     client.list('registries'),
     client.list('registry_fields'),
+    client.list('registry_field_categories'),
     client.list('org_units'),
     client.list('supplier_contacts', { status: 'eq.current' }),
     client.list('source_documents'),
@@ -46,6 +49,7 @@ export async function loadCatalog(client: DataClient): Promise<CatalogData> {
     versions,
     registries,
     fields,
+    fieldCategories,
     categories,
     units,
     contacts,

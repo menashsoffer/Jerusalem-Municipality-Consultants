@@ -6,16 +6,19 @@ export interface Membership {
   registry: string;
   fieldId: string | null;
   field: string;
-  categoryId: string | null;
-  categoryName: string;
-  parentCategoryId: string | null;
-  parentCategoryName: string;
+  categories: CategoryLabel[];
   unitId: string | null;
   unit: string;
   validFrom: string | null;
   validUntil: string | null;
   source: string | null;
   page: number | null;
+}
+export interface CategoryLabel {
+  categoryId: string;
+  categoryName: string;
+  parentCategoryId: string | null;
+  parentCategoryName: string;
 }
 export interface Supplier {
   id: string;
@@ -49,6 +52,7 @@ function lookup(data: CatalogData) {
     registries: new Map(data.registries.map((row) => [row.id, row])),
     fields: new Map(data.fields.map((row) => [row.id, row])),
     categories: new Map(data.categories.map((row) => [row.id, row])),
+    fieldCategories: groupBy(data.fieldCategories, (row) => row.registry_field_id),
     units: new Map(data.units.map((row) => [row.id, row])),
     documents: new Map(data.documents.map((row) => [row.id, row])),
   };
@@ -60,18 +64,20 @@ function optional<T>(map: Map<string, T>, key: string | null): T | undefined {
   return map.get(key ?? '');
 }
 
-function categoryLabels(categoryId: string | null, refs: Lookup) {
-  const category = optional(refs.categories, categoryId);
-  const parent = optional(refs.categories, category?.parent_id ?? null);
-  return {
-    categoryId: category?.id ?? null,
-    categoryName: category?.name ?? '',
-    ...parentLabels(parent),
-  };
-}
-
-function parentLabels(parent: CatalogData['categories'][number] | undefined) {
-  return { parentCategoryId: parent?.id ?? null, parentCategoryName: parent?.name ?? '' };
+function categoryLabels(fieldId: string | null, refs: Lookup): CategoryLabel[] {
+  return (refs.fieldCategories.get(fieldId ?? '') ?? []).flatMap((link) => {
+    const category = refs.categories.get(link.category_id);
+    if (!category) return [];
+    const parent = optional(refs.categories, category.parent_id);
+    return [
+      {
+        categoryId: category.id,
+        categoryName: category.name,
+        parentCategoryId: parent?.id ?? null,
+        parentCategoryName: parent?.name ?? '',
+      },
+    ];
+  });
 }
 
 function labels(
@@ -103,7 +109,7 @@ function member(row: MemberRow, refs: Lookup): Membership | null {
     registryId: registry.id,
     registry: registry.name,
     ...labels(row, { registry, version }, refs),
-    ...categoryLabels(optional(refs.fields, row.registry_field_id)?.category_id ?? null, refs),
+    categories: categoryLabels(row.registry_field_id, refs),
     unitId: registry.owner_unit_id,
     validFrom: row.registered_from,
     validUntil: row.registered_until,

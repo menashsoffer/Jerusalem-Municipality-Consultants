@@ -12,8 +12,8 @@ test('renders each supplier once and filters by registry and validity', async ()
   try {
     const view = await import('../web/src/catalog-view.ts');
     const memberships = [{registryId:'r1', registry:'מאגר א', fieldId:'f1', field:'תכנון',
-      unitId:'u1', unit:'אגף א', validFrom:null, validUntil:'2099-01-01', source:null, page:null},
-    {registryId:'r2', registry:'מאגר ב', fieldId:'f2', field:'ניהול', unitId:'u2', unit:'אגף ב',
+      categories:[], unitId:'u1', unit:'אגף א', validFrom:null, validUntil:'2099-01-01', source:null, page:null},
+    {registryId:'r2', registry:'מאגר ב', fieldId:'f2', field:'ניהול', categories:[], unitId:'u2', unit:'אגף ב',
       validFrom:null, validUntil:'2020-01-01', source:null, page:null}];
     const rows = Array.from({length:533}, (_,i) => ({id:`s${i}`, name:`ספק ${i}`, aliases:[],
       verified:i===0, memberships:i===0 ? memberships : [memberships[0]], contacts:[]}));
@@ -43,8 +43,8 @@ test('shows only subcategories of the selected root and clears stale selection',
   try {
     const view = await import('../web/src/catalog-view.ts');
     const common = {registryId:'r1', registry:'מאגר', fieldId:'f1', field:'תחום', unitId:'u', unit:'אגף', validFrom:null, validUntil:null, source:null, page:null};
-    view.setSuppliers([{id:'s1',name:'א',aliases:[],verified:false,contacts:[],memberships:[{...common,categoryId:'c1',categoryName:'כבישים',parentCategoryId:'r1',parentCategoryName:'הנדסה'}]},
-      {id:'s2',name:'ב',aliases:[],verified:false,contacts:[],memberships:[{...common,categoryId:'c2',categoryName:'מוזיקה',parentCategoryId:'r2',parentCategoryName:'תרבות'}]}]);
+    view.setSuppliers([{id:'s1',name:'א',aliases:[],verified:false,contacts:[],memberships:[{...common,categories:[{categoryId:'c1',categoryName:'כבישים',parentCategoryId:'r1',parentCategoryName:'הנדסה'}]}]},
+      {id:'s2',name:'ב',aliases:[],verified:false,contacts:[],memberships:[{...common,categories:[{categoryId:'c2',categoryName:'מוזיקה',parentCategoryId:'r2',parentCategoryName:'תרבות'}]}]}]);
     const root = document.querySelector('#category-filter'), child = document.querySelector('#subcategory-filter');
     assert.equal(child.disabled,true);
     root.value='r1';view.options();assert.deepEqual([...child.options].map(option=>option.value),['','c1']);

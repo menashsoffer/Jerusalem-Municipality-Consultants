@@ -59,18 +59,21 @@ function matchingSubcategories(
 ): Map<string, string> {
   const subcategories = new Map<string, string>();
   for (const member of visible) {
-    if (member.parentCategoryId === selectedCategory && member.categoryId && member.categoryName)
-      subcategories.set(member.categoryId, member.categoryName);
+    for (const category of member.categories) {
+      if (category.parentCategoryId === selectedCategory)
+        subcategories.set(category.categoryId, category.categoryName);
+    }
   }
   return subcategories;
 }
 function populateCategories(visible: Membership[]): void {
   const roots = new Map<string, string>();
   for (const member of visible) {
-    if (member.parentCategoryId && member.parentCategoryName)
-      roots.set(member.parentCategoryId, member.parentCategoryName);
-    else if (member.categoryId && member.categoryName)
-      roots.set(member.categoryId, member.categoryName);
+    for (const category of member.categories) {
+      if (category.parentCategoryId && category.parentCategoryName)
+        roots.set(category.parentCategoryId, category.parentCategoryName);
+      else roots.set(category.categoryId, category.categoryName);
+    }
   }
   populate('category-filter', 'כל הקטגוריות', roots);
   const selectedCategory = select('category-filter').value;
