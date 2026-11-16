@@ -20,11 +20,13 @@ function normalize(value: string): string {
 }
 
 function categoryMatches(member: Membership, filters: Filters): boolean {
-  return (
-    (!filters.category ||
-      member.categoryId === filters.category ||
-      member.parentCategoryId === filters.category) &&
-    (!filters.subcategory || member.categoryId === filters.subcategory)
+  if (!filters.category && !filters.subcategory) return true;
+  return member.categories.some(
+    (category) =>
+      (!filters.category ||
+        category.categoryId === filters.category ||
+        category.parentCategoryId === filters.category) &&
+      (!filters.subcategory || category.categoryId === filters.subcategory),
   );
 }
 
