@@ -16,18 +16,27 @@ test('requires a duplicate decision and submits the selected supplier to the new
   const supplierId = '40000000-0000-0000-0000-000000000001';
   const payloads = [];
   const tables = {
-    profiles:[{status:'active'}], role_grants:[{role:'editor',unit_id:'u1',revoked_at:null,expires_at:null}],
+    profiles:[{status:'active'}], role_grants:[{role:'editor',unit_id:'10000000-0000-4000-8000-000000000001',revoked_at:null,expires_at:null}],
     suppliers:[{id:supplierId,display_name:'חברת אלון בעמ',status:'active',review_status:'needs_review'}],
-    supplier_names:[], memberships:[], registry_versions:[{id:'v1',registry_id:'r1',valid_from:null,valid_until:null}],
-    registries:[{id:'r1',name:'מאגר א',status:'active',owner_unit_id:'u1'}],
-    registry_fields:[{id:'f1',registry_id:'r1',source_text:'תכנון'}], org_units:[],
+    supplier_names:[], memberships:[], registry_versions:[{id:'20000000-0000-4000-8000-000000000001',registry_id:'30000000-0000-4000-8000-000000000001',valid_from:null,valid_until:null}],
+    registries:[{id:'30000000-0000-4000-8000-000000000001',name:'מאגר א',status:'active',owner_unit_id:'10000000-0000-4000-8000-000000000001'}],
+    registry_fields:[{id:'50000000-0000-4000-8000-000000000001',registry_id:'30000000-0000-4000-8000-000000000001',source_text:'תכנון'}], org_units:[],
     supplier_contacts:[], source_documents:[], supplier_identifiers:[],
   };
   global.fetch = async (input, init) => {
     const url = new URL(input);
     const path = url.pathname.split('/').at(-1);
     assert.notEqual(path, 'legacy_suppliers');
-    if (path === 'my_access') return Response.json({member:true,admin:false,editor:true,manager:false});
+    if (path === 'catalog_snapshot') return Response.json({
+      user_id:'10000000-0000-4000-8000-000000000009',version:'1',
+      access:{state:'active',member:true,admin:false,editor:true,manager:false,
+        grants:[{role:'editor',unitId:'10000000-0000-4000-8000-000000000001'}]},
+      catalog:{suppliers:[[supplierId,'חברת אלון בעמ','company','active',null,'needs_review',null,[],[],[]]],
+        registries:tables.registries.map(r=>[r.id,r.name,r.owner_unit_id,r.status]),
+        versions:tables.registry_versions.map(v=>[v.id,v.registry_id,null,v.valid_from,v.valid_until]),
+        fields:tables.registry_fields.map(f=>[f.id,f.registry_id,f.source_text]),
+        categories:[],fieldCategories:[],units:[],documents:[]},
+    });
     if (path === 'save_supplier_membership') {
       payloads.push(JSON.parse(init.body).payload);
       return Response.json(supplierId);
@@ -37,8 +46,7 @@ test('requires a duplicate decision and submits the selected supplier to the new
   try {
     const site = await import('../web/src/data/site.ts');
     const view = await import('../web/src/write-view.ts');
-    await site.access('token','user');
-    await site.catalog('token');
+    await site.openCatalog('token');
     assert.equal(site.canAddSupplier(), true);
     view.bind(async () => {});
     await view.open('token');
@@ -47,9 +55,9 @@ test('requires a duplicate decision and submits the selected supplier to the new
     name.dispatchEvent(new dom.window.Event('input', {bubbles:true}));
     assert.equal(document.querySelector('#duplicate-choices').hidden, false);
     const version = document.querySelector('#add-version');
-    version.value = 'v1';
+    version.value = '20000000-0000-4000-8000-000000000001';
     version.dispatchEvent(new dom.window.Event('change', {bubbles:true}));
-    document.querySelector('#add-registry-field').value = 'f1';
+    document.querySelector('#add-registry-field').value = '50000000-0000-4000-8000-000000000001';
     const form = document.querySelector('#supplier-add-form');
     form.dispatchEvent(new dom.window.Event('submit', {bubbles:true,cancelable:true}));
     await tick();
@@ -61,7 +69,7 @@ test('requires a duplicate decision and submits the selected supplier to the new
     await tick();
     assert.equal(payloads.length, 1);
     assert.equal(payloads[0].supplier_id, supplierId);
-    assert.equal(payloads[0].registry_field_id, 'f1');
+    assert.equal(payloads[0].registry_field_id, '50000000-0000-4000-8000-000000000001');
     assert.match(document.querySelector('#catalog-feedback').textContent, /נשמר/);
   } finally {
     dom.window.close();

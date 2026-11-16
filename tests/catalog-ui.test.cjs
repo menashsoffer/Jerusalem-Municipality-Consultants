@@ -16,10 +16,10 @@ test('approved viewer searches the new catalog without a legacy admin claim', as
     let opened = null;
     const site = {
       BASE:'https://example.test', canAddSupplier: () => false,
-      currentUser: async () => ({ok:true, json:async () => ({id:'viewer',app_metadata:{}})}),
-      access: async () => ({state:'active', member:true, admin:false}),
-      catalog: async () => [{id:'s1', name:'שם נוכחי', aliases:['שם קודם'], verified:true,
-        memberships:[], contacts:[]}],
+      catalogStore: {subscribe: () => () => {},getSnapshot:()=>({catalog:{},suppliers:[
+        {id:'s1',name:'שם נוכחי',aliases:['שם קודם'],verified:true,memberships:[],contacts:[]}],refreshing:false})},
+      clearCatalog: async () => {},
+      openCatalog: async () => ({userId:'viewer',access:{state:'active',member:true,admin:false}}),
       eventRequest: () => ({url:'https://example.test/events', init:{}}), exchangeCode: async () => ({ok:false}), sendLink: async () => ({ok:true}),
     };
     window.sessionStorage.setItem('consultants-session-v1', JSON.stringify({token:'x',exp:Date.now()+60000}));

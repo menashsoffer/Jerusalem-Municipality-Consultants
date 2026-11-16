@@ -1,7 +1,9 @@
 import type { PublicSchema } from '../database.types.ts';
-import { buildCatalog, type Supplier } from '../catalog-model.ts';
-import { loadAccess, type Access } from './access.ts';
-import { loadCatalog, type CatalogData } from './catalog.ts';
+import type { Supplier } from '../catalog-model.ts';
+import type { Access } from './access.ts';
+import type { CatalogData } from './catalog.ts';
+import { CatalogStore, cacheUserId } from './catalog-store.ts';
+import { catalogCache } from './catalog-cache.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
 import { DataClient, REQUEST_TIMEOUT_MS } from './client.ts';
@@ -25,13 +27,6 @@ function authHeaders(token?: string): Record<string, string> {
   };
 }
 
-export function currentUser(token: string): Promise<Response> {
-  return fetch(`${BASE}/auth/v1/user`, {
-    headers: authHeaders(token),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
-}
-
 export function exchangeCode(code: string, verifier: string): Promise<Response> {
   return fetch(`${BASE}/auth/v1/token?grant_type=pkce`, {
     method: 'POST',
@@ -50,26 +45,41 @@ export function sendLink(email: string, redirect: string): Promise<Response> {
   });
 }
 
+export const catalogStore = new CatalogStore(
+  catalogCache(typeof indexedDB === 'undefined' ? undefined : indexedDB),
+);
 let currentAccess: Access | null = null;
 let currentCatalog: CatalogData | null = null;
 let currentToken: string | null = null;
 
-export async function access(token: string, userId: string): Promise<Access> {
+export async function openCatalog(token: string) {
+  if (currentToken !== token) {
+    currentAccess = null;
+    currentCatalog = null;
+  }
+  currentToken = token;
+  const state = await catalogStore.load(
+    (known_version) => data(token).rpc('catalog_snapshot', { known_version }),
+    cacheUserId(token),
+  );
+  if (currentToken === token) {
+    currentAccess = state.access;
+    currentCatalog = state.catalog;
+  }
+  return state;
+}
+
+export async function clearCatalog(): Promise<void> {
   currentAccess = null;
   currentCatalog = null;
   currentToken = null;
-  currentAccess = await loadAccess(data(token), userId);
-  return currentAccess;
+  await catalogStore.clear();
 }
-
 export function getAccess(): Access | null {
   return currentAccess;
 }
-
 export async function catalog(token: string): Promise<Supplier[]> {
-  currentCatalog = await loadCatalog(data(token));
-  currentToken = token;
-  return buildCatalog(currentCatalog);
+  return (await openCatalog(token)).suppliers;
 }
 
 export async function detail(token: string, supplierId: string): Promise<SupplierDetail> {

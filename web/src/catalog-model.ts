@@ -6,6 +6,7 @@ export interface Membership {
   registry: string;
   fieldId: string | null;
   field: string;
+  normalizedField?: string;
   categories: CategoryLabel[];
   unitId: string | null;
   unit: string;
@@ -24,6 +25,7 @@ export interface Supplier {
   id: string;
   name: string;
   aliases: string[];
+  normalizedNames?: string[];
   verified: boolean;
   memberships: Membership[];
   contacts: { kind: string; value: string; valid: boolean | null }[];
@@ -92,9 +94,11 @@ function labels(
   const field = optional(refs.fields, row.registry_field_id);
   const unit = optional(refs.units, registry.owner_unit_id);
   const document = optional(refs.documents, version.source_document_id);
+  const fieldText = field?.source_text ?? '';
   return {
     fieldId: field?.id ?? null,
-    field: field?.source_text ?? '',
+    field: fieldText,
+    normalizedField: normalizeSearch(fieldText),
 
     unit: unit?.name ?? '',
     source: document?.url ?? null,
@@ -115,6 +119,14 @@ function member(row: MemberRow, refs: Lookup): Membership | null {
     validUntil: row.registered_until,
     page: row.source_page,
   };
+}
+
+export function normalizeSearch(value: string): string {
+  return value
+    .normalize('NFKC')
+    .toLocaleLowerCase('he')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .trim();
 }
 
 export function buildCatalog(data: CatalogData): Supplier[] {
@@ -146,6 +158,10 @@ export function buildCatalog(data: CatalogData): Supplier[] {
           value: item.value,
           valid: item.is_valid,
         })),
+      }))
+      .map((supplier) => ({
+        ...supplier,
+        normalizedNames: [supplier.name, ...supplier.aliases].map(normalizeSearch),
       }))
       // A supplier whose memberships are hidden by access rules must not be
       // displayed without the registry and source needed to interpret it.

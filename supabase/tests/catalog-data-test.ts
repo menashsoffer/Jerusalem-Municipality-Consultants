@@ -25,9 +25,24 @@ const ALLOWED = new Set([
   'source_documents',
 ]);
 function clientFor(db: PGlite): DataClient {
-  const fetcher: typeof fetch = async (input) => {
+  const rpc = async (table: string, init?: RequestInit) => {
+    if (table === 'catalog_snapshot') {
+      const result = await db.query<{ data: unknown }>('select public.catalog_snapshot() as data');
+      return Response.json(result.rows[0]?.data);
+    }
+    const body = JSON.parse(typeof init?.body === 'string' ? init.body : '') as {
+      supplier_id: string;
+    };
+    const result = await db.query<{ data: unknown }>(
+      'select public.supplier_detail($1::uuid) as data',
+      [body.supplier_id],
+    );
+    return Response.json(result.rows[0]?.data);
+  };
+  const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : input);
     const table = url.pathname.split('/').at(-1) ?? '';
+    if (['catalog_snapshot', 'supplier_detail'].includes(table)) return rpc(table, init);
     if (!ALLOWED.has(table)) return new Response(null, { status: 404 });
     const where =
       table === 'suppliers'

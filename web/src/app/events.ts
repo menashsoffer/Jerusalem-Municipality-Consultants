@@ -65,8 +65,9 @@ export function bindCatalog(page: Page): void {
   });
 }
 
-function signOut(page: Page): void {
+async function signOut(page: Page): Promise<void> {
   page.deps.win.sessionStorage.removeItem(SESSION_KEY);
+  await page.deps.site.clearCatalog();
   page.deps.win.location.reload();
 }
 
@@ -93,10 +94,10 @@ async function googleSignIn(page: Page): Promise<void> {
 
 export function bindAuth(page: Page): void {
   page.el('#logout').addEventListener('click', () => {
-    signOut(page);
+    void signOut(page);
   });
   page.el('#access-logout').addEventListener('click', () => {
-    signOut(page);
+    void signOut(page);
   });
   const loginForm = page.el('#login-form') as HTMLFormElement;
   syncInvalidState(loginForm);

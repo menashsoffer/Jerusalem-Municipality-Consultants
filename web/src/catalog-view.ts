@@ -4,6 +4,11 @@ import { validity, type Membership, type Supplier, type Validity } from './catal
 let suppliers: Supplier[] = [];
 let openSupplier: ((id: string) => void) | null = null;
 let firstRender = true;
+let generation = 0;
+let rendered: Promise<void> = Promise.resolve();
+export function whenRendered(): Promise<void> {
+  return rendered;
+}
 
 export function setOpenHandler(handler: (id: string) => void): void {
   openSupplier = handler;
@@ -155,16 +160,41 @@ function card(supplier: Supplier, day: string): HTMLElement {
   node.append(button);
   return node;
 }
+async function yieldToBrowser(): Promise<void> {
+  const scheduler = (globalThis as typeof globalThis & { scheduler?: { yield(): Promise<void> } })
+    .scheduler;
+  if (scheduler) await scheduler.yield();
+  else
+    await new Promise<void>((resolve) => {
+      setTimeout(resolve, 0);
+    });
+}
+async function draw(rows: Supplier[], day: string, current: number): Promise<void> {
+  const result = el('results');
+  let fragment = document.createDocumentFragment();
+  let deadline = performance.now() + 50;
+  for (let index = 0; index < rows.length; index++) {
+    const row = rows[index];
+    if (row) fragment.append(card(row, day));
+    if ((index + 1) % 100 === 0 || performance.now() >= deadline) {
+      if (current !== generation) return;
+      result.append(fragment);
+      fragment = document.createDocumentFragment();
+      await yieldToBrowser();
+      if (current !== generation) return;
+      deadline = performance.now() + 50;
+    }
+  }
+  if (current === generation) result.append(fragment);
+}
 export function render(): void {
   const current = filters();
   const rows = filterCatalog(suppliers, current);
   const result = el('results');
-  const fragment = document.createDocumentFragment();
-  rows.forEach((row) => {
-    fragment.append(card(row, current.today));
-  });
-  result.replaceChildren(fragment);
-  // Only the first list fades in; re-rendering on every keystroke must stay cheap.
+  result.replaceChildren();
+  performance.mark('catalog-render-start');
+  rendered = draw(rows, current.today, ++generation);
+  performance.measure('catalog-render', 'catalog-render-start');
   result.classList.toggle('intro', firstRender);
   firstRender = false;
   el('count').textContent = `${String(rows.length)} ספקים`;

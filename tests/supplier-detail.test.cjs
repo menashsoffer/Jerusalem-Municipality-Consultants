@@ -14,34 +14,24 @@ const cached = {
 const access = role => ({state:'active', member:true, admin:role==='admin', editor:false,
   manager:false, grants:role==='auditor' ? [{role:'auditor',unitId:null}] : []});
 
-test('viewer gets no audit request; admin can see history of deleted related rows', async () => {
+test('supplier details use one RPC and preserve the server audit policy', async () => {
   const {supplierDetail} = await import('../web/src/data/supplier-detail.ts');
   const calls = [];
-  const client = {list: async (table, filters) => {
-    calls.push({table,filters});
-    if (table === 'supplier_identifiers') return [];
-    if (filters.or) return [auditEvent];
-    if (filters.row_id.includes(deletedId)) return [auditEvent];
-    return [];
+  const client = {rpc: async (name, payload) => {
+    calls.push({name,payload}); return {identifiers:[], audit:[{...auditEvent,actor_id:null}]};
   }};
-  const viewer = await supplierDetail(client, cached, {supplierId, access:access('viewer')});
-  assert.equal(viewer.audit, null);
-  assert.equal(calls.filter(call => call.table === 'audit_log').length, 0);
-  const admin = await supplierDetail(client, cached, {supplierId, access:access('admin')});
-  assert.equal(admin.audit.length, 1);
-  assert.equal(admin.audit[0].row_id, deletedId);
-  assert.ok(calls.some(call => call.filters.or && call.filters.or.includes(supplierId)));
+  const result = await supplierDetail(client,cached,{supplierId,access:access('admin')});
+  assert.equal(result.audit[0].row_id,deletedId);
+  assert.deepEqual(calls,[{name:'supplier_detail',payload:{supplier_id:supplierId}}]);
+  const viewer = await supplierDetail({rpc: async () => ({identifiers:[],audit:null})},
+    cached,{supplierId,access:access('viewer')});
+  assert.equal(viewer.audit,null);
 });
 
-test('audit failure is reported without hiding the supplier details', async () => {
+test('invalid detail responses and RPC errors are reported', async () => {
   const {supplierDetail} = await import('../web/src/data/supplier-detail.ts');
-  const client = {list: async table => {
-    if (table === 'supplier_identifiers') return [];
-    throw Error('audit unavailable');
-  }};
-  const result = await supplierDetail(client, cached, {supplierId, access:access('admin')});
-  assert.equal(result.supplier.display_name, 'ספק לדוגמה');
-  assert.equal(result.auditUnavailable, true);
+  await assert.rejects(supplierDetail({rpc: async () => ({identifiers:'wrong'})},
+    cached,{supplierId,access:access('admin')}));
 });
 
 test('displays invalid contacts, their source and the recorded date provenance', async () => {

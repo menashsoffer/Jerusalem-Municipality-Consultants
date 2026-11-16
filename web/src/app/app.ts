@@ -1,4 +1,5 @@
 /* Page startup: sign-in, access check, then the catalog from the normalized supplier model. */
+import { DataError } from '../data/client.ts';
 import type { Access } from '../data/access.ts';
 import { Page, type AppDeps } from './deps.ts';
 import { installDialogFallbacks } from './dialogs.ts';
@@ -37,34 +38,50 @@ export async function loadData(page: Page): Promise<void> {
   page.deps.view.setSuppliers(await page.deps.site.catalog(session.token));
 }
 
-async function currentUserId(page: Page, token: string): Promise<string> {
-  const response = await page.deps.site.currentUser(token);
-  if (!response.ok) throw new Error('auth');
-  const user: unknown = await response.json();
-  const id = (user as Record<string, unknown> | null)?.id;
-  if (typeof id !== 'string') throw new Error('auth');
-  return id;
+function updateCatalog(page: Page): void {
+  const state = page.deps.site.catalogStore.getSnapshot();
+  const visible = !!state.catalog;
+  page.el('#private-content').hidden = !visible;
+  page.el('#add-open').hidden = state.refreshing || !page.deps.site.canAddSupplier();
+  if (visible) {
+    showSignedIn(page);
+    page.deps.view.setSuppliers(state.suppliers);
+  }
+  let status = page.doc.querySelector('#catalog-refresh');
+  if (!status) {
+    status = page.doc.createElement('p');
+    status.id = 'catalog-refresh';
+    status.setAttribute('role', 'status');
+    page.el('#private-content').prepend(status);
+  }
+  status.textContent = state.refreshing
+    ? 'מתעדכן…'
+    : state.error
+      ? 'לא ניתן לעדכן כעת. מוצג העותק שנשמר במכשיר.'
+      : '';
 }
 
-/** Shows the catalog to an active member, or the reason they cannot see it. */
+/** Shows a same-user cache while one request validates both access and catalog freshness. */
 async function enter(page: Page, token: string): Promise<void> {
-  const userId = await currentUserId(page, token);
-  page.state.userId = userId;
-  const access = await page.deps.site.access(token, userId);
+  const unsubscribe = page.deps.site.catalogStore.subscribe(() => {
+    updateCatalog(page);
+  });
+  page.deps.win.addEventListener('pagehide', unsubscribe, { once: true });
+  const state = await page.deps.site.openCatalog(token);
+  page.state.userId = state.userId;
+  const access = state.access;
+  if (!access) throw new Error('auth');
   if (access.state !== 'active' || !access.member) {
     showAccess(page, ACCESS_MESSAGES[access.state]);
     return;
   }
-  try {
-    await loadData(page);
-  } catch {
-    showAccess(page, CATALOG_UNAVAILABLE);
-    return;
-  }
   showSignedIn(page);
-  page.el('#private-content').hidden = false;
-  page.el('#add-open').hidden = !page.deps.site.canAddSupplier();
+  updateCatalog(page);
   page.track('page_view', { page: page.deps.win.location.pathname });
+  for (const name of ['catalog-request', 'catalog-build', 'catalog-render']) {
+    const measure = performance.getEntriesByName(name).at(-1);
+    if (measure) page.track('performance', { metric: name, duration_ms: String(measure.duration) });
+  }
 }
 
 async function init(page: Page): Promise<void> {
@@ -82,23 +99,38 @@ async function init(page: Page): Promise<void> {
     try {
       await enter(page, page.state.session.token);
       return;
-    } catch {
+    } catch (error) {
+      if (!(error instanceof DataError) || ![401, 403].includes(error.status)) {
+        showAccess(page, CATALOG_UNAVAILABLE);
+        return;
+      }
+      await page.deps.site.clearCatalog();
       page.state.session = null;
       page.state.userId = null;
       ctx.storage.removeItem(SESSION_KEY);
-      message.textContent = VERIFY_FAILED;
+      message.textContent = error.status === 403 ? error.message : VERIFY_FAILED;
     }
   }
   (page.el('#login-dialog') as HTMLDialogElement).showModal();
 }
 
 /** Wires the page and starts sign-in. Resolves once the first screen is shown. */
-export function start(deps: AppDeps): Promise<void> {
+export async function start(deps: AppDeps): Promise<void> {
   const page = new Page(deps);
   installDialogFallbacks(deps.win);
+  let requestStarted: (() => void) | undefined;
+  const requesting = new Promise<void>((resolve) => {
+    requestStarted = resolve;
+  });
+  const unsubscribe = deps.site.catalogStore.subscribe(() => {
+    if (deps.site.catalogStore.getSnapshot().refreshing) requestStarted?.();
+  });
+  const initialized = init(page);
+  await Promise.race([requesting, initialized]);
+  unsubscribe();
   bindCatalog(page);
   bindAuth(page);
   bindTracking(page);
   deps.write.bind(() => loadData(page));
-  return init(page);
+  return initialized;
 }

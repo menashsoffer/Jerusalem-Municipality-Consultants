@@ -18,6 +18,7 @@ test('renders each supplier once and filters by registry and validity', async ()
     const rows = Array.from({length:533}, (_,i) => ({id:`s${i}`, name:`ספק ${i}`, aliases:[],
       verified:i===0, memberships:i===0 ? memberships : [memberships[0]], contacts:[]}));
     view.setSuppliers(rows);
+    await view.whenRendered();
     assert.equal(document.querySelectorAll('#results .card').length, 533);
     assert.match(document.querySelector('#count').textContent, /533/);
     document.querySelector('#registry').value = 'r2';

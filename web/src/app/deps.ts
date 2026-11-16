@@ -3,7 +3,14 @@ import type * as CatalogView from '../catalog-view.ts';
 import type { Session } from './session.ts';
 import { EventBatcher } from './tracker.ts';
 
-type SiteKey = 'BASE' | 'currentUser' | 'access' | 'catalog' | 'canAddSupplier' | 'eventRequest';
+type SiteKey =
+  | 'BASE'
+  | 'openCatalog'
+  | 'catalogStore'
+  | 'clearCatalog'
+  | 'catalog'
+  | 'canAddSupplier'
+  | 'eventRequest';
 export type SiteApi = Pick<typeof Site, SiteKey | 'exchangeCode' | 'sendLink'>;
 export type ViewApi = Pick<
   typeof CatalogView,

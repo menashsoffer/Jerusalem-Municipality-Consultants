@@ -81,8 +81,11 @@ export class DataClient {
     }
   }
 
-  async rpc(name: 'my_access'): Promise<unknown> {
-    return this.request(`rpc/${name}`, { method: 'POST', body: '{}' });
+  async rpc(name: string, payload: Record<string, unknown> = {}): Promise<unknown> {
+    return this.request(`rpc/${encodeURIComponent(name)}`, {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
   }
 
   async supplierWrite(

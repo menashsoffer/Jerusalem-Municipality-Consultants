@@ -11,8 +11,14 @@ function fakeSite(access, supplies, events) {
   const site = {
     BASE: 'https://example.test',
     canAddSupplier: () => !!access.admin,
-    currentUser: async () => ({ok: true, json: async () => ({id: 'user'})}),
-    access: async () => access,
+    catalogStore: {subscribe: () => () => {}, getSnapshot: () => ({catalog:null, refreshing:false})},
+    clearCatalog: async () => {},
+    openCatalog: async () => {
+      const suppliers = access.state === 'active' && access.member ? (calls++, supplies()) : [];
+      const state = {userId:'user', access, suppliers, catalog: access.member ? {} : null};
+      site.catalogStore.getSnapshot = () => state;
+      return state;
+    },
     catalog: async () => { calls++; return supplies(); },
     eventRequest: (_token, batch) => ({url: 'https://example.test/events', init: {body: JSON.stringify(batch)}}),
     exchangeCode: async () => ({ok: false}),

@@ -12,14 +12,21 @@ const page = (name) => fileURLToPath(new URL(`web/${name}`, import.meta.url));
 /** Adds the Content-Security-Policy to the built page only; the dev server needs its own scripts. */
 function securityPolicy() {
   let policy = '';
+  let origin = '';
   return {
     name: 'content-security-policy',
     apply: 'build',
     configResolved(config) {
-      policy = contentSecurityPolicy(setting(config.env.VITE_SUPABASE_URL, SUPABASE_URL));
+      origin = new URL(setting(config.env.VITE_SUPABASE_URL, SUPABASE_URL)).origin;
+      policy = contentSecurityPolicy(origin);
     },
     transformIndexHtml() {
       return [
+        {
+          tag: 'link',
+          attrs: { rel: 'preconnect', href: origin, crossorigin: '' },
+          injectTo: 'head-prepend',
+        },
         {
           tag: 'meta',
           attrs: { 'http-equiv': 'Content-Security-Policy', content: policy },
