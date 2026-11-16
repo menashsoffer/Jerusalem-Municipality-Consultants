@@ -1,42 +1,44 @@
-/* Frame of the React pages. Task R2 moves these values to styles/tokens.css. */
-.skip-link {
-  position: absolute;
-  inset-inline-start: 1rem;
-  inset-block-start: -100%;
-  padding: 0.75rem 1rem;
-  background: white;
-  color: #153e4a;
-  z-index: 1;
-  &:focus-visible {
-    inset-block-start: 1rem;
+@layer base {
+  /* Frame of the React pages. Task R2 moves these values to styles/tokens.css. */
+  .skip-link {
+    position: absolute;
+    inset-inline-start: var(--space-lg);
+    inset-block-start: -100%;
+    padding: var(--space-md) var(--space-lg);
+    background: var(--color-surface);
+    color: var(--color-brand);
+    z-index: var(--layer-raised);
+    &:focus-visible {
+      inset-block-start: var(--space-lg);
+    }
   }
-}
-.shell-header {
-  background: #153e4a;
-  color: white;
-}
-.shell-header-inner {
-  max-inline-size: 72.5rem;
-  margin-inline: auto;
-  padding: 1rem 1.5rem;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-}
-.shell-home {
-  color: white;
-  min-block-size: 3rem;
-  display: inline-flex;
-  align-items: center;
-}
-.shell-main {
-  max-inline-size: 72.5rem;
-  margin-inline: auto;
-  padding: 1.5rem;
-  & h1:focus-visible {
-    outline: 0.1875rem solid #153e4a;
-    outline-offset: 0.25rem;
+  .shell-header {
+    background: var(--color-brand);
+    color: var(--color-on-brand);
+  }
+  .shell-header-inner {
+    max-inline-size: var(--page-max-size);
+    margin-inline: auto;
+    padding: var(--space-lg) var(--space-xl);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-lg);
+  }
+  .shell-home {
+    color: var(--color-on-brand);
+    min-block-size: var(--control-min-size);
+    display: inline-flex;
+    align-items: center;
+  }
+  .shell-main {
+    max-inline-size: var(--page-max-size);
+    margin-inline: auto;
+    padding: var(--space-xl);
+    & h1:focus-visible {
+      outline: var(--focus-width) solid var(--color-brand);
+      outline-offset: var(--space-xs);
+    }
   }
 }

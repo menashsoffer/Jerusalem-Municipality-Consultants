@@ -4,7 +4,9 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
 import { AppRouter } from './app-shell/router.tsx';
-import './styles.css';
+import './styles/layers.css';
+import './styles/tokens.css';
+import './styles/base.css';
 import './app-shell/shell.css';
 
 const root = document.getElementById('root');
