@@ -24,6 +24,11 @@ export function DecisionForm({ id, title }: Props) {
       try {
         await decideProposal(id, decision === 'approve');
       } catch (error) {
+        // P0002 (no pending proposal) arrives as 404: another admin decided it already.
+        if (error instanceof DataError && error.status === 404) {
+          await revalidator.revalidate().catch(() => undefined);
+          return { message: 'ההצעה כבר טופלה. הרשימה רועננה.', error: '', decided: true };
+        }
         return {
           message: '',
           error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',

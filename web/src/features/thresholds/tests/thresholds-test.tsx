@@ -67,6 +67,15 @@ describe('monthly threshold decisions', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
     expect(screen.getByRole('table')).toBeDefined();
   });
+  it('refreshes and explains when another admin already decided the proposal', async () => {
+    const data = page();
+    vi.spyOn(api, 'decideProposal').mockImplementation(() => {
+      data.proposals = [];
+      return Promise.reject(new DataError(404));
+    });
+    await userEvent.click(await screen.findByRole('button', { name: 'אישור הסף החודשי' }));
+    expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
+  });
   it('rejects through the same RPC and refreshes after server confirmation', async () => {
     const data = page();
     const decide = vi.spyOn(api, 'decideProposal').mockImplementation(() => {
