@@ -28,7 +28,7 @@
 | `web/src/features/<x>/**` | לפי המשימה | כל פיצ'ר שייך למשימה אחת בלבד |
 | `web/src/app-shell/routes.ts` | Claude | בעלים של פיצ'ר מוסיף לו שורה אחת לנתיב שלו. זה החריג היחיד |
 | `package.json`, `package-lock.json` | Claude ב-R1 | אחרי R1, מי שמוסיף תלות עושה זאת ב-commit נפרד. בהתנגשות: לוקחים את `main`, מריצים `npm install` מחדש |
-| `eslint.config.mjs`, `tsconfig.json`, `web/tsconfig.json`, `vitest.config.mts` | Claude | |
+| `eslint.config.mjs`, `tsconfig.json`, `web/tsconfig.json`, `vitest.config.mjs` | Claude | |
 | `vite.config.mjs` | שניהם, בשורות שונות | Codex מוסיף `preconnect`, Claude מוסיף את React ואת הדף השני. מי שממזג שני מתאים את עצמו |
 | `supabase/migrations/**` | בעל המשימה שצריך את השינוי | לפני הוספת מיגרציה בודקים את המספר האחרון ב-`main` ובבקשות הפתוחות |
 | `web/src/database.types.ts` | מי שהוסיף מיגרציה | נוצר אוטומטית (`npm run types:db`) |
@@ -40,7 +40,7 @@
 | # | משימה | בעלים | קבצים | תלוי ב- | תנאי קבלה |
 | --- | --- | --- | --- | --- | --- |
 | R0 | המדריך, החלטה 0006 והתוכנית הזו | Claude | `documentation/` | | מוזג באישור בעל המוצר |
-| R1 | תשתית React: תלויות, React Compiler, Vitest, כללי ESLint (hooks, a11y, גבולות ייבוא), `web/admin.html` כדף שני, `app-shell/` עם נתב, מבנה ו-ErrorBoundary, ובדיקת תקציב גודל ב-CI. מדידה של `supabase-js` מול הלקוח הקיים, ותוצאה בתיאור | Claude | `package*.json`, `tsconfig*`, `eslint.config.mjs`, `vitest.config.mts`, `vite.config.mjs` (React ודף שני בלבד), `web/admin.html`, `web/src/admin-main.tsx`, `web/src/app-shell/**`, `scripts/bundle-size.ts`, `.github/workflows/tests.yml` | R0 | `npm run check` כולל Vitest ובדיקת גודל. דף ניהול ריק נבנה ונפרס בלי לשנות את הדף הקיים |
+| R1 | תשתית React: תלויות, React Compiler, Vitest, כללי ESLint (hooks, a11y, גבולות ייבוא), `web/admin.html` כדף שני, `app-shell/` עם נתב, מבנה ו-ErrorBoundary, ובדיקת תקציב גודל ב-CI. מדידה של `supabase-js` מול הלקוח הקיים (תוצאה: נשאר הלקוח הקיים, ראו החלטה 0006) | Claude | `package*.json`, `tsconfig*`, `eslint.config.mjs`, `vitest.config.mjs`, `vite.config.mjs` (React ודף שני בלבד), `web/admin.html`, `web/src/admin-main.tsx`, `web/src/app-shell/**`, `scripts/bundle/**`, `.github/workflows/tests.yml` | R0 | `npm run check` כולל Vitest ובדיקת גודל. דף ניהול ריק נבנה ונפרס בלי לשנות את הדף הקיים |
 | R2 | ערכת רכיבים: כפתור, שדה טופס, בחירה, חלון (`<dialog>`), טבלה, הודעת סטטוס, מצב ריק, שלד טעינה, ואסימוני עיצוב | Claude | `web/src/ui/**`, `web/src/styles/**`, `web/src/lib/**` | R1 | כל רכיב עם בדיקת Vitest, נגיש במקלדת, עובד ב-RTL וב-360px |
 | R3 | כניסה והרשאות בדף הניהול: קריאת המשתמש והתפקידים, שומר נתיב לפי תפקיד, הודעות 401/403 | Claude | `web/src/features/auth/**`, `web/src/data/rpc.ts` | R1 | בדיקה לכל תפקיד: ממתין, צופה, עורך, מנהל, מבקר, חסום |
 | R4 | מסך אישור הסף החודשי: הצעות ממתינות, השוואה לחודש הקודם, אישור ודחייה דרך `decide_threshold_proposal` | Claude | `web/src/features/thresholds/**` | R2, R3 | רק מנהל רואה ומאשר. אחרי אישור ההצעה יורדת מהרשימה. מקור המדד מוצג |
@@ -53,7 +53,7 @@
 
 | # | משימה | בעלים | קבצים | תלוי ב- | תנאי קבלה |
 | --- | --- | --- | --- | --- | --- |
-| R9 | חיבור שכבת הנתונים ל-React: `useSyncExternalStore` מעל מאגר הקטלוג, ו-hook ל-`supplier_detail`. אם R1 המליץ על `supabase-js`, המעבר נעשה כאן | Codex | `web/src/data/**` | שכתוב הטעינה, R1 | אותן בדיקות מטמון ממשיכות לעבור. בלי שינוי בהתנהגות |
+| R9 | חיבור שכבת הנתונים ל-React: `useSyncExternalStore` מעל מאגר הקטלוג, ו-hook ל-`supplier_detail` | Codex | `web/src/data/**` | שכתוב הטעינה, R1 | אותן בדיקות מטמון ממשיכות לעבור. בלי שינוי בהתנהגות |
 | R10 | הקטלוג ב-React: חיפוש, חמשת המסננים, רשימת תוצאות עם ציור בחלקים ו-`content-visibility` | Codex | `web/src/features/catalog/**` | R2, R9 | אותן תוצאות כמו הקטלוג הישן על אותם נתונים. INP בהקלדה עד 200ms |
 | R11 | פרטי ספק, הוספה ועריכה, וחלון הכניסה ב-React, בנתיב `/supplier/:id` | Claude | `web/src/features/supplier/**`, `web/src/features/auth/**` | R2, R3, R9 | הבדיקות של `tests/supplier-*.cjs` עוברות לפורמט החדש ומכסות אותו דבר |
 | R12 | דף אחד: `index.html` מעלה את ה-shell, מחיקת `admin.html`, `app/`, `*-view.ts`, `main.ts` ו-`tests/*.cjs`, ועדכון סעיף 10 בכללי הקוד | Claude | הקבצים שנמחקים, `web/index.html`, `vite.config.mjs`, `eslint.config.mjs`, `documentation/coding-standards-he.md` | R10, R11 | אין קוד ישן. `npm run check` עובר. בדיקת תקציב הגודל עוברת |

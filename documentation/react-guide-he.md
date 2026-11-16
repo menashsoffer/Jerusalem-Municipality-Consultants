@@ -88,18 +88,18 @@ features/thresholds/
 | ספרייה | React 19 + `react-dom` | הוחלט בהחלטה 0001. Actions, `useActionState`, `useOptimistic` ו-`use` חוסכים ספריות טפסים ונתונים | |
 | קומפיילר | React Compiler דרך `@vitejs/plugin-react` | מוסיף memoization אוטומטית, ולכן לא כותבים `useMemo`/`useCallback`/`memo` ידנית | |
 | בנייה | Vite (קיים) | כבר בשימוש, כולל ה-CSP בזמן בנייה | |
-| ניתוב | React Router 7 במצב ספרייה, `createHashRouter`, ומסכים ב-`lazy` | GitHub Pages לא מחזיר `index.html` לכתובת עמוקה. Hash עובד בלי טריק 404 | Next.js, Remix, TanStack Router |
+| ניתוב | React Router 8 במצב ספרייה, `createHashRouter`, ומסכים ב-`lazy` | GitHub Pages לא מחזיר `index.html` לכתובת עמוקה. Hash עובד בלי טריק 404 | Next.js, Remix, TanStack Router |
 | נתונים | `data/` שלנו: snapshot של הקטלוג (אפיון #44) ופונקציות RPC מוקלדות | בקשה אחת לקטלוג, מטמון IndexedDB לפי גרסה. ספריית מטמון כללית הייתה מכפילה את המטמון | TanStack Query, Redux, Zustand, SWR |
 | מצב | `useState`, `useReducer`, `useSyncExternalStore` למאגר הקטלוג, Context רק לנתונים שכמעט לא משתנים (משתמש, הרשאות) | מספיק לגודל המערכת | ספריית state גלובלית |
 | טפסים | `<form action>` של React 19 עם `useActionState`, ואימות ב-Zod | אותה סכמה כמו ב-Edge Function | React Hook Form, Formik |
 | אימות קלט | Zod 4 | הוחלט בהחלטה 0001. משותף עם `supabase/functions/_shared` | |
 | עיצוב | CSS רגיל: משתנים ב-`styles/tokens.css`, `@layer`, nesting מובנה, CSS Modules (`*.module.css`) לרכיבים | אפס תלויות, עברית וימין לשמאל עובדים הכי טוב עם HTML ו-CSS רגילים | Tailwind, CSS-in-JS, ספריית רכיבים |
 | בדיקות | `node --test` לקובצי `.ts`, Vitest + Testing Library + jsdom לקובצי `.tsx`, Playwright לקצה לקצה | Node לא מריץ JSX ישירות, ולכן קומפוננטות נבדקות ב-Vitest שכבר יושב על Vite | Jest, Enzyme |
-| Lint | ESLint קיים + `eslint-plugin-react-hooks` (כולל כללי הקומפיילר), `eslint-plugin-jsx-a11y`, `eslint-plugin-import-x` | אוכפים את כללי ה-hooks, הנגישות והתלויות | |
+| Lint | ESLint קיים + `eslint-plugin-react-hooks` (כולל כללי הקומפיילר), `eslint-plugin-jsx-a11y-x` (הגרסה המתוחזקת של `jsx-a11y`, שתומכת ב-ESLint 10), `eslint-plugin-import-x` | אוכפים את כללי ה-hooks, הנגישות והתלויות | |
 
 כל תלות ננעלת לגרסה מדויקת ב-`package.json`. תלות חדשה שאינה בטבלה דורשת החלטה ב-`documentation/decisions/`.
 
-שאלה פתוחה למשימה R1 בתוכנית: האם לעבור ל-`supabase-js` (כפי שנכתב בהחלטה 0001) או להשאיר את הלקוח הקטן שכתוב ביד. ההחלטה תתקבל לפי מדידת גודל החבילה מול התקציב בסעיף 6.
+לקוח Supabase: נשאר הלקוח הקטן שכתוב ביד ב-`web/src/data/`, ולא `supabase-js` שנכתב בהחלטה 0001. במדידה במשימה R1, `supabase-js` 2.119 שוקל כ-56KB gzip, ו-React עם הנתב כבר שוקלים כ-98KB. יחד זה מעבר לתקציב של 150KB בסעיף 6, לפני שורת קוד אחת של מסך. הלקוח הקיים שוקל כ-2KB. אם יידרש משהו ש-`supabase-js` נותן ואין לנו (למשל Realtime), חוזרים להחלטה.
 
 ## 3. כתיבת קומפוננטות
 
@@ -199,7 +199,7 @@ features/thresholds/
 | --- | --- | --- | --- |
 | יחידה | `node --test` | כל קובץ ב-`lib/`, `model/`, `data/`, `api/` | `features/<x>/tests/*-test.ts`, `web/tests/` |
 | קומפוננטה | Vitest + Testing Library | התנהגות מנקודת המבט של המשתמש: מה רואים, מה קורה בלחיצה. שאילתות לפי role ו-label, לא לפי מחלקות | `features/<x>/tests/*-test.tsx` |
-| נגישות | `eslint-plugin-jsx-a11y`, ובדיקת axe בבדיקות הקצה | תוויות, תפקידים, ניגודיות | |
+| נגישות | `eslint-plugin-jsx-a11y-x`, ובדיקת axe בבדיקות הקצה | תוויות, תפקידים, ניגודיות | |
 | קצה לקצה | Playwright מול Supabase מקומי | התחברות, חיפוש, פתיחת ספק, שמירה, אישור סף. לכל תפקיד פעם אחת | `web/e2e/` |
 | הרשאות | PGlite (קיים) | כל מדיניות RLS לכל תפקיד | `supabase/tests/` |
 

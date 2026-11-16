@@ -1,0 +1,42 @@
+/* Frame of the React pages. Task R2 moves these values to styles/tokens.css. */
+.skip-link {
+  position: absolute;
+  inset-inline-start: 1rem;
+  inset-block-start: -100%;
+  padding: 0.75rem 1rem;
+  background: white;
+  color: #153e4a;
+  z-index: 1;
+  &:focus-visible {
+    inset-block-start: 1rem;
+  }
+}
+.shell-header {
+  background: #153e4a;
+  color: white;
+}
+.shell-header-inner {
+  max-inline-size: 72.5rem;
+  margin-inline: auto;
+  padding: 1rem 1.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.shell-home {
+  color: white;
+  min-block-size: 3rem;
+  display: inline-flex;
+  align-items: center;
+}
+.shell-main {
+  max-inline-size: 72.5rem;
+  margin-inline: auto;
+  padding: 1.5rem;
+  & h1:focus-visible {
+    outline: 0.1875rem solid #153e4a;
+    outline-offset: 0.25rem;
+  }
+}
