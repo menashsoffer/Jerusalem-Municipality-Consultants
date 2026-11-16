@@ -39,7 +39,14 @@ export function Layout() {
 
   return (
     <>
-      <a className="skip-link" href="#main">
+      <a
+        className="skip-link"
+        href="#main"
+        onClick={(event) => {
+          event.preventDefault();
+          main.current?.querySelector<HTMLElement>('h1')?.focus();
+        }}
+      >
         דילוג לתוכן
       </a>
       <header className="shell-header">

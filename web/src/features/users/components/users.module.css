@@ -1,0 +1,20 @@
+@layer features {
+  .grants table {
+    min-inline-size: max-content;
+  }
+  .grants button {
+    white-space: nowrap;
+  }
+  .card {
+    padding: var(--space-lg);
+    margin-block: var(--space-xl);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+  .actions {
+    display: flex;
+    gap: var(--space-lg);
+    flex-wrap: wrap;
+  }
+}
