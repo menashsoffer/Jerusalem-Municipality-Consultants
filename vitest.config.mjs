@@ -7,6 +7,8 @@ export default defineConfig({
   test: {
     include: ['web/src/**/*-test.tsx', 'web/tests/**/*-test.tsx'],
     environment: 'jsdom',
+    // Keep jsdom workers within CI resources; parallel startup can starve router hydration.
+    maxWorkers: 1,
     restoreMocks: true,
   },
 });
