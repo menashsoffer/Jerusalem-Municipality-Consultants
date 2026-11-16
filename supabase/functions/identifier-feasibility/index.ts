@@ -9,6 +9,7 @@ declare const Deno: {
 const DENIED: Record<Exclude<Access, 'allowed'>, [string, number]> = {
   unauthenticated: ['Sign in required', 401],
   forbidden: ['Not authorized', 403],
+  limited: ['Too many identifier lookups', 429],
   unavailable: ['Authorization check unavailable', 503],
 };
 

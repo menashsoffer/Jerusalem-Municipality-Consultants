@@ -3,24 +3,21 @@ import { describe, it } from 'node:test';
 import { handle } from '../identifier-feasibility/index.ts';
 
 const ENV = { url: 'https://project.test', anonKey: 'anon-key' };
-type Access = Record<string, boolean>;
-const EDITOR: Access = { member: true, editor: true, admin: false };
-const VIEWER: Access = { member: true, editor: false, admin: false };
+const EDITOR = 204;
+const VIEWER = 403;
 
 function requestUrl(input: Parameters<typeof fetch>[0]): URL {
   return new URL(input instanceof Request ? input.url : input.toString());
 }
 
 /** Answers the access check with `access`, and everything else with `upstream`. */
-function fakeFetch(access: Access | number, upstream: typeof fetch): typeof fetch {
+function fakeFetch(access: number, upstream: typeof fetch): typeof fetch {
   return (input, init) => {
-    if (requestUrl(input).pathname === '/rest/v1/rpc/my_access') {
+    if (requestUrl(input).pathname === '/rest/v1/rpc/identifier_lookup_authorize') {
       const headers = new Headers(init?.headers);
       assert.equal(headers.get('apikey'), 'anon-key');
       assert.equal(headers.get('authorization'), 'Bearer user-token');
-      return Promise.resolve(
-        typeof access === 'number' ? new Response('', { status: access }) : Response.json(access),
-      );
+      return Promise.resolve(new Response(null, { status: access }));
     }
     return upstream(input, init);
   };
@@ -95,11 +92,16 @@ describe('identifier source feasibility probe', () => {
   it('lets editors and admins look up, but not viewers', async () => {
     const viewer = await handle(post({ names: ['x'] }), ENV, fakeFetch(VIEWER, NO_UPSTREAM));
     assert.equal(viewer.status, 403);
-    const admin = { member: false, editor: false, admin: true };
+    const admin = 204;
     const upstream: typeof fetch = () =>
       Promise.resolve(Response.json({ success: true, result: { records: [] } }));
     const allowed = await handle(post({ names: ['x'] }), ENV, fakeFetch(admin, upstream));
     assert.equal(allowed.status, 200);
+  });
+
+  it('does not contact upstream after the quota is exhausted', async () => {
+    const response = await handle(post({ names: ['x'] }), ENV, fakeFetch(429, NO_UPSTREAM));
+    assert.equal(response.status, 429);
   });
 
   it('fails closed when the access check cannot run', async () => {
