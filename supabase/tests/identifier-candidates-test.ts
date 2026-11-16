@@ -116,6 +116,16 @@ describe('identifier candidates', () => {
     assert.equal(again.find((c) => c.value === '515301596')?.registrar_name, 'א חדש');
   });
 
+  it('stores a number found twice in one lookup only once', async () => {
+    const twice = { ...FOUND[0], value: '515000001', searched_name: 'שם מסחרי' };
+    const fromGuidestar = { ...twice, source: 'guidestar', registrar_name: 'ד' };
+    const saved = await save(db, [twice, { ...twice, searched_name: 'ספק' }, fromGuidestar]);
+    const matches = saved.filter((c) => c.value === '515000001');
+    assert.equal(matches.length, 1);
+    assert.equal(matches[0]?.registrar_name, 'א', 'the registrar wins');
+    await db.exec("delete from public.identifier_candidates where value = '515000001'");
+  });
+
   it('lets only the service role store candidates', async () => {
     const call = as(db, USERS.admin, () =>
       db.query("select public.save_identifier_candidates($1, $1, '[]')", [SUPPLIER]),

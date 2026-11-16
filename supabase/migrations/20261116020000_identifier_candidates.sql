@@ -84,8 +84,10 @@ set search_path = ''
 as $$
   insert into public.identifier_candidates as c (supplier_id, scheme, value, source,
     registrar_name, registrar_status, searched_name, found_by)
-  select target, f.scheme, f.value, f.source, left(f.registrar_name, 300),
-    left(f.registrar_status, 100), left(f.searched_name, 300), finder
+  -- One row per number: the same number can come back for several names or from
+  -- both sources, and an upsert may not touch a row twice. The registrar wins.
+  select distinct on (f.scheme, f.value) target, f.scheme, f.value, f.source,
+    left(f.registrar_name, 300), left(f.registrar_status, 100), left(f.searched_name, 300), finder
   from jsonb_to_recordset(found) as f(scheme text, value text, source text,
     registrar_name text, registrar_status text, searched_name text)
   where not exists (
@@ -93,6 +95,7 @@ as $$
     where i.supplier_id = target and i.scheme = f.scheme and i.value = f.value
       and i.review_status <> 'rejected'
   )
+  order by f.scheme, f.value, f.source = 'guidestar'
   on conflict (supplier_id, scheme, value) do update
     set registrar_name = excluded.registrar_name, registrar_status = excluded.registrar_status,
       found_at = now(), found_by = excluded.found_by
