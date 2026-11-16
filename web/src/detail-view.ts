@@ -173,10 +173,6 @@ function memberships(container: HTMLElement, data: SupplierDetail): void {
   });
 }
 function history(container: HTMLElement, data: SupplierDetail): void {
-  if (data.auditUnavailable) {
-    section(container, 'היסטוריית שינויים').append(element('p', 'לא ניתן לטעון את יומן השינויים.'));
-    return;
-  }
   if (data.audit === null) return;
   const node = section(container, 'היסטוריית שינויים');
   if (!data.audit.length) node.append(element('p', 'לא נמצאו שינויים ביומן.'));

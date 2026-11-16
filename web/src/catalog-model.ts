@@ -1,4 +1,5 @@
 import type { CatalogData } from './data/catalog.ts';
+import { normalize } from './catalog-search.ts';
 
 export type Validity = 'valid' | 'expired' | 'undated' | 'future';
 export interface Membership {
@@ -6,6 +7,7 @@ export interface Membership {
   registry: string;
   fieldId: string | null;
   field: string;
+  searchText: string;
   categories: CategoryLabel[];
   unitId: string | null;
   unit: string;
@@ -24,6 +26,7 @@ export interface Supplier {
   id: string;
   name: string;
   aliases: string[];
+  searchNames: string[];
   verified: boolean;
   memberships: Membership[];
   contacts: { kind: string; value: string; valid: boolean | null }[];
@@ -92,9 +95,11 @@ function labels(
   const field = optional(refs.fields, row.registry_field_id);
   const unit = optional(refs.units, registry.owner_unit_id);
   const document = optional(refs.documents, version.source_document_id);
+  const fieldText = field?.source_text ?? '';
   return {
     fieldId: field?.id ?? null,
-    field: field?.source_text ?? '',
+    field: fieldText,
+    searchText: normalize(fieldText),
 
     unit: unit?.name ?? '',
     source: document?.url ?? null,
@@ -150,6 +155,10 @@ export function buildCatalog(data: CatalogData): Supplier[] {
       // A supplier whose memberships are hidden by access rules must not be
       // displayed without the registry and source needed to interpret it.
       .filter((supplier) => supplier.memberships.length > 0)
+      .map((supplier) => ({
+        ...supplier,
+        searchNames: [supplier.name, ...supplier.aliases].map(normalize),
+      }))
       .sort((a, b) => a.name.localeCompare(b.name, 'he'))
   );
 }

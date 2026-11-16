@@ -3,11 +3,18 @@ import type * as CatalogView from '../catalog-view.ts';
 import type { Session } from './session.ts';
 import { EventBatcher } from './tracker.ts';
 
-type SiteKey = 'BASE' | 'currentUser' | 'access' | 'catalog' | 'canAddSupplier' | 'eventRequest';
+type SiteKey =
+  | 'BASE'
+  | 'loadSnapshot'
+  | 'subscribe'
+  | 'clearCatalog'
+  | 'catalog'
+  | 'canAddSupplier'
+  | 'eventRequest';
 export type SiteApi = Pick<typeof Site, SiteKey | 'exchangeCode' | 'sendLink'>;
 export type ViewApi = Pick<
   typeof CatalogView,
-  'setSuppliers' | 'options' | 'render' | 'setOpenHandler'
+  'setSuppliers' | 'options' | 'render' | 'setOpenHandler' | 'renderDuration'
 >;
 export interface DetailsApi {
   open(id: string, token: string): Promise<void>;
@@ -29,11 +36,12 @@ export interface AppDeps {
 export interface AppState {
   session: Session | null;
   userId: string | null;
+  viewed: boolean;
 }
 
 export class Page {
   readonly deps: AppDeps;
-  readonly state: AppState = { session: null, userId: null };
+  readonly state: AppState = { session: null, userId: null, viewed: false };
   private events: EventBatcher | null = null;
 
   constructor(deps: AppDeps) {

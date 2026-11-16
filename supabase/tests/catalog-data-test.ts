@@ -4,43 +4,24 @@ import { after, before, describe, it } from 'node:test';
 import type { PGlite } from '@electric-sql/pglite';
 
 import { buildCatalog } from '../../web/src/catalog-model.ts';
-import { loadCatalog } from '../../web/src/data/catalog.ts';
+import { compactCatalog } from '../../web/src/data/compact-catalog.ts';
+import { object } from '../../web/src/data/parse.ts';
 import { supplierDetail } from '../../web/src/data/supplier-detail.ts';
 import { DataClient } from '../../web/src/data/client.ts';
 import { ACCESS_FIXTURE, SUPPLIER, USERS, VERSION } from './access-fixture.ts';
 import { as, migratedDatabase } from './pglite.ts';
 
-const ALLOWED = new Set([
-  'suppliers',
-  'supplier_names',
-  'memberships',
-  'registry_versions',
-  'registries',
-  'registry_fields',
-  'registry_field_categories',
-  'categories',
-  'org_units',
-  'supplier_contacts',
-  'supplier_identifiers',
-  'source_documents',
-]);
 function clientFor(db: PGlite): DataClient {
-  const fetcher: typeof fetch = async (input) => {
+  const fetcher: typeof fetch = async (input, init) => {
     const url = new URL(input instanceof Request ? input.url : input);
-    const table = url.pathname.split('/').at(-1) ?? '';
-    if (!ALLOWED.has(table)) return new Response(null, { status: 404 });
-    const where =
-      table === 'suppliers'
-        ? "where status <> 'merged'"
-        : table === 'supplier_contacts' && url.searchParams.get('status') === 'eq.current'
-          ? "where status = 'current'"
-          : '';
-    const result = await db.query(
-      `select * from public.${table} ${where} order by id
-      limit $1::int offset $2::int`,
-      [Number(url.searchParams.get('limit')), Number(url.searchParams.get('offset'))],
-    );
-    return Response.json(result.rows);
+    const name = url.pathname.split('/').at(-1);
+    if (name !== 'catalog_snapshot' && name !== 'supplier_detail')
+      return new Response(null, { status: 404 });
+    if (typeof init?.body !== 'string') throw new Error('Missing request body');
+    const args = object(JSON.parse(init.body) as unknown);
+    const arg = name === 'catalog_snapshot' ? null : args.supplier_id;
+    const result = await db.query<{ value: unknown }>(`select public.${name}($1) as value`, [arg]);
+    return Response.json(result.rows[0]?.value);
   };
   return new DataClient({
     baseUrl: 'https://test.invalid',
@@ -68,7 +49,9 @@ describe('new catalog respects database visibility', () => {
       [USERS.viewer, 0],
     ] as const) {
       await as(db, user, async () => {
-        const rows = buildCatalog(await loadCatalog(clientFor(db)));
+        const rows = buildCatalog(
+          compactCatalog(object(await clientFor(db).rpc('catalog_snapshot', {})).catalog),
+        );
         assert.equal(rows.length, expected);
         if (expected) assert.equal(rows[0]?.memberships.length, 1);
       });
@@ -82,22 +65,12 @@ describe('new catalog respects database visibility', () => {
       ('${SUPPLIER}', 'email', 'disputed@example.test', 'disputed')`);
     await as(db, USERS.editor, async () => {
       const client = clientFor(db);
-      const cached = await loadCatalog(client);
+      const cached = compactCatalog(object(await client.rpc('catalog_snapshot', {})).catalog);
       assert.deepEqual(
         buildCatalog(cached)[0]?.contacts.map((contact) => contact.value),
         ['0502222222'],
       );
-      const detail = await supplierDetail(client, cached, {
-        supplierId: SUPPLIER,
-        access: {
-          state: 'active',
-          member: true,
-          admin: false,
-          editor: true,
-          manager: false,
-          grants: [],
-        },
-      });
+      const detail = await supplierDetail(client, cached, SUPPLIER);
       assert.deepEqual(
         detail.contacts.map((contact) => contact.value),
         ['0502222222'],

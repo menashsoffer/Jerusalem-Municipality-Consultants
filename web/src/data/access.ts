@@ -1,4 +1,5 @@
-import { DataError, type DataClient } from './client.ts';
+import { DataError } from './client.ts';
+import { array, object, text } from './parse.ts';
 
 export type Role = 'viewer' | 'editor' | 'unit_manager' | 'admin' | 'auditor';
 export interface Grant {
@@ -32,28 +33,20 @@ function isRole(role: string): role is Role {
   return ['viewer', 'editor', 'unit_manager', 'admin', 'auditor'].includes(role);
 }
 
-export async function loadAccess(client: DataClient, userId: string): Promise<Access> {
-  const [raw, profiles, grants] = await Promise.all([
-    client.rpc('my_access'),
-    client.list('profiles', { user_id: `eq.${userId}` }),
-    client.list('role_grants', { user_id: `eq.${userId}` }),
-  ]);
-  const flags = parseFlags(raw);
-  if (profiles.length > 1) throw new DataError(0);
-  const status = profiles[0]?.status ?? 'unregistered';
+export function parseAccess(value: unknown): Access {
+  const data = object(value);
+  const flags = parseFlags(data);
+  const status = text(data.state);
   if (!['active', 'pending', 'rejected', 'blocked', 'unregistered'].includes(status)) {
     throw new DataError(0);
   }
-  const now = Date.now();
-  const active = grants.filter(
-    (g) => g.revoked_at === null && (g.expires_at === null || Date.parse(g.expires_at) > now),
-  );
-  if (active.some((grant) => !isRole(grant.role))) throw new DataError(0);
-  return {
-    ...flags,
-    state: status as Access['state'],
-    grants: active.map((grant) => ({ role: grant.role as Role, unitId: grant.unit_id })),
-  };
+  const grants = array(data.grants).map((value) => {
+    const grant = object(value);
+    const role = text(grant.role);
+    if (!isRole(role)) throw new DataError(0);
+    return { role, unitId: grant.unitId === null ? null : text(grant.unitId) };
+  });
+  return { ...flags, state: status as Access['state'], grants };
 }
 
 export function mayWriteUnit(access: Access, unitId: string): boolean {

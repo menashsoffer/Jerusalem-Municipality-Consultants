@@ -1,4 +1,4 @@
-import type { PublicSchema } from '../database.types.ts';
+import type { PublicFunctions, PublicSchema } from '../database.types.ts';
 
 type Resource = keyof PublicSchema;
 type Row<T extends Resource> = PublicSchema[T]['Row'];
@@ -39,16 +39,19 @@ export interface ClientOptions {
   publicKey: string;
   token: string;
   fetcher?: typeof fetch;
+  onUnauthorized?: () => Promise<void>;
 }
 
 export class DataClient {
   private readonly fetcher: typeof fetch;
   private readonly root: string;
   private readonly headers: Record<string, string>;
+  private readonly onUnauthorized: (() => Promise<void>) | undefined;
 
   constructor(options: ClientOptions) {
     this.root = `${options.baseUrl.replace(/\/$/, '')}/rest/v1`;
     this.fetcher = options.fetcher ?? fetch;
+    this.onUnauthorized = options.onUnauthorized;
     this.headers = {
       apikey: options.publicKey,
       Authorization: `Bearer ${options.token}`,
@@ -72,6 +75,7 @@ export class DataClient {
     } catch {
       throw new DataError(0);
     }
+    if (response.status === 401) await this.onUnauthorized?.();
     if (!response.ok) throw new DataError(response.status);
     if (response.status === 204 || headers.get('Prefer') === 'return=minimal') return null;
     try {
@@ -81,8 +85,11 @@ export class DataClient {
     }
   }
 
-  async rpc(name: 'my_access'): Promise<unknown> {
-    return this.request(`rpc/${name}`, { method: 'POST', body: '{}' });
+  async rpc<K extends keyof PublicFunctions>(
+    name: K,
+    args: PublicFunctions[K]['Args'],
+  ): Promise<unknown> {
+    return this.request(`rpc/${name}`, { method: 'POST', body: JSON.stringify(args) });
   }
 
   async supplierWrite(
