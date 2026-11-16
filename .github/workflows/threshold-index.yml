@@ -15,14 +15,14 @@ permissions:
 
 jobs:
   staging:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: staging
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
       - run: scripts/deploy/call-threshold-index.sh staging "${{ vars.SUPABASE_PROJECT_REF }}"
 
   production:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
       - run: scripts/deploy/call-threshold-index.sh production "${{ vars.PRODUCTION_PROJECT_REF }}"
