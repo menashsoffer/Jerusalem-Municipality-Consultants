@@ -9,8 +9,8 @@
 | מפתח | סדר העמודות |
 |---|---|
 | `suppliers` | `id, display_name, entity_kind, status, website, review_status, note, names, memberships, contacts` |
-| `names` בתוך ספק | `id, name, kind, source_document_id` |
-| `memberships` בתוך ספק | `id, registry_version_id, registry_field_id, name_as_published, source_page, registered_from, registered_until, engagement_started_on, dates_source, review_status` |
+| `names` בתוך ספק | `name, kind, source_document_id` |
+| `memberships` בתוך ספק | `registry_version_id, registry_field_id, name_as_published, source_page, registered_from, registered_until, engagement_started_on, dates_source, review_status` |
 | `contacts` בתוך ספק | `id, kind, value, is_valid, source_document_id` (כולן `current`) |
 | `registries` | `id, name, owner_unit_id, status` |
 | `versions` | `id, registry_id, source_document_id, valid_from, valid_until` |
@@ -20,7 +20,9 @@
 | `units` | `id, name` |
 | `documents` | `id, url` |
 
-המזהים נשארים UUID מקוריים; כל שיוך מפנה לגרסה ולתחום לפי מזהה. הקטלוג אינו כולל ספקים ממוזגים, פרטי קשר שאינם נוכחיים או שיוכים שהוסרו או נדחו. שורות העזר מוחזרות פעם אחת, גם אם מספר ספקים משתמשים בהן.
+המזהים הדרושים נשארים UUID מקוריים; מזהי רשומות שם ושיוך אינם נשלחים משום שהאתר אינו משתמש בהם. ערך `0` בעמודת שם מקונן פירושו שם הספק המוצג, ו־`null` בשם שפורסם נשאר שם חסר. ערך `null` בעמודות הלא־ריקות הבאות מייצג את ברירת המחדל: `entity_kind=unknown`, `status=active`, `review_status=needs_review`, `kind=as_published`, `dates_source=unknown`. כך ערכי ברירת מחדל ושמות זהים אינם משוכפלים. אין שינוי במידע המפוענח.
+
+ כל שיוך מפנה לגרסה ולתחום לפי מזהה. הקטלוג אינו כולל ספקים ממוזגים, פרטי קשר שאינם נוכחיים או שיוכים שהוסרו או נדחו. שורות העזר מוחזרות פעם אחת, גם אם מספר ספקים משתמשים בהן.
 
 הגרסה כוללת מונה משותף וטביעת מזהה המשתמש, מצבו והרשאותיו הפעילות. טריגר פקודה מגדיל את המונה בכל כתיבה לטבלה מהקטלוג. הטריגר פועל בהרשאות הכותב; הרשאת העדכון למונה מוגבלת בסכמה הפרטית לעדכון מתוך טריגר. אין הרשאת הוספה או מחיקה למשתמש רגיל. ביטול טרנזקציה מבטל גם את הגדלת המונה.
 

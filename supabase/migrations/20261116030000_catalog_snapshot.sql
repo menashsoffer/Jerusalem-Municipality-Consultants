@@ -83,15 +83,19 @@ begin
   -- Each child relation is read once and grouped before nesting. RLS applies to
   -- every relation here, including child rows with different visibility.
   with names as (
-    select n.supplier_id, jsonb_agg(jsonb_build_array(n.id, n.name, n.kind,
-      n.source_document_id) order by n.id) as rows
-    from public.supplier_names n group by n.supplier_id
+    select n.supplier_id, jsonb_agg(jsonb_build_array(case when n.name = s.display_name then '0'::jsonb
+      else to_jsonb(n.name) end, nullif(n.kind, 'as_published'), n.source_document_id) order by n.id) as rows
+    from public.supplier_names n join public.suppliers s on s.id = n.supplier_id
+    group by n.supplier_id
   ), memberships as (
-    select m.supplier_id, jsonb_agg(jsonb_build_array(m.id, m.registry_version_id,
-      m.registry_field_id, m.name_as_published, m.source_page, m.registered_from,
-      m.registered_until, m.engagement_started_on, m.dates_source, m.review_status)
+    select m.supplier_id, jsonb_agg(jsonb_build_array(m.registry_version_id, m.registry_field_id,
+      case when m.name_as_published = s.display_name then '0'::jsonb
+        else to_jsonb(m.name_as_published) end, m.source_page, m.registered_from,
+      m.registered_until, m.engagement_started_on, nullif(m.dates_source, 'unknown'),
+      nullif(m.review_status, 'needs_review'))
       order by m.id) as rows
-    from public.memberships m where m.review_status not in ('rejected', 'removed')
+    from public.memberships m join public.suppliers s on s.id = m.supplier_id
+    where m.review_status not in ('rejected', 'removed')
     group by m.supplier_id
   ), contacts as (
     select c.supplier_id, jsonb_agg(jsonb_build_array(c.id, c.kind, c.value, c.is_valid,
@@ -100,7 +104,8 @@ begin
   )
   select jsonb_build_object(
     'suppliers', coalesce((select jsonb_agg(jsonb_build_array(s.id, s.display_name,
-      s.entity_kind, s.status, s.website, s.review_status, s.note,
+      nullif(s.entity_kind, 'unknown'), nullif(s.status, 'active'), s.website,
+      nullif(s.review_status, 'needs_review'), s.note,
       coalesce(n.rows, '[]'::jsonb), coalesce(m.rows, '[]'::jsonb),
       coalesce(c.rows, '[]'::jsonb)) order by s.id)
       from public.suppliers s left join names n on n.supplier_id = s.id

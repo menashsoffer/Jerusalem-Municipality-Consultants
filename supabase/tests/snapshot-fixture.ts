@@ -52,9 +52,8 @@ export async function snapshotFixture(db: PGlite): Promise<void> {
 
 export const PROJECTIONS = {
   suppliers: ['id', 'display_name', 'entity_kind', 'status', 'website', 'review_status', 'note'],
-  names: ['id', 'name', 'kind', 'source_document_id'],
+  names: ['name', 'kind', 'source_document_id'],
   memberships: [
-    'id',
     'registry_version_id',
     'registry_field_id',
     'name_as_published',
@@ -90,6 +89,18 @@ const TABLES = {
 } as const;
 
 type Records = Record<string, unknown>;
+const DEFAULTS: Record<string, string> = {
+  entity_kind: 'unknown',
+  status: 'active',
+  review_status: 'needs_review',
+  kind: 'as_published',
+  dates_source: 'unknown',
+};
+function compactValue(column: string, value: unknown, displayName: unknown): unknown {
+  if (['name', 'name_as_published'].includes(column) && value === displayName) return 0;
+  return DEFAULTS[column] === value ? null : value;
+}
+
 export async function directCatalog(db: PGlite): Promise<Records> {
   const tables: Record<string, Records[]> = {};
   for (const [key, [table, where]] of Object.entries(TABLES)) {
@@ -103,11 +114,15 @@ export async function directCatalog(db: PGlite): Promise<Records> {
     result[key] = (tables[key] ?? []).map((row) => PROJECTIONS[key].map((col) => row[col]));
   }
   result.suppliers = (tables.suppliers ?? []).map((row) => [
-    ...PROJECTIONS.suppliers.map((col) => row[col]),
+    ...PROJECTIONS.suppliers.map((col) => compactValue(col, row[col], row.display_name)),
     ...(['names', 'memberships', 'contacts'] as const).map((key) =>
       (tables[key] ?? [])
         .filter((child) => child.supplier_id === row.id)
-        .map((child) => PROJECTIONS[key].map((col) => child[col])),
+        .map((child) =>
+          PROJECTIONS[key].map((col) =>
+            key === 'contacts' ? child[col] : compactValue(col, child[col], row.display_name),
+          ),
+        ),
     ),
   ]);
   delete result.names;
