@@ -1,6 +1,8 @@
 import type { RouteObject } from 'react-router';
 
 import { Layout } from './layout.tsx';
+import { ScreenError } from './screen-error.tsx';
+import { Skeleton } from '../ui/skeleton.tsx';
 import { RouteError } from './route-error.tsx';
 
 /** Page title shown in the tab; every route sets one so screen readers announce the change. */
@@ -18,12 +20,21 @@ export const routes: RouteObject[] = [
     element: <Layout />,
     errorElement: <RouteError />,
     // Shown while the first lazily loaded screen arrives.
-    hydrateFallbackElement: <p role="status">טוען...</p>,
+    hydrateFallbackElement: <Skeleton />,
     children: [
       {
         index: true,
         handle: { title: 'ניהול' } satisfies RouteHandle,
         lazy: async () => ({ Component: (await import('./home-page.tsx')).HomePage }),
+      },
+      {
+        path: 'auth',
+        handle: { title: 'כניסה והרשאות' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/auth/auth-page.tsx');
+          return { Component: m.AuthPage, loader: m.loader };
+        },
       },
       {
         path: '*',
