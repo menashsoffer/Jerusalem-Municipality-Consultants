@@ -13,7 +13,7 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 | סכמה, הרשאות, RLS, פונקציות DB | SQL (PostgreSQL) | `supabase/migrations/` | המקור היחיד לסכמה. אין שינוי ידני בלוח הבקרה |
 | לוגיקה עסקית (מנוע הכללים) | TypeScript | `supabase/functions/_shared/` | קוד טהור, בלי תלויות ובלי גישה לרשת. רץ ב-Deno וב-Node |
 | נקודות קצה בשרת | TypeScript (Deno) | `supabase/functions/<שם-בקו-מפריד>/index.ts` | Edge Functions דקות שקוראות ללוגיקה מ-`_shared` |
-| האתר | TypeScript, React | `web/` (מקור). הפלט נבנה ב-Actions ואינו נשמר בריפו | ראו החלטות 0001 ו-0003 |
+| האתר | TypeScript, React | `web/` (מקור). הפלט נבנה ב-Actions ואינו נשמר בריפו | ראו החלטות 0001, 0003 ו-0006, ו-`react-guide-he.md` |
 | חילוץ נתונים ו-OCR מ-PDF ו-Excel | Python 3.12 | `scripts/` (יעבור ל-`pipeline/`) | עבודת אצווה, מקומית או ב-GitHub Actions. כותבת לטבלאות הביניים בלבד. ראו החלטות 0004 ו-0005 |
 | בדיקות | כמו הקוד הנבדק | `supabase/functions/tests/<נושא>-test.ts` ל-TypeScript (המוסכמה של Supabase), `tests/` ל-Python ול-RLS | ראו סעיף 6 |
 | תיעוד | Markdown בעברית | `documentation/`, `README.md` | |
