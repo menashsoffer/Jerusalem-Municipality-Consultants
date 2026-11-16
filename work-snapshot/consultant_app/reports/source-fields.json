@@ -1,0 +1,1272 @@
+{
+  "notice": "Source labels are proposals only; parent categories are not inferred.",
+  "fields": [
+    {
+      "source_label": "פיתוח המשאב האנושי",
+      "row_count": 82,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכלות",
+      "row_count": 30,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מנהלי פרויקטים",
+      "row_count": 30,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מנהלי פרויקטים לשדרוג רחובות ומרחב ציבורי",
+      "row_count": 29,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכל נוף",
+      "row_count": 26,
+      "source_count": 2,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ/תכנון כבישים(פיזי)",
+      "row_count": 26,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים",
+      "row_count": 26,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יחסי ציבור",
+      "row_count": 24,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ/תכנון הסדרי תנועה",
+      "row_count": 23,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מודד",
+      "row_count": 23,
+      "source_count": 2,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ / תכנון הסדרי תנועה",
+      "row_count": 19,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תכנון כבישים )פיזי(",
+      "row_count": 17,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בקרים",
+      "row_count": 15,
+      "source_count": 2,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ ופיקוח תשתיות",
+      "row_count": 13,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מערכות מידע",
+      "row_count": 13,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ייעוץ כלכלי",
+      "row_count": 12,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכלות ועיצו\"פ",
+      "row_count": 11,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ/ תכנון נגישות",
+      "row_count": 10,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ/תכנון אגרונומיה",
+      "row_count": 10,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועצים מפקחים ומתכנני חשמל לפיתוח תאורת רחוב",
+      "row_count": 10,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, כמאי",
+      "row_count": 10,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תרבות ואמנות",
+      "row_count": 10,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ / תכנון קונסטרוקטור",
+      "row_count": 9,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תאורת רחוב וחשמל",
+      "row_count": 9,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ/תכנון הסדרי רמזורים",
+      "row_count": 9,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "כתיבת מכרזים ורכש טכנולוגי",
+      "row_count": 9,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "סוקרי גשרים, מנהרות ומבנה דרך 2",
+      "row_count": 9,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אסטרטגיית דאטה ומשילות מידע",
+      "row_count": 8,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ שילוט",
+      "row_count": 8,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תיאום תשתיות",
+      "row_count": 8,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מודדים",
+      "row_count": 8,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועצים לשירותים פיננסים ובדיקות שכ ר",
+      "row_count": 7,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מדידות",
+      "row_count": 7,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אינסטלציה, כיבוי אש, נגישות שרות, יועץ מכרזים וכמאי",
+      "row_count": 7,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ / תכנון נגישות",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ הסדרי תנועה מומחה",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תכנון קרקע וביסוס",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ/תכנון קרקע וביסוס",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מוקדי שירות וטלפוניה",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אדריכלות, קונסטרוקציה ויציבות מבנים, יועץ חשמל ותאורה, בודק חשמל, תיאום תשתיות",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, יועץ מכרזים, כמאי",
+      "row_count": 6,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בטיחות",
+      "row_count": 5,
+      "source_count": 2,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ גינון / אגרונום",
+      "row_count": 5,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תסקירי תנועה",
+      "row_count": 5,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "לימודים אקדמיים והנדסאים",
+      "row_count": 5,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מולטימדיה ואקוסטיקה",
+      "row_count": 5,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, מתכנן אדריכל, יועץ בטיחות, יועץ חשמל, בודק חשמל, נגישות מתו\"ס",
+      "row_count": 5,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קונסטרוקציה, בטיחות וכיבוי אש",
+      "row_count": 5,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכלות נוף",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "איתור ומיפוי תשתיות תת קרקעיות",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בטיחות, כיבוי אש",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בקרת איכות",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ופתרונות AI תוכנה חדשניים",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ בטיחות",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תוכן מבנה ומיסעות",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועצי מיזוג אווי ר",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ייעוץ בטיחות בתנועה",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "כיבוי אש, בטיחות, בטיחות מתקנים",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "כמאי",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים,",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אינסטלציה, קונסטרוקציה, איטום",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אינסטלציה, תיאום תשתיות, כמאי, מהנדס דרכים, תנועה, כבישים וחנייה",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ענן ציבורי - הגירה, הקמה ותמחור",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קונסטרוקציה ויציבות מבנים",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קונסטרוקציה, חשמל, כיבוי אש",
+      "row_count": 4,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אבטחת המידע והסייבר",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכלות וגינון, כמאי",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקות חשבונאיות לאגף ארנונה וגביה / מתן שירותים לבקרה על עו\"ד החיצוניים / בדיקת תיקי בקשות לפי פקודת הפיטורין / בדיקות חשבונאיות לאגף החשבות",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בטיחות, בטיחות מתקני חצר, נגישות מתו\"ס",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בטיחות, בטיחות מתקנים, יועץ אקוסטי",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "הנדסת תהליכים והטמעת טכנולוגיות",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ תכן מבנה ומיסעות",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אדריכלות, מהנדס דרכים, תנועה, כבישים וחנייה",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אדריכלות, נגישות מתו\"ס",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, בודק חשמל 3,2,1, תאורה, תקשורת ותקשוב, כמאי",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "עיר חכמה",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תשתיות מחשוב וחדרי תקשורת",
+      "row_count": 3,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכלות ועיצו\"פ, אדריכלות נוף",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכלות, אדריכלות נוף",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "איטום",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקות חשבונאיות לאגף ארנונה וגביה / בדיקות חשבונאיות לאגף החשבות / בדיקת תיקי בקשות תמיכה וביקורות עומק בגופים שונים",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקות חשבונאיות לאגף ארנונה וגביה / מתן שירותים לבקרה על עו\"ד החיצוניים / בדיקת תיקי בקשות לפי פקודת הפיטורין / בדיקות חשבונאיות לאגף החשבות / בדיקת תיקי בקשות תמיכה וביקורות עומק בגופים שונים",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "דרכים, תנועה, כבישים וחנייה",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ אינסטלציה",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ בתחום שיתוף ציבור לעבודות תשתית",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ חשמל, יועץ תאורה, תקשורת ותקשוב",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ חשמל, תאורה בודק חשמל, תקשוב ותקשורת",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ לאתרי ומתקני משחק / כושר והצללות",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ייעוץ ותכנון בתחום המים ו/או השקיה ציבורית ומי קולחין",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יעוץ מכרזים",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מיתוג עסקי",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נגישות מתו\"ס",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נגישות מתו\"ס ושרות, כיבוי אש",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נגישות מתו\"ס ושרות, כמאי",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול מוצר",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אדריכלות",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אדריכלות ועיצו\" פ",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, מהנדס דרכים, תנועה, כבישים וחנייה",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "עיצוב פנים",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תחזיות ופיתוח מודלים תחבורתיים",
+      "row_count": 2,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": ", תכנון ופרוגרמות פיזי בהיבט חינוכי, אדריכלות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "AI ופתרונות תוכנה חדשניים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אדריכל שימור",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אורח חיים בריא",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "איסלאם ומזה\"ת",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "איראן. תיאטרון וקולנוע ישראלי, צמחי מרפא,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אנגלית, סדנאות בתחומי ריפוי ותודעה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אקוסטיקה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "אקטואליה היסטוריה, תנ\"ך, ארכיאולוגיה,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ארומתרפיה, פרחי באך",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקות חשבונאיות לאגף ארנונה וגביה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקות חשבונאיות לאגף ארנונה וגביה / מתן שירותים לבקרה על עו\"ד החיצוניים / בדיקת תיקי בקשות לפי פקודת הפיטורין / בדיקת תיקי בקשות תמיכה וביקורות עומק בגופים שונים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקות חשבונאיות לאגף החשבות / בדיקת תיקי בקשות תמיכה וביקורות עומק בגופים שונים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בדיקת תיקי בקשות תמיכה וביקורות עומק בגופים שונים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "בירושלים ות\"א נשים במקרא, חגי ישראל, סיורים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "הדתו ת מחשבת ישראל, עיון במקרא ומדע",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "הוראת ערבית, הוראת עברי ת",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "העברית כשפה שנייה האזנה למוסיקה קלאסית, שיפור",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "העתיקה תרבות קלאסית: יוון ורומא בעת",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "וירושות משפט פלילי, משפחה, ייפוי כוח, צוואות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "וישראל, ערים, דתות היסטוריה, תרבויות, מנהיגים, יהדות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ומדעים פיתוח מיומנויות אישיות, מדעי החברה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ונפש, פילוסופיה מדעי ההתנהגות, פסיכולוגיה, גוף",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "חווית לקוח",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "חידונים ושעשועונים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "חיובית הלא מודע, שיפור הזיכרון, פסיכולוגיה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "חינוך, אימון אישי, NLP",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "חסידות, קבלה מקרא, תושבע, היסטוריה יהודית,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "טראומה, גוף ונפש, חוסן וצמיחה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יהדות, הדרכת טיולים שיווק, כלכלה, התחדשות עירונית,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ איטום",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ חשמל",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ חשמל ותאורה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ חשמל, בודק חשמל, יועץ תאורה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ חשמל, בודק חשמל, תאורה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יועץ מעליות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "יציבות מבנים ,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ישראל ערב איסלם, מזה\"ת, היסטוריה, סכסוך",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "כלכלה, מנהל עסקים, גישור",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "כלכלת ישראל, ניהול עסק",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "לוגיסטיקת מיחשוב",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מוזיקה יהודית, יוגה קול",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מושגי יסוד במשפטים שיפור איכות החיים, יצירה דרך אימון,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מחול",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מחשבת ישראל, בודהיזם פסיכולוגיה, פילוסופיה, מיינדפולנס,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מכרזים ותעריפים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "מתכנון מיזוג אויר",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נגישות , קונסטרוקציה, יציבות מבנים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נגישות מתו\"ס , קונסטרוקציה, יציבות מבני ם",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נגישות מתו\"ס , קונסטרוקציה, יציבות מבנים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, אינסטלציה, תיאום תשתיות, כמאי, מהנדס דרכים, תנועה, כבישים וחניי ה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ניהול פרויקטים, בודק חשמל 3,2,1, תאורה, תקשורת ותקשוב, כמא י",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "נפש, רפואה קוריאנית ביולוגיה תאית ומולקולרית, רפואת גוף-",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "סדנאות חימר פולימרי",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "סדנת גבס, שיש, נרות ופסיפס",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "סיורים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "עיצוב אופנה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "עיצוב פנים, אורבני ותעשייתי",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ערבית מדוברת וספרותי ת",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "פאראפסיכולוגיה, ימימה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "פיתוח מיומנות אישית",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ציור טבע דומם, אומנות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ציור, אומנות, עיצוב",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "צילום, מסעות סיפור אישי",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קבלה שואה, סיור ביד ושם ובבית העדות,",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קולינריים אימון באמצעות הבישול, סיורים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קונסטרוקציה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "קרימינולוגיה, מזה\"ת",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "ריפוי טבעי וקונבציונלי",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "רקמה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "שבטיות, בדואים, חות'ים, תימן",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "שיפור הזיכרון",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "שפה ולשון, ספרות וחינוך לשוני",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תולדות המוסיקה, זמר עברי",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תזונה",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תיכונית מדעים, תזונה, אוריינות מזון, תזונה ים",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תכנון ופרוגרמות פיזי בהיבט חינוכי",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תנ\"ך, מדעי יהדות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תנועה והתעמלות בריאותית",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תעסוקה, זוגיות, הורות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    },
+    {
+      "source_label": "תעסוקה, ניהול זמן, זוגיות, הורות",
+      "row_count": 1,
+      "source_count": 1,
+      "parent_category": null,
+      "status": "needs_review"
+    }
+  ]
+}

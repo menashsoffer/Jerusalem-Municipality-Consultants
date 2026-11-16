@@ -1,0 +1,14 @@
+{
+  "candidate_older_media_id": "wlqdetya",
+  "newer_media_id": "3sydompm",
+  "local_file_mapping": "candidate_needs_content_verification",
+  "older_extraction_sha256": "09a3f514f2a41c9d592588fc67cd4ff45ddc6da7061a3a25f97a7c610cde88bd",
+  "newer_extraction_sha256": "7483619da85201d22a4b8ae172cdb30a91698fb84739f4581cee623c681767f9",
+  "older_rows": 151,
+  "newer_rows": 210,
+  "exact_name_field_pairs": 147,
+  "older_unmatched_pairs": 4,
+  "newer_unmatched_pairs": 63,
+  "unnumbered_older_rows": 2,
+  "note": "Extracted name and field comparison; no identity, legal status, or current eligibility inferred."
+}

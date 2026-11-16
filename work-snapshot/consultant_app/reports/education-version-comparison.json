@@ -1,0 +1,12 @@
+{
+  "older_media_id": "lymhcxle",
+  "newer_media_id": "tecnwz4z",
+  "older_file_sha256": "48e8434f2169f74cf64ed7da478f29d87b61ecac17299a71226dd576e316f16c",
+  "newer_file_sha256": "7483619da85201d22a4b8ae172cdb30a91698fb84739f4581cee623c681767f9",
+  "older_rows": 210,
+  "newer_rows": 210,
+  "matching_name_and_field_rows": 125,
+  "older_only_name_and_field_rows": 85,
+  "newer_only_name_and_field_rows": 85,
+  "note": "Exact extracted name/field comparison only; not a supplier identity or current-status decision."
+}

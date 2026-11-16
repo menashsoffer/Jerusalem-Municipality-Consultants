@@ -1,0 +1,8 @@
+*.sqlite3
+__pycache__/
+staging/
+reports/
+sources/municipal/
+node_modules/
+.venv-graphify/
+graphify-out/

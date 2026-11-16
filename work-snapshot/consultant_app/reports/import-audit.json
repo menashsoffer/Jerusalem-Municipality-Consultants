@@ -1,0 +1,3525 @@
+{
+  "total_rows": 787,
+  "sources": [
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+      "rows": 170,
+      "registries": [
+        "אגף שיפור פני העיר"
+      ],
+      "missing": {}
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/1yrhrhfi/מאגר-יועצים-2024.xlsx",
+      "rows": 82,
+      "registries": [
+        "פיתוח המשאב האנושי"
+      ],
+      "missing": {
+        "source_page": 82
+      }
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+      "rows": 210,
+      "registries": [
+        "תחבורה ופיתוח תשתיות"
+      ],
+      "missing": {}
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+      "rows": 68,
+      "registries": [
+        "יועצי מחשוב ומערכות מידע"
+      ],
+      "missing": {}
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/lbajvgl4/רשימת-הנכללים-במאגר-לפי-קטגוריות.pdf",
+      "rows": 11,
+      "registries": [
+        "שירותי ראיית חשבון למינהל הכספי"
+      ],
+      "missing": {}
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/tcbhbl5i/רשימת-יועצים-כלכלנים-2023.pdf",
+      "rows": 12,
+      "registries": [
+        "מאגר כלכלנים"
+      ],
+      "missing": {}
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+      "rows": 210,
+      "registries": [
+        "תחומים פיזיים מינהל החינוך"
+      ],
+      "missing": {}
+    },
+    {
+      "source_url": "https://www.jerusalem.muni.il/media/w2megjnt/רשימת-מאגר-משרדי-יחצ-בתוקף-עד-3182027.pdf",
+      "rows": 24,
+      "registries": [
+        "משרדי יחסי ציבור"
+      ],
+      "missing": {}
+    }
+  ],
+  "duplicate_name_candidates": [
+    {
+      "normalized_name": "bdo",
+      "rows": 7,
+      "examples": [
+        {
+          "name": "BDO",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 2
+        },
+        {
+          "name": "BDO",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 3
+        },
+        {
+          "name": "BDO",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 4
+        },
+        {
+          "name": "BDO",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 5
+        },
+        {
+          "name": "BDO",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 6
+        }
+      ]
+    },
+    {
+      "normalized_name": "g stat",
+      "rows": 8,
+      "examples": [
+        {
+          "name": "G-stat",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 9
+        },
+        {
+          "name": "G-stat",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 10
+        },
+        {
+          "name": "G-stat",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 11
+        },
+        {
+          "name": "G-stat",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 12
+        },
+        {
+          "name": "G-stat",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 13
+        }
+      ]
+    },
+    {
+      "normalized_name": "hy cloud",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "Hy- cloud",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 17
+        },
+        {
+          "name": "Hy- cloud",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 18
+        },
+        {
+          "name": "Hy- cloud",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 19
+        }
+      ]
+    },
+    {
+      "normalized_name": "kpmg",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "Kpmg",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 20
+        },
+        {
+          "name": "Kpmg",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "1",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 21
+        },
+        {
+          "name": "Kpmg",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 22
+        },
+        {
+          "name": "Kpmg",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 23
+        }
+      ]
+    },
+    {
+      "normalized_name": "א א תנועה וכבישים",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "א.א תנועה וכבישים",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 231
+        },
+        {
+          "name": "א.א תנועה וכבישים",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 319
+        }
+      ]
+    },
+    {
+      "normalized_name": "א גיאומכניקה בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "א.גיאומכניקה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "18",
+          "file": "consultant_app/additional_import.csv",
+          "line": 343
+        },
+        {
+          "name": "א.גיאומכניקה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "20",
+          "file": "consultant_app/additional_import.csv",
+          "line": 348
+        },
+        {
+          "name": "א.גיאומכניקה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "28",
+          "file": "consultant_app/additional_import.csv",
+          "line": 380
+        }
+      ]
+    },
+    {
+      "normalized_name": "א מ תבל הנדסה",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "א.מ. תבל הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 414
+        },
+        {
+          "name": "א.מ. תבל הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 579
+        }
+      ]
+    },
+    {
+      "normalized_name": "א ס ת תכנון והגקמת פרוייקטים בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "א.ס.ת תכנון והגקמת פרוייקטים בע\"|מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 284
+        },
+        {
+          "name": "א.ס.ת תכנון והגקמת פרוייקטים בע\"|מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "26",
+          "file": "consultant_app/additional_import.csv",
+          "line": 368
+        },
+        {
+          "name": "א.ס.ת תכנון והגקמת פרוייקטים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "27",
+          "file": "consultant_app/additional_import.csv",
+          "line": 374
+        }
+      ]
+    },
+    {
+      "normalized_name": "א קומפס הנדסה ובנייה בע מ",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "א.קומפס הנדסה ובנייה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 285
+        },
+        {
+          "name": "א.קומפס הנדסה ובנייה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 298
+        },
+        {
+          "name": "א.קומפס הנדסה ובנייה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "17",
+          "file": "consultant_app/additional_import.csv",
+          "line": 336
+        },
+        {
+          "name": "א.קומפס הנדסה ובנייה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "26",
+          "file": "consultant_app/additional_import.csv",
+          "line": 369
+        },
+        {
+          "name": "א.קומפס הנדסה ובנייה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "27",
+          "file": "consultant_app/additional_import.csv",
+          "line": 375
+        }
+      ]
+    },
+    {
+      "normalized_name": "אביב תכנון כבישים ותנועה בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אביב תכנון כבישים ותנועה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 238
+        },
+        {
+          "name": "אביב תכנון כבישים ותנועה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 325
+        }
+      ]
+    },
+    {
+      "normalized_name": "אביב תכנון כבישים ותנועה בעמ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אביב תכנון כבישים ותנועה בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 46
+        },
+        {
+          "name": "אביב תכנון כבישים ותנועה בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 89
+        }
+      ]
+    },
+    {
+      "normalized_name": "אבני אפרת",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "אבני אפרת",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 505
+        },
+        {
+          "name": "אבני אפרת",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 532
+        },
+        {
+          "name": "אבני אפרת",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 537
+        },
+        {
+          "name": "אבני אפרת",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 543
+        },
+        {
+          "name": "אבני אפרת",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 550
+        }
+      ]
+    },
+    {
+      "normalized_name": "אדר קו הנדסה בע מ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "אדר )קו( הנדסה בע\"\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 286
+        },
+        {
+          "name": "אדר )קו( הנדסה בע\"\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 299
+        },
+        {
+          "name": "אדר )קו( הנדסה בע\"\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "26",
+          "file": "consultant_app/additional_import.csv",
+          "line": 370
+        },
+        {
+          "name": "אדר )קו( הנדסה בע\"\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "27",
+          "file": "consultant_app/additional_import.csv",
+          "line": 376
+        }
+      ]
+    },
+    {
+      "normalized_name": "אור גולדשטיין",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "אור גולדשטיין",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 445
+        },
+        {
+          "name": "אור גולדשטיין",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 553
+        },
+        {
+          "name": "אור גולדשטיין",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 573
+        }
+      ]
+    },
+    {
+      "normalized_name": "אורן הלוי",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אורן הלוי",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 515
+        },
+        {
+          "name": "אורן הלוי",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 528
+        }
+      ]
+    },
+    {
+      "normalized_name": "איהאב זין",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "איהאב זין",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 173
+        },
+        {
+          "name": "איהאב זין",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 386
+        },
+        {
+          "name": "איהאב זין",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 479
+        },
+        {
+          "name": "איהאב זין",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 560
+        }
+      ]
+    },
+    {
+      "normalized_name": "אינג מוחמד בזבז",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אינג' מוחמד בזבז",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 242
+        },
+        {
+          "name": "אינג' מוחמד בזבז",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "16",
+          "file": "consultant_app/additional_import.csv",
+          "line": 328
+        }
+      ]
+    },
+    {
+      "normalized_name": "אל בי אס",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "אל.בי.אס",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 24
+        },
+        {
+          "name": "אל. בי. אס",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 38
+        },
+        {
+          "name": "אל.בי. אס",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 76
+        }
+      ]
+    },
+    {
+      "normalized_name": "אל בי אס הנדסה",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "אל בי אס הנדסה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 241
+        },
+        {
+          "name": "אל בי אס הנדסה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 316
+        },
+        {
+          "name": "אל בי אס הנדסה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 327
+        }
+      ]
+    },
+    {
+      "normalized_name": "אלבו מהנדסים",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אלבו מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 391
+        },
+        {
+          "name": "אלבו מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 575
+        }
+      ]
+    },
+    {
+      "normalized_name": "אלומת יועצים מתכננים וניהול פרוייקטים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אלומת יועצים מתכננים וניהול פרוייקטים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 180
+        },
+        {
+          "name": "אלומת יועצים מתכננים וניהול פרוייקטים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "19",
+          "file": "consultant_app/additional_import.csv",
+          "line": 344
+        }
+      ]
+    },
+    {
+      "normalized_name": "אלחנן צייזלר",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אלחנן צייזלר",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 382
+        },
+        {
+          "name": "אלחנן צייזלר",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 442
+        }
+      ]
+    },
+    {
+      "normalized_name": "אלמלם הנדסה וניהול בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אלמלם הנדסה וניהול בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 265
+        },
+        {
+          "name": "אלמלם הנדסה וניהול בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 296
+        }
+      ]
+    },
+    {
+      "normalized_name": "אם אם אם",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "אם אם אם",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 531
+        },
+        {
+          "name": "אם אם אם",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 536
+        },
+        {
+          "name": "אם אם אם",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 542
+        },
+        {
+          "name": "אם אם אם",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 548
+        }
+      ]
+    },
+    {
+      "normalized_name": "אמ אס מאור ושי הנדסה בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אמ.אס מאור ושי הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 280
+        },
+        {
+          "name": "אמ.אס מאור ושי הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "23",
+          "file": "consultant_app/additional_import.csv",
+          "line": 355
+        }
+      ]
+    },
+    {
+      "normalized_name": "אמהב תחבורה בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "אמהב תחבורה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 35
+        },
+        {
+          "name": "אמהב תחבורה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 61
+        },
+        {
+          "name": "אמהב תחבורה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 71
+        }
+      ]
+    },
+    {
+      "normalized_name": "אנונו רפי",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אנונו רפי",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 497
+        },
+        {
+          "name": "אנונו רפי",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 502
+        }
+      ]
+    },
+    {
+      "normalized_name": "אפ סקיל יור ביזנס בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אפ סקיל יור ביזנס בע\"מ",
+          "registry": "פיתוח המשאב האנושי",
+          "source_url": "https://www.jerusalem.muni.il/media/1yrhrhfi/מאגר-יועצים-2024.xlsx",
+          "source_page": "",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 113
+        },
+        {
+          "name": "אפ סקיל יור ביזנס בע\"מ",
+          "registry": "פיתוח המשאב האנושי",
+          "source_url": "https://www.jerusalem.muni.il/media/1yrhrhfi/מאגר-יועצים-2024.xlsx",
+          "source_page": "",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 126
+        }
+      ]
+    },
+    {
+      "normalized_name": "אפרת קנופף",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אפרת קנופף",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 549
+        },
+        {
+          "name": "אפרת קנופף",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 556
+        }
+      ]
+    },
+    {
+      "normalized_name": "אריה הורן יועצים",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "אריה הורן יועצים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 25
+        },
+        {
+          "name": "אריה הורן יועצים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 26
+        },
+        {
+          "name": "אריה הורן יועצים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 27
+        }
+      ]
+    },
+    {
+      "normalized_name": "אריה צור מהנדסים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "אריה צור מהנדסים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 39
+        },
+        {
+          "name": "אריה צור מהנדסים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 72
+        }
+      ]
+    },
+    {
+      "normalized_name": "ארמה מהנדסים יועצים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ארמה מהנדסים יועצים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 257
+        },
+        {
+          "name": "ארמה מהנדסים יועצים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 278
+        }
+      ]
+    },
+    {
+      "normalized_name": "ארץ הדר וברכה הנדסה ובינוי בע מ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "ארץ הדר וברכה הנדסה ובינוי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 283
+        },
+        {
+          "name": "ארץ הדר וברכה הנדסה ובינוי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 292
+        },
+        {
+          "name": "ארץ הדר וברכה הנדסה ובינוי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "17",
+          "file": "consultant_app/additional_import.csv",
+          "line": 335
+        },
+        {
+          "name": "ארץ הדר וברכה הנדסה ובינוי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "24",
+          "file": "consultant_app/additional_import.csv",
+          "line": 357
+        }
+      ]
+    },
+    {
+      "normalized_name": "בוריבקר בירץ בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "בוריבקר בירץ' בע\"מ",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 420
+        },
+        {
+          "name": "בוריבקר בירץ' בע\"מ",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 582
+        },
+        {
+          "name": "בוריבקר בירץ' בע\"מ",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 589
+        }
+      ]
+    },
+    {
+      "normalized_name": "בנד הנהדסה ניהול ופיקוח בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "בנד הנהדסה ניהול ופיקוח בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 258
+        },
+        {
+          "name": "בנד הנהדסה ניהול ופיקוח בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 273
+        }
+      ]
+    },
+    {
+      "normalized_name": "בסול מהנדסים ויועצים",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "בסול מהנדסים ויועצים",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 111
+        },
+        {
+          "name": "בסול מהנדסים ויועצים",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 250
+        }
+      ]
+    },
+    {
+      "normalized_name": "ברן ישראל",
+      "rows": 6,
+      "examples": [
+        {
+          "name": "ברן ישראל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 385
+        },
+        {
+          "name": "ברן ישראל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 443
+        },
+        {
+          "name": "ברן ישראל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 500
+        },
+        {
+          "name": "ברן ישראל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 507
+        },
+        {
+          "name": "ברן ישראל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 519
+        }
+      ]
+    },
+    {
+      "normalized_name": "ג באר עומר",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "ג'באר עומר",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 44
+        },
+        {
+          "name": "ג'באר עומר",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 75
+        },
+        {
+          "name": "ג'באר עומר",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 101
+        }
+      ]
+    },
+    {
+      "normalized_name": "גבריאל לוטן מהנדסים בע מ ייעוץ ותכנון בהנדסה אזרחית",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "גבריאל לוטן מהנדסים בע\"מ ייעוץ ותכנון בהנדסה אזרחית",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 290
+        },
+        {
+          "name": "גבריאל לוטן מהנדסים בע\"מ ייעוץ ותכנון בהנדסה אזרחית",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 321
+        }
+      ]
+    },
+    {
+      "normalized_name": "גדליה אוליצקי",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "גדליה אוליצקי",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 30
+        },
+        {
+          "name": "גדליה אוליצקי",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 91
+        },
+        {
+          "name": "גדליה אוליצקי",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 121
+        }
+      ]
+    },
+    {
+      "normalized_name": "גיאו סטראק בעמ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "גיאו סטראק בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 6
+        },
+        {
+          "name": "גיאו-סטראק בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 107
+        }
+      ]
+    },
+    {
+      "normalized_name": "גרושקו מהנדסי מבנים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "גרושקו מהנדסי מבנים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 97
+        },
+        {
+          "name": "גרושקו מהנדסי מבנים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 192
+        }
+      ]
+    },
+    {
+      "normalized_name": "גרנד הנדסה גשרים ובנים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "גרנד הנדסה גשרים ובנים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 95
+        },
+        {
+          "name": "גרנד הנדסה גשרים ובנים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 106
+        }
+      ]
+    },
+    {
+      "normalized_name": "ד א ל הנדסה בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ד.א.ל הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 41
+        },
+        {
+          "name": "ד.א.ל הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 73
+        }
+      ]
+    },
+    {
+      "normalized_name": "דב שוורץ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "דב שוורץ",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 539
+        },
+        {
+          "name": "דב שוורץ",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 545
+        },
+        {
+          "name": "דב שוורץ",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 559
+        }
+      ]
+    },
+    {
+      "normalized_name": "דוד אלחנתי אדריכלות נוף בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "דוד אלחנתי אדריכלות נוף בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 17
+        },
+        {
+          "name": "דוד אלחנתי אדריכלות נוף בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 212
+        }
+      ]
+    },
+    {
+      "normalized_name": "דור טכנולוגיות",
+      "rows": 8,
+      "examples": [
+        {
+          "name": "דור טכנולוגיות",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 28
+        },
+        {
+          "name": "דור טכנולוגיות",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 29
+        },
+        {
+          "name": "דור טכנולוגיות",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 30
+        },
+        {
+          "name": "דור טכנולוגיות",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 31
+        },
+        {
+          "name": "דור טכנולוגיות",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 32
+        }
+      ]
+    },
+    {
+      "normalized_name": "דורון אשל מהנדסים יועצים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "דורון אשל מהנדסים יועצים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "18",
+          "file": "consultant_app/additional_import.csv",
+          "line": 342
+        },
+        {
+          "name": "דורון אשל מהנדסים יועצים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "28",
+          "file": "consultant_app/additional_import.csv",
+          "line": 379
+        }
+      ]
+    },
+    {
+      "normalized_name": "דקר בניין והנדסה בע מ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "דקר בניין והנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 245
+        },
+        {
+          "name": "דקר בניין והנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 282
+        },
+        {
+          "name": "דקר בניין והנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 291
+        },
+        {
+          "name": "דקר בניין והנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "16",
+          "file": "consultant_app/additional_import.csv",
+          "line": 331
+        }
+      ]
+    },
+    {
+      "normalized_name": "הוד הנדסה",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "הוד הנדסה",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 119
+        },
+        {
+          "name": "הוד הנדסה",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 175
+        },
+        {
+          "name": "הוד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 498
+        },
+        {
+          "name": "הוד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 506
+        },
+        {
+          "name": "הוד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 558
+        }
+      ]
+    },
+    {
+      "normalized_name": "הוד הנדסה ובניה ירושלים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "הוד הנדסה ובניה ירושלים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 255
+        },
+        {
+          "name": "הוד הנדסה ובניה ירושלים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "19",
+          "file": "consultant_app/additional_import.csv",
+          "line": 346
+        }
+      ]
+    },
+    {
+      "normalized_name": "העין השלישית",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "העין השלישית",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 428
+        },
+        {
+          "name": "העין השלישית",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 508
+        },
+        {
+          "name": "העין השלישית",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 512
+        },
+        {
+          "name": "העין השלישית",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 524
+        }
+      ]
+    },
+    {
+      "normalized_name": "וינפלד מיכאל חברה להנדסה בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "וינפלד מיכאל חברה להנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 27
+        },
+        {
+          "name": "וינפלד מיכאל חברה להנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 137
+        }
+      ]
+    },
+    {
+      "normalized_name": "חב ד ר אליה בן שבת הנדסת תחבורה תנועה ובקרה בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "חב' ד\"ר אליה בן שבת הנדסת תחבורה תנועה ובקרה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 232
+        },
+        {
+          "name": "חב' ד\"ר אליה בן שבת הנדסת תחבורה תנועה ובקרה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 289
+        },
+        {
+          "name": "חב' ד\"ר אליה בן שבת הנדסת תחבורה תנועה ובקרה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 320
+        }
+      ]
+    },
+    {
+      "normalized_name": "חברת אייקס בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "חברת אייקס בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 63
+        },
+        {
+          "name": "חברת אייקס בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 82
+        }
+      ]
+    },
+    {
+      "normalized_name": "חברת גיאו סטראק בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "חברת גיאו-סטראק בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "18",
+          "file": "consultant_app/additional_import.csv",
+          "line": 338
+        },
+        {
+          "name": "חברת גיאו-סטראק בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "28",
+          "file": "consultant_app/additional_import.csv",
+          "line": 378
+        }
+      ]
+    },
+    {
+      "normalized_name": "טופז חשמל",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "טופז חשמל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 514
+        },
+        {
+          "name": "טופז חשמל",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 527
+        }
+      ]
+    },
+    {
+      "normalized_name": "טרסות פיתוח בע מ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "טרסות פיתוח בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 221
+        },
+        {
+          "name": "טרסות פיתוח בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 226
+        },
+        {
+          "name": "טרסות פיתוח בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 248
+        },
+        {
+          "name": "טרסות פיתוח בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "25",
+          "file": "consultant_app/additional_import.csv",
+          "line": 365
+        }
+      ]
+    },
+    {
+      "normalized_name": "יוני מרכוס תכנון וייעוץ הנדסי",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "יוני מרכוס תכנון וייעוץ הנדסי",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 276
+        },
+        {
+          "name": "יוני מרכוס תכנון וייעוץ הנדסי",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "26",
+          "file": "consultant_app/additional_import.csv",
+          "line": 367
+        }
+      ]
+    },
+    {
+      "normalized_name": "יניב גורביץ מהנדסים",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "יניב גורביץ מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 416
+        },
+        {
+          "name": "יניב גורביץ מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 511
+        },
+        {
+          "name": "יניב גורביץ מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 569
+        },
+        {
+          "name": "יניב גורביץ מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 571
+        },
+        {
+          "name": "יניב גורביץ מהנדסים",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 581
+        }
+      ]
+    },
+    {
+      "normalized_name": "ירדן הנדסה בעמ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "ירדן הנדסה בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 45
+        },
+        {
+          "name": "ירדן הנדסה בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 87
+        },
+        {
+          "name": "ירדן הנדסה בעמ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 104
+        }
+      ]
+    },
+    {
+      "normalized_name": "ירדן תנועה וכבישים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ירדן תנועה וכבישים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 234
+        },
+        {
+          "name": "ירדן תנועה וכבישים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 323
+        }
+      ]
+    },
+    {
+      "normalized_name": "ירון עברון הנדסה בע מ",
+      "rows": 7,
+      "examples": [
+        {
+          "name": "ירון עברון הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 43
+        },
+        {
+          "name": "ירון עברון הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 62
+        },
+        {
+          "name": "ירון עברון הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 78
+        },
+        {
+          "name": "ירון עברון הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 243
+        },
+        {
+          "name": "ירון עברון הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "16",
+          "file": "consultant_app/additional_import.csv",
+          "line": 329
+        }
+      ]
+    },
+    {
+      "normalized_name": "ירון שמעוני שחם מהנדסים יועצים בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ירון-שמעוני-שחם מהנדסים יועצים בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 188
+        },
+        {
+          "name": "ירון-שמעוני-שחם מהנדסים יועצים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 256
+        }
+      ]
+    },
+    {
+      "normalized_name": "ל מ אפיק הנדסה אזרחית בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ל.מ אפיק הנדסה אזרחית בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 266
+        },
+        {
+          "name": "ל.מ אפיק הנדסה אזרחית בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "27",
+          "file": "consultant_app/additional_import.csv",
+          "line": 372
+        }
+      ]
+    },
+    {
+      "normalized_name": "לבטח",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "לבטח",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 504
+        },
+        {
+          "name": "לבטח",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 518
+        },
+        {
+          "name": "לבטח",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 530
+        },
+        {
+          "name": "לבטח",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 547
+        }
+      ]
+    },
+    {
+      "normalized_name": "לביד הנדסה",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "לביד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 430
+        },
+        {
+          "name": "לביד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 522
+        },
+        {
+          "name": "לביד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 529
+        },
+        {
+          "name": "לביד הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 583
+        }
+      ]
+    },
+    {
+      "normalized_name": "ליאור לוריה ישוומי מחשב בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "ליאור לוריה ישוומי מחשב בע\"מ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 36
+        },
+        {
+          "name": "ליאור לוריה ישוומי מחשב בע\"מ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 37
+        },
+        {
+          "name": "ליאור לוריה ישוומי מחשב בע\"מ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 38
+        }
+      ]
+    },
+    {
+      "normalized_name": "ליעד שמש",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ליעד שמש",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 145
+        },
+        {
+          "name": "ליעד שמש",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 418
+        }
+      ]
+    },
+    {
+      "normalized_name": "למעי יצחק",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "למעי יצחק",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 501
+        },
+        {
+          "name": "למעי יצחק",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 509
+        }
+      ]
+    },
+    {
+      "normalized_name": "מ זהר הנדסה בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "מ.זהר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 240
+        },
+        {
+          "name": "מ.זהר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 315
+        },
+        {
+          "name": "מ.זהר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 326
+        }
+      ]
+    },
+    {
+      "normalized_name": "מ ס ארזים הנדסה",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "מ.ס. ארזים הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 388
+        },
+        {
+          "name": "מ.ס. ארזים הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 492
+        },
+        {
+          "name": "מ.ס. ארזים הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 520
+        },
+        {
+          "name": "מ.ס. ארזים הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 540
+        },
+        {
+          "name": "מ.ס. ארזים הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 561
+        }
+      ]
+    },
+    {
+      "normalized_name": "מאי רודס",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "מאי רודס",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 53
+        },
+        {
+          "name": "מאי רודס",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 102
+        }
+      ]
+    },
+    {
+      "normalized_name": "מאי רודס מהנדסים בע מ",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "מאי רודס - מהנדסים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 229
+        },
+        {
+          "name": "מאי רודס - מהנדסים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 288
+        },
+        {
+          "name": "מאי רודס - מהנדסים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 317
+        },
+        {
+          "name": "מאי רודס - מהנדסים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "21",
+          "file": "consultant_app/additional_import.csv",
+          "line": 350
+        },
+        {
+          "name": "מאי רודס - מהנדסים בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "25",
+          "file": "consultant_app/additional_import.csv",
+          "line": 359
+        }
+      ]
+    },
+    {
+      "normalized_name": "מומנתקן",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "מומנתקן",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 533
+        },
+        {
+          "name": "מומנתקן",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 538
+        },
+        {
+          "name": "מומנתקן",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 544
+        },
+        {
+          "name": "מומנתקן",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 551
+        }
+      ]
+    },
+    {
+      "normalized_name": "מומנתקן הנדסת איכות ובטיחות בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "מומנתקן הנדסת איכות ובטיחות בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 153
+        },
+        {
+          "name": "מומנתקן הנדסת איכות ובטיחות בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 228
+        },
+        {
+          "name": "מומנתקן הנדסת איכות ובטיחות בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "17",
+          "file": "consultant_app/additional_import.csv",
+          "line": 334
+        }
+      ]
+    },
+    {
+      "normalized_name": "מור 450",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "מור 450",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 390
+        },
+        {
+          "name": "מור 450",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 574
+        },
+        {
+          "name": "מור 450",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "14",
+          "file": "consultant_app/additional_import.csv",
+          "line": 587
+        }
+      ]
+    },
+    {
+      "normalized_name": "מיכאל פוסטלניק ייעוץ הנדסי בע מ",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "מיכאל פוסטלניק ייעוץ הנדסי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 246
+        },
+        {
+          "name": "מיכאל פוסטלניק ייעוץ הנדסי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "16",
+          "file": "consultant_app/additional_import.csv",
+          "line": 333
+        },
+        {
+          "name": "מיכאל פוסטלניק ייעוץ הנדסי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "21",
+          "file": "consultant_app/additional_import.csv",
+          "line": 353
+        },
+        {
+          "name": "מיכאל פוסטלניק ייעוץ הנדסי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "25",
+          "file": "consultant_app/additional_import.csv",
+          "line": 364
+        },
+        {
+          "name": "מיכאל פוסטלניק ייעוץ הנדסי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "28",
+          "file": "consultant_app/additional_import.csv",
+          "line": 381
+        }
+      ]
+    },
+    {
+      "normalized_name": "מיכאל פסטלניק בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "מיכאל פסטלניק בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 70
+        },
+        {
+          "name": "מיכאל פסטלניק בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 99
+        }
+      ]
+    },
+    {
+      "normalized_name": "מילר בלום תכנון סביבתי בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "מילר בלום תכנון סביבתי בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 13
+        },
+        {
+          "name": "מילר בלום תכנון סביבתי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 220
+        },
+        {
+          "name": "מילר בלום תכנון סביבתי בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 225
+        }
+      ]
+    },
+    {
+      "normalized_name": "מסר טכנולויות מידע בעמ",
+      "rows": 6,
+      "examples": [
+        {
+          "name": "מסר טכנולויות מידע בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 39
+        },
+        {
+          "name": "מסר טכנולויות מידע בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 40
+        },
+        {
+          "name": "מסר טכנולויות מידע בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "2",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 41
+        },
+        {
+          "name": "מסר טכנולויות מידע בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 42
+        },
+        {
+          "name": "מסר טכנולויות מידע בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 43
+        }
+      ]
+    },
+    {
+      "normalized_name": "מרשל הנדסה בע מ",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "מרשל הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 247
+        },
+        {
+          "name": "מרשל הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 249
+        },
+        {
+          "name": "מרשל הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 294
+        },
+        {
+          "name": "מרשל הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "16",
+          "file": "consultant_app/additional_import.csv",
+          "line": 332
+        },
+        {
+          "name": "מרשל הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "20",
+          "file": "consultant_app/additional_import.csv",
+          "line": 349
+        }
+      ]
+    },
+    {
+      "normalized_name": "משה אלבוחר שירותי הנדסה בע מ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "משה אלבוחר שירותי הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 36
+        },
+        {
+          "name": "משה אלבוחר שירותי הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 77
+        },
+        {
+          "name": "משה אלבוחר שירותי הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 230
+        },
+        {
+          "name": "משה אלבוחר שירותי הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "15",
+          "file": "consultant_app/additional_import.csv",
+          "line": 318
+        }
+      ]
+    },
+    {
+      "normalized_name": "משה בנאבו",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "משה בנאבו",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 28
+        },
+        {
+          "name": "משה בנאבו",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 108
+        },
+        {
+          "name": "משה בנאבו",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 387
+        }
+      ]
+    },
+    {
+      "normalized_name": "משה בנאבו הנדסה בע מ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "משה בנאבו הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 125
+        },
+        {
+          "name": "משה בנאבו הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "9",
+          "file": "consultant_app/additional_import.csv",
+          "line": 281
+        },
+        {
+          "name": "משה בנאבו הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 297
+        },
+        {
+          "name": "משה בנאבו הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "27",
+          "file": "consultant_app/additional_import.csv",
+          "line": 373
+        }
+      ]
+    },
+    {
+      "normalized_name": "משה סעדה",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "משה סעדה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 541
+        },
+        {
+          "name": "משה סעדה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 546
+        },
+        {
+          "name": "משה סעדה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 564
+        }
+      ]
+    },
+    {
+      "normalized_name": "מתודה",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "מתודה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 45
+        },
+        {
+          "name": "מתודה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 46
+        }
+      ]
+    },
+    {
+      "normalized_name": "מתן בראשי",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "מתן בראשי",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 29
+        },
+        {
+          "name": "מתן בראשי",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 127
+        }
+      ]
+    },
+    {
+      "normalized_name": "ניסים שוקר",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "ניסים שוקר",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 415
+        },
+        {
+          "name": "ניסים שוקר",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 580
+        }
+      ]
+    },
+    {
+      "normalized_name": "נעים בדרך",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "נעים בדרך",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 205
+        },
+        {
+          "name": "נעים בדרך",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 521
+        }
+      ]
+    },
+    {
+      "normalized_name": "סולבר פתרונות לקומיוניקציה",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "סולבר פתרונות לקומיוניקציה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 47
+        },
+        {
+          "name": "סולבר פתרונות לקומיוניקציה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 48
+        },
+        {
+          "name": "סולבר פתרונות לקומיוניקציה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 49
+        }
+      ]
+    },
+    {
+      "normalized_name": "סנסקום יעוץ וניהול פרויקטים",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "סנסקום יעוץ וניהול פרויקטים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 51
+        },
+        {
+          "name": "סנסקום יעוץ וניהול פרויקטים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 52
+        },
+        {
+          "name": "סנסקום יעוץ וניהול פרויקטים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 53
+        },
+        {
+          "name": "סנסקום יעוץ וניהול פרויקטים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 54
+        },
+        {
+          "name": "סנסקום יעוץ וניהול פרויקטים",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 55
+        }
+      ]
+    },
+    {
+      "normalized_name": "סקאפי",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "סקאפי",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 401
+        },
+        {
+          "name": "סקאפי",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 577
+        }
+      ]
+    },
+    {
+      "normalized_name": "ע הנדסת תנועה אינג עבדאללה חוואש",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "ע. הנדסת תנועה אינג' עבדאללה חוואש",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 42
+        },
+        {
+          "name": "ע. הנדסת תנועה אינג' עבדאללה חוואש",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 74
+        },
+        {
+          "name": "ע.הנדסת תנועה אינג' עבדאללה חוואש",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 236
+        }
+      ]
+    },
+    {
+      "normalized_name": "עלא ברהום",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "עלא ברהום",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 179
+        },
+        {
+          "name": "עלא ברהום",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 554
+        },
+        {
+          "name": "עלא ברהום",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 572
+        }
+      ]
+    },
+    {
+      "normalized_name": "עמירם הנדסה",
+      "rows": 7,
+      "examples": [
+        {
+          "name": "עמירם הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 395
+        },
+        {
+          "name": "עמירם הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "8",
+          "file": "consultant_app/additional_import.csv",
+          "line": 510
+        },
+        {
+          "name": "עמירם הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 534
+        },
+        {
+          "name": "עמירם הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 552
+        },
+        {
+          "name": "עמירם הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 562
+        }
+      ]
+    },
+    {
+      "normalized_name": "פלדמן מרינה",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "פלדמן מרינה",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 84
+        },
+        {
+          "name": "פלדמן מרינה",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 103
+        }
+      ]
+    },
+    {
+      "normalized_name": "צ סלר סולומון בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "צ'סלר סולומון בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 219
+        },
+        {
+          "name": "צ'סלר סולומון בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 237
+        }
+      ]
+    },
+    {
+      "normalized_name": "קבוצת באדר הנדסה",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "קבוצת באדר הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 407
+        },
+        {
+          "name": "קבוצת באדר הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 496
+        },
+        {
+          "name": "קבוצת באדר הנדסה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 567
+        }
+      ]
+    },
+    {
+      "normalized_name": "קבוצת בדר הנדסה בע מ",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "קבוצת בדר הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 110
+        },
+        {
+          "name": "קבוצת בדר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "10",
+          "file": "consultant_app/additional_import.csv",
+          "line": 287
+        },
+        {
+          "name": "קבוצת בדר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "11",
+          "file": "consultant_app/additional_import.csv",
+          "line": 295
+        },
+        {
+          "name": "קבוצת בדר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "23",
+          "file": "consultant_app/additional_import.csv",
+          "line": 356
+        },
+        {
+          "name": "קבוצת בדר הנדסה בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "24",
+          "file": "consultant_app/additional_import.csv",
+          "line": 358
+        }
+      ]
+    },
+    {
+      "normalized_name": "קפאו פתרנות מיחשוב בעמ",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "קפאו פתרנות מיחשוב בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 58
+        },
+        {
+          "name": "קפאו פתרנות מיחשוב בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 59
+        },
+        {
+          "name": "קפאו פתרנות מיחשוב בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 60
+        },
+        {
+          "name": "קפאו פתרנות מיחשוב בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "3",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 61
+        }
+      ]
+    },
+    {
+      "normalized_name": "קראוס",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "קראוס",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 168
+        },
+        {
+          "name": "קראוס",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 433
+        }
+      ]
+    },
+    {
+      "normalized_name": "קראוס חן",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "קראוס חן",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 32
+        },
+        {
+          "name": "קראוס חן",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 58
+        },
+        {
+          "name": "קראוס חן",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 67
+        }
+      ]
+    },
+    {
+      "normalized_name": "רולי פלד",
+      "rows": 5,
+      "examples": [
+        {
+          "name": "רולי פלד",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 60
+        },
+        {
+          "name": "רולי פלד",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "3",
+          "file": "consultant_app/additional_import.csv",
+          "line": 69
+        },
+        {
+          "name": "רולי פלד",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 100
+        },
+        {
+          "name": "רולי פלד",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 233
+        },
+        {
+          "name": "רולי פלד",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "25",
+          "file": "consultant_app/additional_import.csv",
+          "line": 361
+        }
+      ]
+    },
+    {
+      "normalized_name": "רמא הגליל הנדסה בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "רמא הגליל הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 182
+        },
+        {
+          "name": "רמא הגליל הנדסה בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "7",
+          "file": "consultant_app/additional_import.csv",
+          "line": 191
+        }
+      ]
+    },
+    {
+      "normalized_name": "שביל הנדסת תנועה ותחבורה",
+      "rows": 4,
+      "examples": [
+        {
+          "name": "שביל הנדסת תנועה ותחבורה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "5",
+          "file": "consultant_app/additional_import.csv",
+          "line": 244
+        },
+        {
+          "name": "שביל הנדסת תנועה ותחבורה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "16",
+          "file": "consultant_app/additional_import.csv",
+          "line": 330
+        },
+        {
+          "name": "שביל הנדסת תנועה ותחבורה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "21",
+          "file": "consultant_app/additional_import.csv",
+          "line": 352
+        },
+        {
+          "name": "שביל הנדסת תנועה ותחבורה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "25",
+          "file": "consultant_app/additional_import.csv",
+          "line": 363
+        }
+      ]
+    },
+    {
+      "normalized_name": "שור יוחנן",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "שור יוחנן",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 392
+        },
+        {
+          "name": "שור יוחנן",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 495
+        }
+      ]
+    },
+    {
+      "normalized_name": "שטראוס אסטרטגיה",
+      "rows": 6,
+      "examples": [
+        {
+          "name": "שטראוס אסטרטגיה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 62
+        },
+        {
+          "name": "שטראוס אסטרטגיה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 63
+        },
+        {
+          "name": "שטראוס אסטרטגיה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 64
+        },
+        {
+          "name": "שטראוס אסטרטגיה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 65
+        },
+        {
+          "name": "שטראוס אסטרטגיה",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 66
+        }
+      ]
+    },
+    {
+      "normalized_name": "שלהבת מערכות מידע בע מ",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "שלהבת מערכות מידע בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "17",
+          "file": "consultant_app/additional_import.csv",
+          "line": 337
+        },
+        {
+          "name": "שלהבת מערכות מידע בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "19",
+          "file": "consultant_app/additional_import.csv",
+          "line": 347
+        },
+        {
+          "name": "שלהבת מערכות מידע בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "27",
+          "file": "consultant_app/additional_import.csv",
+          "line": 377
+        }
+      ]
+    },
+    {
+      "normalized_name": "שלמה ברסקה",
+      "rows": 3,
+      "examples": [
+        {
+          "name": "שלמה ברסקה",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "19",
+          "file": "consultant_app/additional_import.csv",
+          "line": 345
+        },
+        {
+          "name": "שלמה ברסקה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "6",
+          "file": "consultant_app/additional_import.csv",
+          "line": 478
+        },
+        {
+          "name": "שלמה ברסקה",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "12",
+          "file": "consultant_app/additional_import.csv",
+          "line": 557
+        }
+      ]
+    },
+    {
+      "normalized_name": "שמואל גפן",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "שמואל גפן",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 2
+        },
+        {
+          "name": "שמואל גפן",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "4",
+          "file": "consultant_app/additional_import.csv",
+          "line": 105
+        }
+      ]
+    },
+    {
+      "normalized_name": "שריג וקסמן אדריכלות נוף בע מ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "שריג וקסמן אדריכלות נוף בע\"מ",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 8
+        },
+        {
+          "name": "שריג וקסמן אדריכלות נוף בע\"מ",
+          "registry": "אגף שיפור פני העיר",
+          "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 216
+        }
+      ]
+    },
+    {
+      "normalized_name": "תדשיין פרו",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "תדשיין פרו",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "2",
+          "file": "consultant_app/additional_import.csv",
+          "line": 412
+        },
+        {
+          "name": "תדשיין פרו",
+          "registry": "תחומים פיזיים מינהל החינוך",
+          "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/מאגר-2024.pdf",
+          "source_page": "13",
+          "file": "consultant_app/additional_import.csv",
+          "line": 568
+        }
+      ]
+    },
+    {
+      "normalized_name": "תימור עיצוב נוף",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "תימור עיצוב נוף",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 9
+        },
+        {
+          "name": "תימור עיצוב נוף",
+          "registry": "תחבורה ופיתוח תשתיות",
+          "source_url": "https://www.jerusalem.muni.il/media/3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+          "source_page": "1",
+          "file": "consultant_app/additional_import.csv",
+          "line": 22
+        }
+      ]
+    },
+    {
+      "normalized_name": "תמר שירותי מערכות הנדסיות ותקשורת בעמ",
+      "rows": 2,
+      "examples": [
+        {
+          "name": "תמר שירותי מערכות הנדסיות ותקשורת בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 68
+        },
+        {
+          "name": "תמר שירותי מערכות הנדסיות ותקשורת בעמ",
+          "registry": "יועצי מחשוב ומערכות מידע",
+          "source_url": "https://www.jerusalem.muni.il/media/he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+          "source_page": "4",
+          "file": "consultant_app/suppliers_import.csv",
+          "line": 69
+        }
+      ]
+    }
+  ],
+  "issues": [],
+  "notice": "Name matches are review candidates only; no records were merged."
+}

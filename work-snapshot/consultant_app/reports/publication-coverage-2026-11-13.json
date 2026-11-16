@@ -1,0 +1,776 @@
+{
+  "publication_count": 50,
+  "publications": [
+    {
+      "name": "מאגר יועצים אגף תחבורה ופיתוח תשתיות",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "אגף תחבורה ופיתוח תשתיות",
+      "updated": "13/10/26",
+      "media_path": "3sydompm/מאגר-יועצים-מאושר-לשנת-2025-2027.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/3sydompm/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9E%D7%90%D7%95%D7%A9%D7%A8-%D7%9C%D7%A9%D7%A0%D7%AA-2025-2027.pdf",
+      "imported_rows": 210,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר-יועצים-מאושר-תחבורה ופיתוח תשתיות-לשנת-2025-2027.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "d6b68dfc5676268ae230b3118b51faa4eff3d5fb41a03d30a65c357cf95ccf0d",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "רסטורטורים/משמרים - פיסול במרחב הציבורי",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "אגף תרבות ואמנויות",
+      "updated": "11/10/26",
+      "media_path": "wftle0ze/פרוטוקול-קול-קורא-מאגר-רסטורטורים-ומשמרים.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/wftle0ze/%D7%A4%D7%A8%D7%95%D7%98%D7%95%D7%A7%D7%95%D7%9C-%D7%A7%D7%95%D7%9C-%D7%A7%D7%95%D7%A8%D7%90-%D7%9E%D7%90%D7%92%D7%A8-%D7%A8%D7%A1%D7%98%D7%95%D7%A8%D7%98%D7%95%D7%A8%D7%99%D7%9D-%D7%95%D7%9E%D7%A9%D7%9E%D7%A8%D7%99%D7%9D.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/פרוטוקול-קול-קורא-מאגר-רסטורטורים-ומשמרים.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "653a13de20adb938421113e7172e6ea27e3316c04557ad3a666a1c68c129d4ba",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים",
+      "administration": "מינהל תפעול",
+      "department": "אגף שיפור פני העיר",
+      "updated": "22/09/26",
+      "media_path": "0xrfvbbn/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/0xrfvbbn/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%90%D7%92%D7%A3-%D7%A9%D7%99%D7%A4%D7%95%D7%A8-%D7%A4%D7%A0%D7%99-%D7%94%D7%A2%D7%99%D7%A8.pdf",
+      "imported_rows": 170,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר-יועצים-אגף-שיפור-פני-העיר.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "ebee2a71760826bc0bb23ba920c8c4c67bb898fb338a68e4493dc5ab066eb3c4",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "רשימת מאגר משרדי יחסי ציבור דוברות והסברה",
+      "administration": "מינהל כללי",
+      "department": "דוברות והסברה",
+      "updated": "04/08/26",
+      "media_path": "w2megjnt/רשימת-מאגר-משרדי-יחצ-בתוקף-עד-3182027.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/w2megjnt/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%90%D7%92%D7%A8-%D7%9E%D7%A9%D7%A8%D7%93%D7%99-%D7%99%D7%97%D7%A6-%D7%91%D7%AA%D7%95%D7%A7%D7%A3-%D7%A2%D7%93-3182027.pdf",
+      "imported_rows": 24,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/רשימת-מאגר-משרדי-יחצ-בתוקף-עד-3182027.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "e825511bf37675cadb5aa6b9e321c64ac490800fdc031bc9a07c1035964b4466",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "מאגר יועצים בתחומים פיזיים - מינהל החינוך",
+      "administration": "מינהל חינוך",
+      "department": "הנהלת מינהל חינוך",
+      "updated": "10/06/26",
+      "media_path": "tecnwz4z/מאגר-2024.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/tecnwz4z/%D7%9E%D7%90%D7%92%D7%A8-2024.pdf",
+      "imported_rows": 210,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר יועצים תחומים פיזיים מינהל החינוך-2024.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "1076098314841f51216af831e36df9c17feb52313996063c6c6d7f6cb4c0b823",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "יועצי מיחשוב ומערכות מידע",
+      "administration": "מינהל אסטרטגיה וחדשנות",
+      "department": "אגף מחשוב ומערכות מידע",
+      "updated": "09/06/26",
+      "media_path": "he0nee24/רשימת-יועצים-לפרסום-באינטרנט.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/he0nee24/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9C%D7%A4%D7%A8%D7%A1%D7%95%D7%9D-%D7%91%D7%90%D7%99%D7%A0%D7%98%D7%A8%D7%A0%D7%98.pdf",
+      "imported_rows": 68,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/רשימת-יועצים-מחשוב ומערכות מידע.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "c41b4cc8ea6a960961240bb71b282cbe6e9dab273331c8b8aabaac48d25e7fdd",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "מאגר מרצים אוניברסיטה עממית",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "אגף תרבות ואמנויות",
+      "updated": "30/04/26",
+      "media_path": "ciwlkdzx/מאגר-מרצים-מאושר-לא-לעריכה.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/ciwlkdzx/%D7%9E%D7%90%D7%92%D7%A8-%D7%9E%D7%A8%D7%A6%D7%99%D7%9D-%D7%9E%D7%90%D7%95%D7%A9%D7%A8-%D7%9C%D7%90-%D7%9C%D7%A2%D7%A8%D7%99%D7%9B%D7%94.pdf",
+      "imported_rows": 0,
+      "staged_rows": 57,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר-מרצים-אוניברסיטה עממית.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "d041e40ac94e4455e3c2eb06ca3b027858e05fe7b3070c202c8bf7cf8eab4d02",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר משרדי רו\"ח למינהל הכספי",
+      "administration": "מינהל כספי",
+      "department": "אגף חשבות וניהול פיננסי",
+      "updated": "19/01/26",
+      "media_path": "lbajvgl4/רשימת-הנכללים-במאגר-לפי-קטגוריות.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/lbajvgl4/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%94%D7%A0%D7%9B%D7%9C%D7%9C%D7%99%D7%9D-%D7%91%D7%9E%D7%90%D7%92%D7%A8-%D7%9C%D7%A4%D7%99-%D7%A7%D7%98%D7%92%D7%95%D7%A8%D7%99%D7%95%D7%AA.pdf",
+      "imported_rows": 11,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר שירותי ראיית חשבון למינהל הכספי.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "d145f68b742245dc73882468e55638ff7148aa0672b9138b3c80893078e385d9",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "מאגר להרחבת מוסדות להשכלה גבוהה למתן שירותי לימודים אקדמיים ומסלולי הנדסאים",
+      "administration": "מינהל משאבי אנוש ומינהל עירוני",
+      "department": "אגף פיתוח הון האנושי",
+      "updated": "07/12/25",
+      "media_path": "fhcajuaq/רשימת-מוסדות-לימוד-שאושרו-להרחבת-המאגר.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/fhcajuaq/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%95%D7%A1%D7%93%D7%95%D7%AA-%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%A9%D7%90%D7%95%D7%A9%D7%A8%D7%95-%D7%9C%D7%94%D7%A8%D7%97%D7%91%D7%AA-%D7%94%D7%9E%D7%90%D7%92%D7%A8.pdf",
+      "imported_rows": 0,
+      "staged_rows": 5,
+      "local_candidates": [
+        {
+          "local_file": "sources/רשימת-מוסדות-לימוד-הרחבת המאגר מוסדות להשכלה גבוהה : להנדסאים.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "a2f06adbf86e817f87bc859338ae85caff4dce7aec8dc438688ab394224b327b",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים- האגף למדיניות ותכנון אסטרטגי",
+      "administration": "מינהל כללי",
+      "department": "אגף למדיניות ותכנון אסטרטגי",
+      "updated": "12/08/25",
+      "media_path": "j1yeqolc/מאגר-יועצים-אתר-עירוני.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/j1yeqolc/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%90%D7%AA%D7%A8-%D7%A2%D7%99%D7%A8%D7%95%D7%A0%D7%99.pdf",
+      "imported_rows": 0,
+      "staged_rows": 35,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר יועצים - האגף למדיניות ותכנון אסטרטגי.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "ba762b04f976d7701d5fcb002521c030a7c4f259de4a321441710911a65db5a8",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר מוסדות להשכלה גבוהה למתן שירותי לימודים אקדמיים לעובדי עיריית ירושלים",
+      "administration": "מינהל משאבי אנוש ומינהל עירוני",
+      "department": "אגף פיתוח הון האנושי",
+      "updated": "04/08/25",
+      "media_path": "zlsj0sog/מאגר-מוסדות-להשכלה-גבוהה-למתן-שירותי-לימודים-אקדמיים-לעובדי-עיריית-ירושלים.xlsx",
+      "source_url": "https://www.jerusalem.muni.il/media/zlsj0sog/%D7%9E%D7%90%D7%92%D7%A8-%D7%9E%D7%95%D7%A1%D7%93%D7%95%D7%AA-%D7%9C%D7%94%D7%A9%D7%9B%D7%9C%D7%94-%D7%92%D7%91%D7%95%D7%94%D7%94-%D7%9C%D7%9E%D7%AA%D7%9F-%D7%A9%D7%99%D7%A8%D7%95%D7%AA%D7%99-%D7%9C%D7%99%D7%9E%D7%95%D7%93%D7%99%D7%9D-%D7%90%D7%A7%D7%93%D7%9E%D7%99%D7%99%D7%9D-%D7%9C%D7%A2%D7%95%D7%91%D7%93%D7%99-%D7%A2%D7%99%D7%A8%D7%99%D7%99%D7%AA-%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D.xlsx",
+      "imported_rows": 0,
+      "staged_rows": 6,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר-מוסדות-להשכלה-גבוהה-למתן-שירותי-לימודים-אקדמיים-לעובדי-עיריית-ירושלים.xlsx",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "a9a1708154782da5107cbd27a60cf96abca02251c7ee118a278936665078ac4d",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים - אגף לוגיסטיקה",
+      "administration": "",
+      "department": "",
+      "updated": "08/05/25",
+      "media_path": "i2dexgag/מאגר-יועצים-לפרסום.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/i2dexgag/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9C%D7%A4%D7%A8%D7%A1%D7%95%D7%9D.pdf",
+      "imported_rows": 0,
+      "staged_rows": 11,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר אגף לוגיסטיקה יועצי מיזוג אוויר : יועצים לשירותים פיננסים ובדיקות שכר.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "83a5dfbd58b4b4ae71c1e2e0f9fe2c2e8db50196c06dee2775bb26c6b9ff449c",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים בתחומים פיזיים - מינהל החינוך",
+      "administration": "מינהל חינוך",
+      "department": "הנהלת מינהל חינוך",
+      "updated": "05/03/25",
+      "media_path": "lymhcxle/מאגר-2024.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/lymhcxle/%D7%9E%D7%90%D7%92%D7%A8-2024.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר יועצים בתחומים פיזיים - מינהל החינוך.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "74b113f245f0aa920841cb86a1db9c5a12f6f144af1f92457831fda7d4bca150",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר כלכלנים- ייעוץ כלכלי",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "",
+      "updated": "02/03/25",
+      "media_path": "tcbhbl5i/רשימת-יועצים-כלכלנים-2023.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/tcbhbl5i/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9B%D7%9C%D7%9B%D7%9C%D7%A0%D7%99%D7%9D-2023.pdf",
+      "imported_rows": 12,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר כלכלנים- ייעוץ כלכלי.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "c2e72753d1e2f41af730e6e4786f4dcb42c3c3e4dfd9f63281c3b297db942649",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "מאגר יועצים אגף תחבורה ופיתוח תשתיות",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "אגף תחבורה ופיתוח תשתיות",
+      "updated": "24/02/25",
+      "media_path": "wlqdetya/מאגר-יועצים-מאושר.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/wlqdetya/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9E%D7%90%D7%95%D7%A9%D7%A8.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר יועצים אגף תחבורה ופיתוח תשתיות 2025.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "e24f108a61349581c96e1be0aac30dd9a9346279342988aafe1c53c2b25663f3",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים- פיתוח המשאב האנושי",
+      "administration": "מינהל משאבי אנוש ומינהל עירוני",
+      "department": "אגף פיתוח הון האנושי",
+      "updated": "03/07/24",
+      "media_path": "1yrhrhfi/מאגר-יועצים-2024.xlsx",
+      "source_url": "https://www.jerusalem.muni.il/media/1yrhrhfi/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-2024.xlsx",
+      "imported_rows": 82,
+      "staged_rows": 0,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר יועצים- פיתוח המשאב האנושי.xlsx",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "849e83adf56f934d39f83c874bedad2db4537a586483782a62be6e614c97852e",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "rows_extracted_unverified"
+    },
+    {
+      "name": "מאגר יועצים אגף תכנון - 2024",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "אגף תכנון עיר",
+      "updated": "02/06/24",
+      "media_path": "0ebjnauh/רשימת-יועצים-2024-מאושרת.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/0ebjnauh/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-2024-%D7%9E%D7%90%D7%95%D7%A9%D7%A8%D7%AA.pdf",
+      "imported_rows": 0,
+      "staged_rows": 158,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר יועצים אגף תכנון - 2024.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "27d2fdca61de4a416c59daa97f0a277b3f51d1f195409ed1a70b621f7503f7df",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר אולמות",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "אגף תרבות ואמנויות",
+      "updated": "24/03/24",
+      "media_path": "5sadsxmp/טבלת-נתונים-למאגר-אולמות-2024.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/5sadsxmp/%D7%98%D7%91%D7%9C%D7%AA-%D7%A0%D7%AA%D7%95%D7%A0%D7%99%D7%9D-%D7%9C%D7%9E%D7%90%D7%92%D7%A8-%D7%90%D7%95%D7%9C%D7%9E%D7%95%D7%AA-2024.pdf",
+      "imported_rows": 0,
+      "staged_rows": 52,
+      "local_candidates": [
+        {
+          "local_file": "sources/טבלת-נתונים-למאגר-אולמות-2024.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "b3d678a6199d9d7a2cc359eb06b8bb6972cd8d4bdbc9428fc2ccb3c3de290867",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר מודדים",
+      "administration": "",
+      "department": "",
+      "updated": "01/08/22",
+      "media_path": "cs2lkiri/מאגר-מודדים-למחלקת-מידע-ומיפוי-באגף-לרישוי-ופיקוח.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/cs2lkiri/%D7%9E%D7%90%D7%92%D7%A8-%D7%9E%D7%95%D7%93%D7%93%D7%99%D7%9D-%D7%9C%D7%9E%D7%97%D7%9C%D7%A7%D7%AA-%D7%9E%D7%99%D7%93%D7%A2-%D7%95%D7%9E%D7%99%D7%A4%D7%95%D7%99-%D7%91%D7%90%D7%92%D7%A3-%D7%9C%D7%A8%D7%99%D7%A9%D7%95%D7%99-%D7%95%D7%A4%D7%99%D7%A7%D7%95%D7%97.pdf",
+      "imported_rows": 0,
+      "staged_rows": 7,
+      "local_candidates": [
+        {
+          "local_file": "sources/מאגר-מודדים-למחלקת-מידע-ומיפוי-באגף-לרישוי-ופיקוח.pdf",
+          "basis": "user_supplied_filename",
+          "exists": true,
+          "sha256": "0eac0f1f2d52ac3822daed4f9f8c462423c1c280ee5af8b9ffb8dc79bdbc8a6a",
+          "match_status": "candidate_needs_content_verification"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים אגף תחבורה ופיתוח תשתיות",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "אגף תחבורה ופיתוח תשתיות",
+      "updated": "30/05/22",
+      "media_path": "b5gafafy/מאגר-יועצים-מאושר.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/b5gafafy/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9E%D7%90%D7%95%D7%A9%D7%A8.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר מפעילי תוכניות במדעים טכנולוגיה וקיימות",
+      "administration": "מינהל חינוך",
+      "department": "",
+      "updated": "13/09/21",
+      "media_path": "gdkgrgpl/רשימת-ספקים-לאתר-העירוני.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/gdkgrgpl/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%A1%D7%A4%D7%A7%D7%99%D7%9D-%D7%9C%D7%90%D7%AA%D7%A8-%D7%94%D7%A2%D7%99%D7%A8%D7%95%D7%A0%D7%99.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים לאגף הספורט",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "אגף הספורט",
+      "updated": "02/08/21",
+      "media_path": "bzoezea3/sports-division-consultants-database-08-2021.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/bzoezea3/sports-division-consultants-database-08-2021.pdf",
+      "imported_rows": 0,
+      "staged_rows": 14,
+      "local_candidates": [
+        {
+          "local_file": "consultant_app/sources/municipal/2026-11-12/bzoezea3/bzoezea3.pdf",
+          "basis": "downloaded_from_municipal_link",
+          "exists": true,
+          "sha256": "7a706461cf3100ea1631c92299174faea9d0fa357e4f3f2b8cb929cfdc568ea0",
+          "match_status": "source_link_verified"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר אולמות לאירועי תרבות",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "",
+      "updated": "10/06/21",
+      "media_path": "ohil0npr/halls-database-9-6.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/ohil0npr/halls-database-9-6.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר אולמות לאירועי תרבות - אולמות מינהלים קהילתיים",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "",
+      "updated": "25/05/21",
+      "media_path": "1ypdmx3e/community-centers-halls-database.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/1ypdmx3e/community-centers-halls-database.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "יועצים בתחום חירום וביטחון",
+      "administration": "מינהל תפעול",
+      "department": "אגף חירום וביטחון",
+      "updated": "12/12/20",
+      "media_path": "jeohlnbk/emergency-and-security-consultants-12-20.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/jeohlnbk/emergency-and-security-consultants-12-20.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר ספקים ליווי בתי ספר",
+      "administration": "מינהל חינוך",
+      "department": "",
+      "updated": "22/11/20",
+      "media_path": "xp1d23xo/accompanying-school-providers.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/xp1d23xo/accompanying-school-providers.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים בתחום רכש",
+      "administration": "מינהל כספי",
+      "department": "רכש ואספקה",
+      "updated": "22/11/20",
+      "media_path": "yhujzk3y/purchasing-department.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/yhujzk3y/purchasing-department.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר המרצים של מחלקת ההדרכה",
+      "administration": "מינהל משאבי אנוש ומינהל עירוני",
+      "department": "אגף משאבי אנוש",
+      "updated": "",
+      "media_path": "glndgagk/pool-of-lecturers2020.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/glndgagk/pool-of-lecturers2020.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים כלכליים",
+      "administration": "",
+      "department": "",
+      "updated": "",
+      "media_path": "i1diyo3q/economic-advisers.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/i1diyo3q/economic-advisers.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר מרצים",
+      "administration": "מינהל משאבי אנוש ומינהל עירוני",
+      "department": "אגף משאבי אנוש",
+      "updated": "",
+      "media_path": "5ndje0ju/lecturers-training2020.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/5ndje0ju/lecturers-training2020.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצי קרקע",
+      "administration": "",
+      "department": "",
+      "updated": "",
+      "media_path": "iwvdaeu1/landconsultants1.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/iwvdaeu1/landconsultants1.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים - לשכת התאגידים",
+      "administration": "",
+      "department": "",
+      "updated": "",
+      "media_path": "kvmfoitj/corporatedatabase.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/kvmfoitj/corporatedatabase.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים – מינהלת קרית העירייה",
+      "administration": "מינהל משאבי אנוש ומינהל עירוני",
+      "department": "אגף לוגיסטיקה",
+      "updated": "",
+      "media_path": "4q1lrqbw/kiryathaerya2018.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/4q1lrqbw/kiryathaerya2018.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר היועצים למתן שירותי ייעוץ בתחום הבנייה",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "אגף הספורט",
+      "updated": "",
+      "media_path": "jk5fqejv/consulting-construction-sport-database.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/jk5fqejv/consulting-construction-sport-database.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים/מתכננים – מינהל תכנון",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "אגף תחבורה ופיתוח תשתיות",
+      "updated": "",
+      "media_path": "ddkkkw12/consultants-planners-planning-database.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/ddkkkw12/consultants-planners-planning-database.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים בתחום החירום והבטחון",
+      "administration": "מינהל תפעול",
+      "department": "אגף חירום וביטחון",
+      "updated": "",
+      "media_path": "zkif5uwv/advertisingresults-security.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/zkif5uwv/advertisingresults-security.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים בתחום מבנים מסוכנים",
+      "administration": "מינהל תכנון ותשתיות",
+      "department": "",
+      "updated": "",
+      "media_path": "deyen1gm/dangerousbuildingsr.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/deyen1gm/dangerousbuildingsr.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים למתן שליחויות",
+      "administration": "מינהל כללי",
+      "department": "",
+      "updated": "",
+      "media_path": "g4hhxwr3/results_shlicoyot.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/g4hhxwr3/results_shlicoyot.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים למתן שירותי פיקוח בקרה ייעוץ וליווי עבודות המבוצעות",
+      "administration": "מינהל תפעול",
+      "department": "",
+      "updated": "",
+      "media_path": "pqrdu4k4/consultant-database-july.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/pqrdu4k4/consultant-database-july.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים למתן שירותים בכלכלת המשפחה",
+      "administration": "מינהל לשירותי קהילה",
+      "department": "",
+      "updated": "",
+      "media_path": "toegnmgn/family-economics-database.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/toegnmgn/family-economics-database.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים לתחום התרבות והאמנות",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "",
+      "updated": "",
+      "media_path": "dn3jnavb/cultural-and-art-consultants-database.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/dn3jnavb/cultural-and-art-consultants-database.pdf",
+      "imported_rows": 0,
+      "staged_rows": 10,
+      "local_candidates": [
+        {
+          "local_file": "consultant_app/sources/municipal/2026-11-12/dn3jnavb/cultural-and-art-consultants-database.pdf",
+          "basis": "downloaded_from_municipal_link",
+          "exists": true,
+          "sha256": "9f31f7bcbc25eb4dabb3a3dc36a9c008992c834078cfe265573023746747b7c0",
+          "match_status": "source_link_verified"
+        }
+      ],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים לתחום השיווק והפרסום",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "",
+      "updated": "",
+      "media_path": "v2hj25ho/marketing-and-advertising-consultants-database.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/v2hj25ho/marketing-and-advertising-consultants-database.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מוסדות אקדמיים למתן קורסים לתלמידי תיכון",
+      "administration": "מינהל חינוך",
+      "department": "",
+      "updated": "",
+      "media_path": "b51nn1me/database-academic-institutions.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/b51nn1me/database-academic-institutions.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים אגף הספורט",
+      "administration": "מינהל תרבות חברה וספורט",
+      "department": "אגף הספורט",
+      "updated": "",
+      "media_path": "e52ndugn/sports-division-consultants-2021.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/e52ndugn/sports-division-consultants-2021.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר עורכי דין חיצוניים",
+      "administration": "מינהל כללי",
+      "department": "",
+      "updated": "",
+      "media_path": "ygkamavi/layer21.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/ygkamavi/layer21.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר עורכי דין חיצוניים - גבייה",
+      "administration": "מינהל כללי",
+      "department": "",
+      "updated": "",
+      "media_path": "3xndzccw/external-lawyers-dec-2018-gviya.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/3xndzccw/external-lawyers-dec-2018-gviya.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצי דיגיטל דוברות והסברה",
+      "administration": "מינהל כללי",
+      "department": "דוברות והסברה",
+      "updated": "",
+      "media_path": "3xpfoivu/רשימת-מאגר-יועצי-דיגיטל-דוברות-והסברה-עיריית-ירושלים.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/3xpfoivu/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99-%D7%93%D7%99%D7%92%D7%99%D7%98%D7%9C-%D7%93%D7%95%D7%91%D7%A8%D7%95%D7%AA-%D7%95%D7%94%D7%A1%D7%91%D7%A8%D7%94-%D7%A2%D7%99%D7%A8%D7%99%D7%99%D7%AA-%D7%99%D7%A8%D7%95%D7%A9%D7%9C%D7%99%D7%9D.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים, כותבי תוכן ונאומים",
+      "administration": "מינהל כללי",
+      "department": "דוברות והסברה",
+      "updated": "",
+      "media_path": "zfaf5q33/רשימת-מאגר-יועצים-כותבי-תוכן-ונאומים-מאושר-ל-3-שנים-החל-מ-1102025-ועד-3092028.pdf",
+      "source_url": "https://www.jerusalem.muni.il/media/zfaf5q33/%D7%A8%D7%A9%D7%99%D7%9E%D7%AA-%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%9B%D7%95%D7%AA%D7%91%D7%99-%D7%AA%D7%95%D7%9B%D7%9F-%D7%95%D7%A0%D7%90%D7%95%D7%9E%D7%99%D7%9D-%D7%9E%D7%90%D7%95%D7%A9%D7%A8-%D7%9C-3-%D7%A9%D7%A0%D7%99%D7%9D-%D7%94%D7%97%D7%9C-%D7%9E-1102025-%D7%95%D7%A2%D7%93-3092028.pdf",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים אגף שירות וחויית לקוח",
+      "administration": "",
+      "department": "",
+      "updated": "",
+      "media_path": "lsias2k5/מאגר-יועצים-אגף-שירות-וחויית-לקוח-2025.xlsx",
+      "source_url": "https://www.jerusalem.muni.il/media/lsias2k5/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%90%D7%92%D7%A3-%D7%A9%D7%99%D7%A8%D7%95%D7%AA-%D7%95%D7%97%D7%95%D7%99%D7%99%D7%AA-%D7%9C%D7%A7%D7%95%D7%97-2025.xlsx",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    },
+    {
+      "name": "מאגר יועצים אגף שירות וחוויית לקוח 2025",
+      "administration": "מינהל אסטרטגיה וחדשנות",
+      "department": "אגף לשירות עירוני וחווית לקוח",
+      "updated": "",
+      "media_path": "atqhmmly/מאגר-יועצים-אגף-שירות-וחויית-לקוח-2025.xlsx",
+      "source_url": "https://www.jerusalem.muni.il/media/atqhmmly/%D7%9E%D7%90%D7%92%D7%A8-%D7%99%D7%95%D7%A2%D7%A6%D7%99%D7%9D-%D7%90%D7%92%D7%A3-%D7%A9%D7%99%D7%A8%D7%95%D7%AA-%D7%95%D7%97%D7%95%D7%99%D7%99%D7%AA-%D7%9C%D7%A7%D7%95%D7%97-2025.xlsx",
+      "imported_rows": 0,
+      "staged_rows": 0,
+      "local_candidates": [],
+      "import_status": "not_in_import_files"
+    }
+  ],
+  "unmatched_import_media_ids": [],
+  "unmatched_staging_media_ids": [],
+  "notice": "Import counts do not establish completeness, validity, or database contents."
+}
