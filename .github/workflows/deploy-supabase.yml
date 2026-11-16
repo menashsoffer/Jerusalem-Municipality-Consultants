@@ -19,6 +19,12 @@ on:
         description: 'Also deploy to production after staging (asks for approval)'
         type: boolean
         default: false
+      hold:
+        description: >-
+          Migration versions to keep out of production this time, separated by spaces
+          (they are applied out of order in a later run)
+        type: string
+        default: ''
 
 permissions:
   contents: read
@@ -83,9 +89,14 @@ jobs:
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
       - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Hold back migrations
+        if: inputs.hold != ''
+        env:
+          HOLD: ${{ inputs.hold }}
+        run: scripts/deploy/hold-migrations.sh $HOLD
       - name: List what production would receive
         run: |
-          supabase db push --dry-run 2>&1 | tee plan.txt
+          supabase db push --include-all --dry-run 2>&1 | tee plan.txt
           { echo '### Pending for production'; echo '```'; cat plan.txt; echo '```'; } \
             >> "$GITHUB_STEP_SUMMARY"
 
@@ -102,6 +113,11 @@ jobs:
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
       - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
+      - name: Hold back migrations
+        if: inputs.hold != ''
+        env:
+          HOLD: ${{ inputs.hold }}
+        run: scripts/deploy/hold-migrations.sh $HOLD
       - name: Apply migrations (no dummy data)
-        run: supabase db push --yes
+        run: supabase db push --include-all --yes
       - run: scripts/deploy/deploy-functions.sh
