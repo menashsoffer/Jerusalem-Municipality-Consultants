@@ -1,0 +1,39 @@
+@layer base {
+  :root {
+    --color-text: #183543;
+    --color-surface: #fff;
+    --color-page: #f5f7f6;
+    --color-brand: #153e4a;
+    --color-brand-hover: #245965;
+    --color-on-brand: #fff;
+    --color-muted: #425d66;
+    --color-border: #72878e;
+    --color-error: #9d2727;
+    --color-subtle: #e3efec;
+    --color-backdrop: #10283099;
+    --font-body: system-ui, -apple-system, sans-serif;
+    --font-weight-label: 650;
+    --font-weight-strong: 700;
+    --font-small: 0.875rem;
+    --font-body-size: 1rem;
+    --font-title: clamp(1.75rem, 1.25rem + 2vi, 2.625rem);
+    --line-height-body: 1.6;
+    --space-xs: 0.25rem;
+    --space-sm: 0.5rem;
+    --space-md: 0.75rem;
+    --space-lg: 1rem;
+    --space-xl: 1.5rem;
+    --space-2xl: 2rem;
+    --radius-control: 0.5rem;
+    --radius-panel: 0.75rem;
+    --border-width: 0.0625rem;
+    --focus-width: 0.1875rem;
+    --control-min-size: 3rem;
+    --page-max-size: 72.5rem;
+    --dialog-max-size: 36rem;
+    --panel-min-size: 12rem;
+    --layer-raised: 1;
+    --skeleton-opacity-min: 0.45;
+    --duration-pulse: 1.2s;
+  }
+}

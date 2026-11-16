@@ -1,0 +1,80 @@
+@layer ui {
+  .panel {
+    min-block-size: var(--panel-min-size);
+    padding: var(--space-lg);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+  }
+  .dialog {
+    max-inline-size: min(var(--dialog-max-size), calc(100% - var(--space-2xl)));
+    max-block-size: calc(100dvb - var(--space-2xl));
+    padding: var(--space-xl);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    color: var(--color-text);
+    &:modal {
+      overscroll-behavior: contain;
+    }
+    &::backdrop {
+      background: var(--color-backdrop);
+      overflow: hidden;
+      overscroll-behavior: contain;
+    }
+  }
+  .skeleton {
+    display: grid;
+    gap: var(--space-lg);
+    & span {
+      block-size: var(--space-lg);
+      background: var(--color-subtle);
+      border-radius: var(--radius-control);
+    }
+  }
+  .tableRegion {
+    max-inline-size: 100%;
+    overflow: auto;
+    container-type: inline-size;
+  }
+  .table {
+    inline-size: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    text-align: start;
+    & caption {
+      text-align: start;
+      font-weight: var(--font-weight-strong);
+      padding-block: var(--space-lg);
+    }
+    & :where(th, td) {
+      padding: var(--space-lg);
+      border-block-end: var(--border-width) solid var(--color-border);
+    }
+    & thead th {
+      position: sticky;
+      inset-block-start: 0;
+      background: var(--color-subtle);
+    }
+    & tbody th {
+      position: sticky;
+      inset-inline-start: 0;
+      background: var(--color-surface);
+    }
+  }
+  @container (inline-size < 30rem) {
+    .table :where(th, td) {
+      padding: var(--space-sm);
+    }
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .skeleton {
+      animation: pulse var(--duration-pulse) ease-in-out infinite alternate;
+    }
+    @keyframes pulse {
+      to {
+        opacity: var(--skeleton-opacity-min);
+      }
+    }
+  }
+}
