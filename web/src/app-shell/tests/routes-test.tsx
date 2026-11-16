@@ -1,4 +1,4 @@
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { afterEach, describe, expect, it } from 'vitest';
 
@@ -19,6 +19,13 @@ describe('admin routes', () => {
     await waitFor(() => {
       expect(document.title).toBe('ניהול | איתור ספקים');
     });
+  });
+
+  it('focuses the current heading without changing the hash route when skipping navigation', async () => {
+    renderAt('/');
+    const heading = await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' });
+    fireEvent.click(screen.getByRole('link', { name: 'דילוג לתוכן' }));
+    expect(document.activeElement).toBe(heading);
   });
 
   it('shows a not-found screen for an unknown path, inside the shared frame', async () => {

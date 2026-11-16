@@ -5,6 +5,9 @@ export function HomePage() {
     <>
       <h1 tabIndex={-1}>מסכי הניהול</h1>
       <p>
+        <Link to="/users">משתמשים ותפקידים</Link>
+      </p>
+      <p>
         <Link to="/thresholds">אישור הסף החודשי</Link>
       </p>
       <p>
