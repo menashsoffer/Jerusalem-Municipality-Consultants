@@ -34,11 +34,11 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  SUPABASE_CLI_VERSION: 2.122.0
+  SUPABASE_CLI_VERSION: 3.1.0
 
 jobs:
   staging:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: staging
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
@@ -60,32 +60,36 @@ jobs:
           fi
           echo "ready=true" >> "$GITHUB_OUTPUT"
       - if: steps.config.outputs.ready == 'true'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7.0.1
       - if: steps.config.outputs.ready == 'true'
-        uses: supabase/setup-cli@v1
+        uses: supabase/setup-cli@v3.2.0
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
       - if: steps.config.outputs.ready == 'true'
         run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
       - name: Apply migrations and dummy data
         if: steps.config.outputs.ready == 'true'
-        run: supabase db push --include-seed --yes
+        run: supabase db push --linked --include-seed --yes
       - if: steps.config.outputs.ready == 'true'
-        run: scripts/deploy/deploy-functions.sh
+        run: |
+          # CLI v3 requires explicit consent for hosted function deployments.
+          supabase() { command supabase "$@" --yes; }
+          export -f supabase
+          scripts/deploy/deploy-functions.sh
 
   production-plan:
     if: >-
       github.event_name == 'workflow_dispatch' && inputs.production &&
       needs.staging.outputs.applied == 'true'
     needs: staging
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production-plan
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/checkout@v7.0.1
+      - uses: supabase/setup-cli@v3.2.0
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
       - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
@@ -96,20 +100,20 @@ jobs:
         run: scripts/deploy/hold-migrations.sh $HOLD
       - name: List what production would receive
         run: |
-          supabase db push --include-all --dry-run 2>&1 | tee plan.txt
+          supabase db push --linked --include-all --dry-run 2>&1 | tee plan.txt
           { echo '### Pending for production'; echo '```'; cat plan.txt; echo '```'; } \
             >> "$GITHUB_STEP_SUMMARY"
 
   production:
     needs: production-plan
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     environment: production
     env:
       SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
       SUPABASE_PROJECT_REF: ${{ vars.SUPABASE_PROJECT_REF }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: supabase/setup-cli@v1
+      - uses: actions/checkout@v7.0.1
+      - uses: supabase/setup-cli@v3.2.0
         with:
           version: ${{ env.SUPABASE_CLI_VERSION }}
       - run: supabase link --project-ref "$SUPABASE_PROJECT_REF"
@@ -119,5 +123,9 @@ jobs:
           HOLD: ${{ inputs.hold }}
         run: scripts/deploy/hold-migrations.sh $HOLD
       - name: Apply migrations (no dummy data)
-        run: supabase db push --include-all --yes
-      - run: scripts/deploy/deploy-functions.sh
+        run: supabase db push --linked --include-all --yes
+      - run: |
+          # CLI v3 requires explicit consent for hosted function deployments.
+          supabase() { command supabase "$@" --yes; }
+          export -f supabase
+          scripts/deploy/deploy-functions.sh
