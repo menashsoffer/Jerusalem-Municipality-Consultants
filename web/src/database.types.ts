@@ -415,6 +415,32 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "job_runs": {
+    Row: {
+      "id": number;
+      "job": string;
+      "started_at": string;
+      "finished_at": string | null;
+      "status": string;
+      "detail": Json;
+    };
+    Insert: {
+      "id"?: never;
+      "job": string;
+      "started_at"?: string;
+      "finished_at"?: string | null;
+      "status"?: string;
+      "detail"?: Json;
+    };
+    Update: {
+      "id"?: never;
+      "job"?: string;
+      "started_at"?: string;
+      "finished_at"?: string | null;
+      "status"?: string;
+      "detail"?: Json;
+    };
+  };
   "legacy_suppliers": {
     Row: {
       "id": number;
@@ -1103,6 +1129,50 @@ export interface PublicSchema {
       "covered_until": string | null;
       "covered_today": boolean | null;
       "days_left": number | null;
+    };
+  };
+  "threshold_proposals": {
+    Row: {
+      "id": string;
+      "valid_from": string;
+      "index_value": number;
+      "no_tender_max": number;
+      "zuta4_max": number;
+      "zuta6_max": number;
+      "source": string;
+      "status": string;
+      "created_at": string;
+      "decided_at": string | null;
+      "decided_by": string | null;
+      "threshold_id": string | null;
+    };
+    Insert: {
+      "id"?: string;
+      "valid_from": string;
+      "index_value": number;
+      "no_tender_max": number;
+      "zuta4_max": number;
+      "zuta6_max": number;
+      "source": string;
+      "status"?: string;
+      "created_at"?: string;
+      "decided_at"?: string | null;
+      "decided_by"?: string | null;
+      "threshold_id"?: string | null;
+    };
+    Update: {
+      "id"?: string;
+      "valid_from"?: string;
+      "index_value"?: number;
+      "no_tender_max"?: number;
+      "zuta4_max"?: number;
+      "zuta6_max"?: number;
+      "source"?: string;
+      "status"?: string;
+      "created_at"?: string;
+      "decided_at"?: string | null;
+      "decided_by"?: string | null;
+      "threshold_id"?: string | null;
     };
   };
   "thresholds": {

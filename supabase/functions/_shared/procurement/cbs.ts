@@ -28,6 +28,9 @@ function asRecord(value: unknown): Record<string, unknown> {
   return value as Record<string, unknown>;
 }
 
+/** The error cbsIndex throws when the month is not (yet) in the response. */
+export const MISSING_OBSERVATION = 'CBS observation is missing or ambiguous';
+
 function asArray(value: unknown): unknown[] {
   if (value === null) throw new Error('CBS observation is missing or not yet published');
   if (!Array.isArray(value)) throw new Error('Unexpected CBS response');
@@ -41,7 +44,7 @@ export function cbsIndex(response: unknown, year: number, month: number): number
   if (cpi.length !== 1) throw new Error('CBS CPI series is missing or ambiguous');
   const observations = asArray(cpi[0]?.date).map(asRecord);
   const matches = observations.filter((item) => item.year === year && item.month === month);
-  if (matches.length !== 1) throw new Error('CBS observation is missing or ambiguous');
+  if (matches.length !== 1) throw new Error(MISSING_OBSERVATION);
   const bases = asArray(matches[0]?.prevBase).map(asRecord);
   const base = bases.filter((item) => item.baseDesc === '1985 ממוצע');
   const index = base[0]?.value;
@@ -51,12 +54,18 @@ export function cbsIndex(response: unknown, year: number, month: number): number
   return index;
 }
 
-/** Produce a reviewable migration without applying it to a database. */
-export function thresholdInsert(index: number, year: number, month: number): string {
+export interface StoredCpi {
+  /** The index as the database stores it (4 decimals). */
+  readonly index: number;
+  readonly thresholds: Thresholds;
+}
+
+/** Round the index to the stored precision, refusing when rounding changes an amount. */
+export function storedCpi(index: number, year: number, month: number): StoredCpi {
   if (index >= 1_000_000) throw new Error('CBS index exceeds database precision');
-  const roundedIndex = Number(index.toFixed(4));
+  const rounded = Number(index.toFixed(4));
   const exact = thresholdsFromCbs(index, year, month);
-  const stored = thresholdsFromCbs(roundedIndex, year, month);
+  const stored = thresholdsFromCbs(rounded, year, month);
   if (
     exact.noTenderMax !== stored.noTenderMax ||
     exact.zuta4Max !== stored.zuta4Max ||
@@ -64,6 +73,12 @@ export function thresholdInsert(index: number, year: number, month: number): str
   ) {
     throw new Error('Database index precision changes a threshold; manual review required');
   }
+  return { index: rounded, thresholds: stored };
+}
+
+/** Produce a reviewable migration without applying it to a database. */
+export function thresholdInsert(index: number, year: number, month: number): string {
+  const { index: roundedIndex, thresholds: stored } = storedCpi(index, year, month);
   return (
     `insert into public.thresholds
   (valid_from, valid_until, no_tender_max, zuta4_max, zuta6_max, index_value, source, is_official)
