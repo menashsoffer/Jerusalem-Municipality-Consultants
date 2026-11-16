@@ -1,9 +1,17 @@
 import { filterCatalog, type Filters } from './catalog-filter.ts';
 import { validity, type Membership, type Supplier, type Validity } from './catalog-model.ts';
+import { ChunkRenderer } from './render-chunks.ts';
+import { beginTiming } from './data/catalog-timing.ts';
 
 let suppliers: Supplier[] = [];
 let openSupplier: ((id: string) => void) | null = null;
 let firstRender = true;
+const renderer = new ChunkRenderer();
+let firstRenderMs = '0';
+
+export function renderDuration(): string {
+  return firstRenderMs;
+}
 
 export function setOpenHandler(handler: (id: string) => void): void {
   openSupplier = handler;
@@ -159,11 +167,16 @@ export function render(): void {
   const current = filters();
   const rows = filterCatalog(suppliers, current);
   const result = el('results');
-  const fragment = document.createDocumentFragment();
-  rows.forEach((row) => {
-    fragment.append(card(row, current.today));
+  const end = beginTiming('first-render');
+  void renderer.draw(rows, (part, first) => {
+    const fragment = document.createDocumentFragment();
+    part.forEach((row) => {
+      fragment.append(card(row, current.today));
+    });
+    if (first) result.replaceChildren(fragment);
+    else result.append(fragment);
   });
-  result.replaceChildren(fragment);
+  firstRenderMs = end().toFixed(2);
   // Only the first list fades in; re-rendering on every keystroke must stay cheap.
   result.classList.toggle('intro', firstRender);
   firstRender = false;
@@ -171,6 +184,7 @@ export function render(): void {
   el('empty').hidden = rows.length > 0;
 }
 export function setSuppliers(rows: Supplier[]): void {
+  if (suppliers === rows) return;
   suppliers = rows;
   options();
   render();

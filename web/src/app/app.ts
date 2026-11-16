@@ -1,5 +1,7 @@
 /* Page startup: sign-in, access check, then the catalog from the normalized supplier model. */
 import type { Access } from '../data/access.ts';
+import type { CatalogState } from '../data/snapshot.ts';
+import { DataError } from '../data/client.ts';
 import { Page, type AppDeps } from './deps.ts';
 import { installDialogFallbacks } from './dialogs.ts';
 import { bindAuth, bindCatalog, bindTracking } from './events.ts';
@@ -34,53 +36,80 @@ function showAccess(page: Page, [title, message]: [string, string]): void {
 export async function loadData(page: Page): Promise<void> {
   const { session } = page.state;
   if (!session) throw new Error('auth');
-  page.deps.view.setSuppliers(await page.deps.site.catalog(session.token));
+  await page.deps.site.loadSnapshot(session.token);
 }
 
-async function currentUserId(page: Page, token: string): Promise<string> {
-  const response = await page.deps.site.currentUser(token);
-  if (!response.ok) throw new Error('auth');
-  const user: unknown = await response.json();
-  const id = (user as Record<string, unknown> | null)?.id;
-  if (typeof id !== 'string') throw new Error('auth');
-  return id;
+function clearPage(page: Page): void {
+  page.state.session = null;
+  page.state.userId = null;
+  page.context().storage.removeItem(SESSION_KEY);
+  page.el('#private-content').hidden = true;
+  page.el('#add-open').hidden = true;
+  clearPrivateViews(page);
+  page.el('#login-message').textContent = VERIFY_FAILED;
+  (page.el('#login-dialog') as HTMLDialogElement).showModal();
 }
 
-/** Shows the catalog to an active member, or the reason they cannot see it. */
-async function enter(page: Page, token: string): Promise<void> {
-  const userId = await currentUserId(page, token);
-  page.state.userId = userId;
-  const access = await page.deps.site.access(token, userId);
-  if (access.state !== 'active' || !access.member) {
-    showAccess(page, ACCESS_MESSAGES[access.state]);
+function clearPrivateViews(page: Page): void {
+  page.deps.view.setSuppliers([]);
+  for (const selector of ['#supplier-dialog', '#add-dialog']) {
+    const dialog = page.el(selector) as HTMLDialogElement;
+    if (dialog.open) dialog.close();
+  }
+  page.el('#supplier-content').replaceChildren();
+}
+
+function showSnapshot(page: Page, state: CatalogState): void {
+  page.state.userId = state.userId;
+  const feedback = page.el('#catalog-feedback');
+  feedback.hidden = !state.refreshing;
+  feedback.textContent = state.refreshing ? 'מתעדכן' : '';
+  if (state.access && (state.access.state !== 'active' || !state.access.member)) {
+    page.el('#private-content').hidden = true;
+    page.el('#add-open').hidden = true;
+    clearPrivateViews(page);
+    showAccess(page, ACCESS_MESSAGES[state.access.state]);
     return;
   }
-  try {
-    await loadData(page);
-  } catch {
-    showAccess(page, CATALOG_UNAVAILABLE);
-    return;
-  }
+  if (!state.catalog) return;
+  page.deps.view.setSuppliers(state.suppliers);
   showSignedIn(page);
+  page.el('#access-status').hidden = true;
   page.el('#private-content').hidden = false;
-  page.el('#add-open').hidden = !page.deps.site.canAddSupplier();
-  page.track('page_view', { page: page.deps.win.location.pathname });
+  page.el('#add-open').hidden = state.refreshing || !page.deps.site.canAddSupplier();
+  if (!state.refreshing) {
+    page.track('catalog_load', { ...state.timings, render_ms: page.deps.view.renderDuration() });
+    page.track('page_view', { page: page.deps.win.location.pathname });
+  }
 }
 
-async function init(page: Page): Promise<void> {
+async function enter(page: Page, token: string, onRequest: () => void): Promise<void> {
+  try {
+    await page.deps.site.loadSnapshot(token, undefined, onRequest);
+  } catch (error) {
+    page.el('#private-content').hidden = true;
+    page.el('#add-open').hidden = true;
+    page.deps.view.setSuppliers([]);
+    if (error instanceof DataError && error.status === 401) throw error;
+    showAccess(page, CATALOG_UNAVAILABLE);
+  }
+}
+
+async function init(page: Page, onRequest: () => void): Promise<void> {
   const ctx = page.context();
   const message = page.el('#login-message');
   const authError = takeAuthError(ctx);
   if (authError) message.textContent = authError;
   try {
-    await exchangeGoogleCode(ctx, page.deps.site.exchangeCode);
+    if (new URL(ctx.location.href).searchParams.has('code'))
+      await exchangeGoogleCode(ctx, page.deps.site.exchangeCode);
   } catch {
     message.textContent = LOGIN_FAILED;
   }
   page.state.session = takeSession(ctx);
   if (page.state.session) {
     try {
-      await enter(page, page.state.session.token);
+      await enter(page, page.state.session.token, onRequest);
       return;
     } catch {
       page.state.session = null;
@@ -89,16 +118,28 @@ async function init(page: Page): Promise<void> {
       message.textContent = VERIFY_FAILED;
     }
   }
+  onRequest();
+  await Promise.resolve();
   (page.el('#login-dialog') as HTMLDialogElement).showModal();
 }
 
 /** Wires the page and starts sign-in. Resolves once the first screen is shown. */
-export function start(deps: AppDeps): Promise<void> {
+export async function start(deps: AppDeps): Promise<void> {
   const page = new Page(deps);
+  deps.site.subscribe((state) => {
+    if (state) showSnapshot(page, state);
+    else clearPage(page);
+  });
+  let ready: () => void = () => undefined;
+  const requestStarted = new Promise<void>((resolve) => {
+    ready = resolve;
+  });
+  const loading = init(page, ready).finally(ready);
+  await requestStarted;
   installDialogFallbacks(deps.win);
   bindCatalog(page);
   bindAuth(page);
   bindTracking(page);
   deps.write.bind(() => loadData(page));
-  return init(page);
+  return loading;
 }

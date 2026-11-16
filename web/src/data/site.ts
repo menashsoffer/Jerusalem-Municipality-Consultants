@@ -1,12 +1,11 @@
 import type { PublicSchema } from '../database.types.ts';
-import { buildCatalog, type Supplier } from '../catalog-model.ts';
-import { loadAccess, type Access } from './access.ts';
-import { loadCatalog, type CatalogData } from './catalog.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
 import { DataClient, REQUEST_TIMEOUT_MS } from './client.ts';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './environment.ts';
 import type { EventRequest } from '../app/tracker.ts';
+import { IndexedCatalogCache } from './catalog-cache.ts';
+import { SnapshotLoader, tokenUserId, type CatalogState } from './snapshot.ts';
 
 export const BASE = SUPABASE_URL;
 const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
@@ -14,7 +13,12 @@ const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
 type EventInsert = PublicSchema['activity_events']['Insert'];
 
 export function data(token: string): DataClient {
-  return new DataClient({ baseUrl: BASE, publicKey: PUBLIC_KEY, token });
+  return new DataClient({
+    baseUrl: BASE,
+    publicKey: PUBLIC_KEY,
+    token,
+    onUnauthorized: () => (token === currentToken ? clearCatalog() : Promise.resolve()),
+  });
 }
 
 function authHeaders(token?: string): Record<string, string> {
@@ -23,13 +27,6 @@ function authHeaders(token?: string): Record<string, string> {
     Authorization: `Bearer ${token ?? PUBLIC_KEY}`,
     'Content-Type': 'application/json',
   };
-}
-
-export function currentUser(token: string): Promise<Response> {
-  return fetch(`${BASE}/auth/v1/user`, {
-    headers: authHeaders(token),
-    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
-  });
 }
 
 export function exchangeCode(code: string, verifier: string): Promise<Response> {
@@ -50,46 +47,73 @@ export function sendLink(email: string, redirect: string): Promise<Response> {
   });
 }
 
-let currentAccess: Access | null = null;
-let currentCatalog: CatalogData | null = null;
+const loader = new SnapshotLoader(new IndexedCatalogCache(BASE));
 let currentToken: string | null = null;
+type Listener = (state: CatalogState | null) => void;
+const listeners = new Set<Listener>();
 
-export async function access(token: string, userId: string): Promise<Access> {
-  currentAccess = null;
-  currentCatalog = null;
-  currentToken = null;
-  currentAccess = await loadAccess(data(token), userId);
-  return currentAccess;
+export function subscribe(listener: Listener): () => void {
+  listeners.add(listener);
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
-export function getAccess(): Access | null {
-  return currentAccess;
+function publishState(state: CatalogState | null): void {
+  for (const listener of listeners) listener(state);
 }
 
-export async function catalog(token: string): Promise<Supplier[]> {
-  currentCatalog = await loadCatalog(data(token));
+export async function loadSnapshot(
+  token: string,
+  publish: (state: CatalogState) => void = () => undefined,
+  onRequest: () => void = () => undefined,
+): Promise<CatalogState> {
+  if (currentToken && currentToken !== token) await loader.clear();
   currentToken = token;
-  return buildCatalog(currentCatalog);
+  return loader.load(data(token), token, {
+    publish: (state) => {
+      publishState(state);
+      publish(state);
+    },
+    onRequest,
+  });
+}
+
+export async function clearCatalog(userId?: string): Promise<void> {
+  const id = userId ?? tokenUserId(currentToken ?? '') ?? undefined;
+  currentToken = null;
+  const clearing = loader.clear(id);
+  publishState(null);
+  await clearing;
+}
+
+export function getAccess() {
+  return loader.state?.access ?? null;
+}
+
+export async function catalog(token: string) {
+  return (await loadSnapshot(token)).suppliers;
 }
 
 export async function detail(token: string, supplierId: string): Promise<SupplierDetail> {
-  if (!currentAccess || !currentCatalog || currentToken !== token)
+  const state = loader.state;
+  if (!state?.access || !state.catalog || currentToken !== token)
     throw new Error('יש להתחבר מחדש.');
-  return supplierDetail(data(token), currentCatalog, { supplierId, access: currentAccess });
+  return supplierDetail(data(token), state.catalog, supplierId);
 }
 
 export function canAddSupplier(): boolean {
+  const state = loader.state;
   return (
-    !!currentAccess &&
-    !!currentCatalog &&
-    writableVersions(currentCatalog, currentAccess).length > 0
+    !!state?.access && !!state.catalog && writableVersions(state.catalog, state.access).length > 0
   );
 }
 
 export async function writeContext(token: string): Promise<WriteContext> {
-  if (!currentAccess || !currentCatalog || currentToken !== token)
+  const state = loader.state;
+  if (!state?.access || !state.catalog || currentToken !== token)
     throw new Error('יש להתחבר מחדש.');
-  return loadWriteContext(data(token), currentCatalog, currentAccess);
+  return loadWriteContext(data(token), state.catalog, state.access);
 }
 
 export function saveMembership(token: string, payload: Record<string, string>): Promise<string> {

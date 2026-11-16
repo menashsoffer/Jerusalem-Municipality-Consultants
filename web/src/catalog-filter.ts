@@ -1,4 +1,5 @@
 import { validity, type Membership, type Supplier, type Validity } from './catalog-model.ts';
+import { normalize } from './catalog-search.ts';
 
 export interface Filters {
   query: string;
@@ -9,14 +10,6 @@ export interface Filters {
   unit: string;
   validity: Validity | '';
   today: string;
-}
-
-function normalize(value: string): string {
-  return value
-    .normalize('NFKC')
-    .toLocaleLowerCase('he')
-    .replace(/[^\p{L}\p{N}]+/gu, ' ')
-    .trim();
 }
 
 function categoryMatches(member: Membership, filters: Filters): boolean {
@@ -55,8 +48,8 @@ export function filterCatalog(suppliers: Supplier[], filters: Filters): Supplier
     if (hasFilters && members.length === 0) return false;
     if (!query) return true;
     return (
-      [supplier.name, ...supplier.aliases].some((name) => normalize(name).includes(query)) ||
-      members.some((member) => normalize(member.field).includes(query))
+      supplier.searchNames.some((name) => name.includes(query)) ||
+      members.some((member) => member.searchText.includes(query))
     );
   });
 }

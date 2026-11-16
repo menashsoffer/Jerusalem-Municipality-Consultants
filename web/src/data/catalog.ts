@@ -1,58 +1,37 @@
 import type { PublicSchema } from '../database.types.ts';
-import type { DataClient } from './client.ts';
 
 type Row<T extends keyof PublicSchema> = PublicSchema[T]['Row'];
 export interface CatalogData {
-  suppliers: Row<'suppliers'>[];
-  names: Row<'supplier_names'>[];
-  memberships: Row<'memberships'>[];
-  versions: Row<'registry_versions'>[];
-  registries: Row<'registries'>[];
-  fields: Row<'registry_fields'>[];
-  fieldCategories: Row<'registry_field_categories'>[];
-  categories: Row<'categories'>[];
-  units: Row<'org_units'>[];
-  contacts: Row<'supplier_contacts'>[];
-  documents: Row<'source_documents'>[];
-}
-
-export async function loadCatalog(client: DataClient): Promise<CatalogData> {
-  const [
-    suppliers,
-    names,
-    memberships,
-    versions,
-    registries,
-    fields,
-    fieldCategories,
-    units,
-    contacts,
-    documents,
-    categories,
-  ] = await Promise.all([
-    client.list('suppliers', { status: 'neq.merged' }),
-    client.list('supplier_names'),
-    client.list('memberships'),
-    client.list('registry_versions'),
-    client.list('registries'),
-    client.list('registry_fields'),
-    client.list('registry_field_categories'),
-    client.list('org_units'),
-    client.list('supplier_contacts', { status: 'eq.current' }),
-    client.list('source_documents'),
-    client.list('categories', { active: 'eq.true' }),
-  ]);
-  return {
-    suppliers,
-    names,
-    memberships,
-    versions,
-    registries,
-    fields,
-    fieldCategories,
-    categories,
-    units,
-    contacts,
-    documents,
-  };
+  suppliers: Pick<
+    Row<'suppliers'>,
+    'id' | 'display_name' | 'entity_kind' | 'status' | 'website' | 'review_status' | 'note'
+  >[];
+  names: Pick<Row<'supplier_names'>, 'supplier_id' | 'name' | 'kind' | 'source_document_id'>[];
+  memberships: Pick<
+    Row<'memberships'>,
+    | 'supplier_id'
+    | 'registry_version_id'
+    | 'registry_field_id'
+    | 'name_as_published'
+    | 'source_page'
+    | 'registered_from'
+    | 'registered_until'
+    | 'engagement_started_on'
+    | 'dates_source'
+    | 'review_status'
+  >[];
+  versions: Pick<
+    Row<'registry_versions'>,
+    'id' | 'registry_id' | 'source_document_id' | 'valid_from' | 'valid_until'
+  >[];
+  registries: Pick<Row<'registries'>, 'id' | 'name' | 'owner_unit_id' | 'status'>[];
+  fields: Pick<Row<'registry_fields'>, 'id' | 'registry_id' | 'source_text'>[];
+  fieldCategories: Pick<Row<'registry_field_categories'>, 'registry_field_id' | 'category_id'>[];
+  categories: Pick<Row<'categories'>, 'id' | 'name' | 'parent_id'>[];
+  units: Pick<Row<'org_units'>, 'id' | 'name'>[];
+  contacts: Pick<
+    Row<'supplier_contacts'>,
+    'id' | 'supplier_id' | 'kind' | 'value' | 'is_valid' | 'source_document_id' | 'status'
+  >[];
+  documents: Pick<Row<'source_documents'>, 'id' | 'url'>[];
 }
