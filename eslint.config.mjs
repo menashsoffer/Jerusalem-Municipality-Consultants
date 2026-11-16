@@ -1,8 +1,38 @@
 // Rules mirror documentation/coding-standards-he.md. Change both together.
+import { existsSync, readdirSync } from 'node:fs';
 import js from '@eslint/js';
 import { defineConfig, globalIgnores } from 'eslint/config';
+import importX from 'eslint-plugin-import-x';
+import jsxA11y from 'eslint-plugin-jsx-a11y-x';
+import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+
+// Import direction of the React site (documentation/react-guide-he.md, section 1):
+// lib <- ui, data <- features <- app-shell. A feature never imports another feature.
+const web = './web/src';
+const layers = [
+  {
+    target: `${web}/lib`,
+    from: [`${web}/ui`, `${web}/data`, `${web}/features`, `${web}/app-shell`],
+  },
+  { target: `${web}/ui`, from: [`${web}/data`, `${web}/features`, `${web}/app-shell`] },
+  { target: `${web}/data`, from: [`${web}/ui`, `${web}/features`, `${web}/app-shell`] },
+  { target: `${web}/features`, from: [`${web}/app-shell`] },
+].map((zone) => ({
+  ...zone,
+  message: 'Imports in the React site go one way: lib, ui, data, features, app-shell.',
+}));
+const featureDir = new URL('web/src/features/', import.meta.url);
+const features = existsSync(featureDir)
+  ? readdirSync(featureDir, { withFileTypes: true }).filter((entry) => entry.isDirectory())
+  : [];
+const featureZones = features.map(({ name }) => ({
+  target: `${web}/features/${name}`,
+  from: `${web}/features`,
+  except: [`./${name}`],
+  message: 'A feature does not import another feature. Move shared code to ui, data or lib.',
+}));
 
 // Legacy code listed in section 10 of the standards. Remove entries as files are replaced.
 const legacy = ['tests/*.cjs'];
@@ -10,7 +40,7 @@ const legacy = ['tests/*.cjs'];
 export default defineConfig(
   globalIgnores(['node_modules/**', 'dist/**', 'web/src/database.types.ts', ...legacy]),
   {
-    files: ['**/*.ts'],
+    files: ['**/*.ts', '**/*.tsx'],
     extends: [
       js.configs.recommended,
       tseslint.configs.strictTypeChecked,
@@ -41,7 +71,20 @@ export default defineConfig(
     },
   },
   {
-    files: ['supabase/functions/tests/**/*.ts', 'supabase/tests/**/*.ts', 'web/tests/**/*.ts'],
+    files: ['web/src/**/*.tsx', 'web/src/**/*.ts'],
+    extends: [reactHooks.configs.flat['recommended-latest'], jsxA11y.configs.recommended],
+    plugins: { 'import-x': importX },
+    languageOptions: { globals: globals.browser },
+    rules: { 'import-x/no-restricted-paths': ['error', { zones: [...layers, ...featureZones] }] },
+  },
+  {
+    files: [
+      'supabase/functions/tests/**/*.ts',
+      'supabase/tests/**/*.ts',
+      'web/tests/**/*.ts',
+      '**/tests/**/*-test.ts',
+      '**/tests/**/*-test.tsx',
+    ],
     rules: {
       'max-lines': ['error', { max: 500, skipBlankLines: true, skipComments: true }],
       'max-lines-per-function': 'off',

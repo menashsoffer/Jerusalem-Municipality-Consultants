@@ -36,3 +36,4 @@ jobs:
       - run: npm run typecheck
       - run: npm run types:db:check
       - run: npm test
+      - run: npm run size:check
