@@ -108,7 +108,7 @@ supabase/
       identifiers/          registrar and GuideStar clients
       http/                 caller check, rate limit, input parsing, errors
     route-check/            endpoint
-    supplier-identifiers/   endpoint (today: identifier-feasibility)
+    supplier-identifiers/   endpoint
     scheduled/              monthly index, periodic refresh
   tests/
 pipeline/                   Python, batch only (today: scripts/)
