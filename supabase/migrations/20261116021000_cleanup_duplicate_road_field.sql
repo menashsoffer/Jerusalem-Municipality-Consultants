@@ -13,11 +13,28 @@ begin
       and k.source_text = 'ניהול פרויקטים, אינסטלציה, תיאום תשתיות, כמאי, מהנדס דרכים, תנועה, כבישים וחנייה'
       and d.source_code is not distinct from k.source_code
   ) then raise exception 'Road-field snapshot differs; review before cleanup'; end if;
+  -- Only remove a collision when every stored attribute matches, other than
+  -- row identity, the field being consolidated, page and import-row reference.
+  -- A missing page cannot be recorded as evidence, so it requires review too.
   if exists (
     select 1 from public.memberships d join public.memberships k
       on k.supplier_id = d.supplier_id and k.registry_version_id = d.registry_version_id
     where d.registry_field_id = duplicate_id and k.registry_field_id = kept_id
+      and (d.source_page is null or
+        (to_jsonb(d) - array['id', 'registry_field_id', 'source_page', 'import_row_id'])
+          is distinct from
+        (to_jsonb(k) - array['id', 'registry_field_id', 'source_page', 'import_row_id']))
   ) then raise exception 'Conflicting memberships require manual review'; end if;
+  update public.memberships k
+  set note = concat_ws(' ', nullif(k.note, ''), 'מופיע גם בעמוד ' || d.source_page::text)
+  from public.memberships d
+  where d.registry_field_id = duplicate_id and k.registry_field_id = kept_id
+    and k.supplier_id = d.supplier_id and k.registry_version_id = d.registry_version_id;
+  -- A restrictive foreign key (e.g. an engagement request) prevents deletion;
+  -- in that case the whole migration stops for manual review, with no data lost.
+  delete from public.memberships d using public.memberships k
+  where d.registry_field_id = duplicate_id and k.registry_field_id = kept_id
+    and k.supplier_id = d.supplier_id and k.registry_version_id = d.registry_version_id;
   insert into public.registry_field_categories (registry_field_id, category_id, created_at, created_by)
     select kept_id, category_id, created_at, created_by from public.registry_field_categories
     where registry_field_id = duplicate_id on conflict (registry_field_id, category_id) do nothing;

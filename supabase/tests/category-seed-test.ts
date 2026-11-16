@@ -120,8 +120,8 @@ describe('reviewed category seed', () => {
       values ('60000000-0000-0000-0000-000000000001', '${field.registry_id}');
       insert into public.suppliers (id, display_name)
       values ('60000000-0000-0000-0000-000000000002', 'Test supplier');
-      insert into public.memberships (supplier_id, registry_version_id, registry_field_id, note)
-      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${DUPLICATE}', 'source evidence');
+      insert into public.memberships (supplier_id, registry_version_id, registry_field_id, source_page, note)
+      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${DUPLICATE}', 2, 'source evidence');
       insert into public.registry_field_categories (registry_field_id, category_id)
       values ('${DUPLICATE}', '${MANUAL}');`);
     const before = await db.query<{ category_id: string }>(
@@ -129,8 +129,17 @@ describe('reviewed category seed', () => {
       [DUPLICATE],
     );
     assert.equal(before.rows.length, 7);
-    await db.exec(`insert into public.memberships (supplier_id, registry_version_id, registry_field_id)
-      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${KEPT}')`);
+    await db.exec(`insert into public.suppliers (id, display_name)
+      values ('60000000-0000-0000-0000-000000000003', 'יניב גורביץ מהנדסים');
+      insert into public.import_batches (id, script_name) values ('60000000-0000-0000-0000-000000000004', 'test');
+      insert into public.import_rows (id, batch_id, row_number, source_page, raw)
+      overriding system value values (10, '60000000-0000-0000-0000-000000000004', 1, 2, '{}'),
+        (11, '60000000-0000-0000-0000-000000000004', 2, 8, '{}');
+      insert into public.memberships (id, supplier_id, registry_version_id, registry_field_id, source_page, import_row_id, note)
+      values ('60000000-0000-0000-0000-000000000005', '60000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000001', '${DUPLICATE}', 2, 10, 'existing note'),
+        ('60000000-0000-0000-0000-000000000006', '60000000-0000-0000-0000-000000000003', '60000000-0000-0000-0000-000000000001', '${KEPT}', 8, 11, 'existing note');
+      insert into public.memberships (supplier_id, registry_version_id, registry_field_id, source_page)
+      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${KEPT}', 8)`);
     await assert.rejects(
       applyMigrations(db, { after: PRE_CLEANUP, until: CLEANUP }),
       /Conflicting memberships/,
@@ -146,13 +155,51 @@ describe('reviewed category seed', () => {
       ),
       7,
     );
-    await db.exec(`delete from public.memberships where registry_field_id = '${KEPT}'`);
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.memberships where supplier_id = '60000000-0000-0000-0000-000000000003'`,
+      ),
+      2,
+    );
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.memberships where id = '60000000-0000-0000-0000-000000000006' and note = 'existing note'`,
+      ),
+      1,
+    );
+    await db.exec(
+      `delete from public.memberships where registry_field_id = '${KEPT}' and supplier_id = '60000000-0000-0000-0000-000000000002'`,
+    );
     await applyMigrations(db, { after: PRE_CLEANUP, until: CLEANUP });
     const after = await db.query<{ category_id: string }>(
       `select category_id from public.registry_field_categories where registry_field_id = $1 order by category_id`,
       [KEPT],
     );
     assert.deepEqual(after.rows, before.rows);
+    const retained = await db.query<{
+      id: string;
+      source_page: number;
+      import_row_id: string;
+      note: string;
+    }>(
+      `select id, source_page, import_row_id::text, note from public.memberships where supplier_id = $1`,
+      ['60000000-0000-0000-0000-000000000003'],
+    );
+    assert.equal(retained.rows.length, 1);
+    assert.equal(retained.rows[0]?.id, '60000000-0000-0000-0000-000000000006');
+    assert.equal(retained.rows[0].source_page, 8);
+    assert.equal(retained.rows[0].import_row_id, '11');
+    assert.equal(retained.rows[0].note, 'existing note מופיע גם בעמוד 2');
+    assert.equal(await count(db, `select 1 from public.import_rows where id in (10, 11)`), 2);
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.audit_log where table_name = 'memberships' and row_id = '60000000-0000-0000-0000-000000000005' and operation = 'DELETE'`,
+      ),
+      1,
+    );
     assert.equal(
       await count(db, `select 1 from public.registry_fields where id = '${DUPLICATE}'`),
       0,
