@@ -54,13 +54,74 @@ alter policy memberships_read on public.memberships using (
   or registry_version_id = any ((select private.editable_version_ids())::uuid[])
 );
 
+create function private.catalog_suppliers()
+returns jsonb language sql stable security invoker set search_path = '' as $$
+  -- Each child relation is read once and grouped before nesting. RLS applies to
+  -- every relation here, including child rows with different visibility.
+  with names as (
+    select n.supplier_id, jsonb_agg(jsonb_build_array(
+      case when n.name = s.display_name then '0'::jsonb else to_jsonb(n.name) end,
+      nullif(n.kind, 'as_published'), n.source_document_id) order by n.id) as rows
+    from public.supplier_names n join public.suppliers s on s.id = n.supplier_id
+    group by n.supplier_id
+  ), memberships as (
+    select m.supplier_id, jsonb_agg(jsonb_build_array(m.registry_version_id, m.registry_field_id,
+      case when m.name_as_published = s.display_name then '0'::jsonb
+        else to_jsonb(m.name_as_published) end, m.source_page, m.registered_from,
+      m.registered_until, m.engagement_started_on, nullif(m.dates_source, 'unknown'),
+      nullif(m.review_status, 'needs_review'))
+      order by m.id) as rows
+    from public.memberships m join public.suppliers s on s.id = m.supplier_id
+    where m.review_status not in ('rejected', 'removed')
+    group by m.supplier_id
+  ), contacts as (
+    select c.supplier_id, jsonb_agg(jsonb_build_array(c.id, c.kind, c.value, c.is_valid,
+      c.source_document_id) order by c.id) as rows
+    from public.supplier_contacts c where c.status = 'current' group by c.supplier_id
+  )
+  select coalesce((select jsonb_agg(jsonb_build_array(s.id, s.display_name,
+      nullif(s.entity_kind, 'unknown'), nullif(s.status, 'active'), s.website,
+      nullif(s.review_status, 'needs_review'), s.note,
+      coalesce(n.rows, '[]'::jsonb), coalesce(m.rows, '[]'::jsonb),
+      coalesce(c.rows, '[]'::jsonb)) order by s.id)
+      from public.suppliers s left join names n on n.supplier_id = s.id
+      left join memberships m on m.supplier_id = s.id
+      left join contacts c on c.supplier_id = s.id where s.status <> 'merged'), '[]'::jsonb)
+$$;
+revoke all on function private.catalog_suppliers() from public, anon, authenticated;
+grant execute on function private.catalog_suppliers() to authenticated;
+
+create function private.catalog_rows()
+returns jsonb language sql stable security invoker set search_path = '' as $$
+  select jsonb_build_object(
+    'suppliers', private.catalog_suppliers(),
+    'registries', coalesce((select jsonb_agg(jsonb_build_array(r.id, r.name,
+      r.owner_unit_id, r.status) order by r.id) from public.registries r), '[]'::jsonb),
+    'versions', coalesce((select jsonb_agg(jsonb_build_array(v.id, v.registry_id,
+      v.source_document_id, v.valid_from, v.valid_until) order by v.id)
+      from public.registry_versions v), '[]'::jsonb),
+    'fields', coalesce((select jsonb_agg(jsonb_build_array(f.id, f.registry_id,
+      f.source_text) order by f.id) from public.registry_fields f), '[]'::jsonb),
+    'categories', coalesce((select jsonb_agg(jsonb_build_array(c.id, c.name, c.parent_id)
+      order by c.id) from public.categories c where c.active), '[]'::jsonb),
+    'fieldCategories', coalesce((select jsonb_agg(jsonb_build_array(f.registry_field_id,
+      f.category_id) order by f.registry_field_id, f.category_id)
+      from public.registry_field_categories f), '[]'::jsonb),
+    'units', coalesce((select jsonb_agg(jsonb_build_array(u.id, u.name) order by u.id)
+      from public.org_units u), '[]'::jsonb),
+    'documents', coalesce((select jsonb_agg(jsonb_build_array(d.id, d.url) order by d.id)
+      from public.source_documents d), '[]'::jsonb)
+  )
+$$;
+revoke all on function private.catalog_rows() from public, anon, authenticated;
+grant execute on function private.catalog_rows() to authenticated;
+
 create function public.catalog_snapshot(known_version text default null)
 returns jsonb language plpgsql stable security invoker set search_path = '' as $$
 declare
   access jsonb;
   result jsonb;
   version text;
-  catalog jsonb;
 begin
   select public.my_access() || jsonb_build_object(
     'state', coalesce((select p.status from public.profiles p
@@ -80,55 +141,7 @@ begin
     return result || jsonb_build_object('unchanged', true);
   end if;
 
-  -- Each child relation is read once and grouped before nesting. RLS applies to
-  -- every relation here, including child rows with different visibility.
-  with names as (
-    select n.supplier_id, jsonb_agg(jsonb_build_array(case when n.name = s.display_name then '0'::jsonb
-      else to_jsonb(n.name) end, nullif(n.kind, 'as_published'), n.source_document_id) order by n.id) as rows
-    from public.supplier_names n join public.suppliers s on s.id = n.supplier_id
-    group by n.supplier_id
-  ), memberships as (
-    select m.supplier_id, jsonb_agg(jsonb_build_array(m.registry_version_id, m.registry_field_id,
-      case when m.name_as_published = s.display_name then '0'::jsonb
-        else to_jsonb(m.name_as_published) end, m.source_page, m.registered_from,
-      m.registered_until, m.engagement_started_on, nullif(m.dates_source, 'unknown'),
-      nullif(m.review_status, 'needs_review'))
-      order by m.id) as rows
-    from public.memberships m join public.suppliers s on s.id = m.supplier_id
-    where m.review_status not in ('rejected', 'removed')
-    group by m.supplier_id
-  ), contacts as (
-    select c.supplier_id, jsonb_agg(jsonb_build_array(c.id, c.kind, c.value, c.is_valid,
-      c.source_document_id) order by c.id) as rows
-    from public.supplier_contacts c where c.status = 'current' group by c.supplier_id
-  )
-  select jsonb_build_object(
-    'suppliers', coalesce((select jsonb_agg(jsonb_build_array(s.id, s.display_name,
-      nullif(s.entity_kind, 'unknown'), nullif(s.status, 'active'), s.website,
-      nullif(s.review_status, 'needs_review'), s.note,
-      coalesce(n.rows, '[]'::jsonb), coalesce(m.rows, '[]'::jsonb),
-      coalesce(c.rows, '[]'::jsonb)) order by s.id)
-      from public.suppliers s left join names n on n.supplier_id = s.id
-      left join memberships m on m.supplier_id = s.id
-      left join contacts c on c.supplier_id = s.id where s.status <> 'merged'), '[]'::jsonb),
-    'registries', coalesce((select jsonb_agg(jsonb_build_array(r.id, r.name,
-      r.owner_unit_id, r.status) order by r.id) from public.registries r), '[]'::jsonb),
-    'versions', coalesce((select jsonb_agg(jsonb_build_array(v.id, v.registry_id,
-      v.source_document_id, v.valid_from, v.valid_until) order by v.id)
-      from public.registry_versions v), '[]'::jsonb),
-    'fields', coalesce((select jsonb_agg(jsonb_build_array(f.id, f.registry_id,
-      f.source_text) order by f.id) from public.registry_fields f), '[]'::jsonb),
-    'categories', coalesce((select jsonb_agg(jsonb_build_array(c.id, c.name, c.parent_id)
-      order by c.id) from public.categories c where c.active), '[]'::jsonb),
-    'fieldCategories', coalesce((select jsonb_agg(jsonb_build_array(f.registry_field_id,
-      f.category_id) order by f.registry_field_id, f.category_id)
-      from public.registry_field_categories f), '[]'::jsonb),
-    'units', coalesce((select jsonb_agg(jsonb_build_array(u.id, u.name) order by u.id)
-      from public.org_units u), '[]'::jsonb),
-    'documents', coalesce((select jsonb_agg(jsonb_build_array(d.id, d.url) order by d.id)
-      from public.source_documents d), '[]'::jsonb)
-  ) into catalog;
-  return result || jsonb_build_object('catalog', catalog);
+  return result || jsonb_build_object('catalog', private.catalog_rows());
 end;
 $$;
 revoke all on function public.catalog_snapshot(text) from public, anon, authenticated;

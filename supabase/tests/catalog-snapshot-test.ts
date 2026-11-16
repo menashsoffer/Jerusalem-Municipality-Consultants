@@ -87,12 +87,14 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
     const result = await db.query<{ proname: string; prosecdef: boolean }>(`
       select proname, prosecdef from pg_proc
       where proname in ('catalog_snapshot', 'supplier_detail', 'editable_version_ids',
-        'bump_catalog_version') order by proname`);
+        'bump_catalog_version', 'catalog_rows', 'catalog_suppliers') order by proname`);
     assert.deepEqual(
       result.rows.map((row) => [row.proname, row.prosecdef]),
       [
         ['bump_catalog_version', false],
+        ['catalog_rows', false],
         ['catalog_snapshot', false],
+        ['catalog_suppliers', false],
         ['editable_version_ids', true],
         ['supplier_detail', false],
       ],
@@ -154,9 +156,10 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
     await as(db, USERS.admin, async () => {
       const before = await snapshot(db);
       await db.exec(`update public.suppliers set display_name = 'שם חדש' where id = '${SUPPLIER}'`);
-      assert.notEqual((await snapshot(db)).version, before.version);
+      const changed = await snapshot(db);
+      assert.notEqual(changed.version, before.version);
       await db.exec('update private.catalog_version set counter = 1');
-      assert.notEqual((await snapshot(db)).version, before.version);
+      assert.equal((await snapshot(db)).version, changed.version);
       await assert.rejects(db.exec('delete from private.catalog_version'), /permission denied/);
       await assert.rejects(
         db.exec('insert into private.catalog_version default values'),
