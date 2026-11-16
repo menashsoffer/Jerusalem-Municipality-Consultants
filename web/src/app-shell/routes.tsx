@@ -23,6 +23,15 @@ export const routes: RouteObject[] = [
     hydrateFallbackElement: <Skeleton />,
     children: [
       {
+        path: 'identifiers',
+        handle: { title: 'מועמדי מזהה ספק' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/identifiers/identifiers-page.tsx');
+          return { Component: m.IdentifiersPage, loader: m.loader };
+        },
+      },
+      {
         index: true,
         handle: { title: 'ניהול' } satisfies RouteHandle,
         lazy: async () => ({ Component: (await import('./home-page.tsx')).HomePage }),
