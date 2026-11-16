@@ -28,6 +28,15 @@ export const routes: RouteObject[] = [
         lazy: async () => ({ Component: (await import('./home-page.tsx')).HomePage }),
       },
       {
+        path: 'thresholds',
+        handle: { title: 'אישור הסף החודשי' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/thresholds/thresholds-page.tsx');
+          return { Component: m.ThresholdsPage, loader: m.loader };
+        },
+      },
+      {
         path: 'auth',
         handle: { title: 'כניסה והרשאות' },
         errorElement: <ScreenError />,
