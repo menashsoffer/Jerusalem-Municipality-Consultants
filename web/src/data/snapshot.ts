@@ -49,6 +49,7 @@ export class SnapshotLoader {
   private wire: CacheEntry | null = null;
   private generation = 0;
   private storage: Promise<void> = Promise.resolve();
+  private inflight: Promise<CatalogState> | null = null;
 
   constructor(cache: CatalogCache) {
     this.cache = cache;
@@ -58,8 +59,16 @@ export class SnapshotLoader {
     return this.current;
   }
 
+  /** The server-confirmed state: waits for a pending refresh before reporting. */
+  async settled(): Promise<CatalogState | null> {
+    const pending = this.inflight;
+    if (pending) await pending.catch(() => undefined);
+    return this.current?.access ? this.current : null;
+  }
+
   async clear(userId = this.current?.userId): Promise<void> {
     ++this.generation;
+    this.inflight = null;
     this.current = null;
     this.wire = null;
     if (userId) await this.persist(() => this.cache.remove(userId));
@@ -101,7 +110,17 @@ export class SnapshotLoader {
     }
   }
 
-  async load(client: DataClient, token: string, options: LoadOptions = {}) {
+  load(client: DataClient, token: string, options: LoadOptions = {}): Promise<CatalogState> {
+    const pending = this.fetch(client, token, options);
+    this.inflight = pending;
+    const done = () => {
+      if (this.inflight === pending) this.inflight = null;
+    };
+    pending.then(done, done);
+    return pending;
+  }
+
+  private async fetch(client: DataClient, token: string, options: LoadOptions) {
     const publish = options.publish ?? (() => undefined);
     const generation = ++this.generation;
     const userId = tokenUserId(token);
