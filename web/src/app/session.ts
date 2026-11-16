@@ -67,7 +67,13 @@ export function takeSession(ctx: BrowserContext): Session | null {
   return parseSession(ctx.storage.getItem(SESSION_KEY));
 }
 
-function base64Url(bytes: Uint8Array): string {
+type ToBase64 = (options: { alphabet: 'base64url'; omitPadding: boolean }) => string;
+
+/** URL-safe base64 without padding, as PKCE requires. Uses the built-in encoder where present. */
+export function base64Url(bytes: Uint8Array): string {
+  const native = (bytes as Uint8Array & { toBase64?: ToBase64 }).toBase64;
+  if (typeof native === 'function')
+    return native.call(bytes, { alphabet: 'base64url', omitPadding: true });
   return btoa(String.fromCharCode(...bytes))
     .replace(/\+/g, '-')
     .replace(/\//g, '_')

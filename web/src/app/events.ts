@@ -1,5 +1,6 @@
 /* Event wiring for filters, sign-in controls and usage tracking. */
 import type { Page } from './deps.ts';
+import { syncInvalidState } from '../form-validation.ts';
 import { googleAuthorizeUrl, SESSION_KEY } from './session.ts';
 
 /** Opening a dialog reports its own errors; nothing more to do here. */
@@ -58,9 +59,6 @@ export function bindCatalog(page: Page): void {
     const { session } = page.state;
     if (session) details.open(id, session.token).catch(ignore);
   });
-  page.el('#supplier-close').addEventListener('click', () => {
-    details.close();
-  });
   page.el('#add-open').addEventListener('click', () => {
     const { session } = page.state;
     if (session) write.open(session.token).catch(ignore);
@@ -94,20 +92,15 @@ async function googleSignIn(page: Page): Promise<void> {
 }
 
 export function bindAuth(page: Page): void {
-  const dialog = page.el('#login-dialog') as HTMLDialogElement;
-  page.el('#login-open').addEventListener('click', () => {
-    dialog.showModal();
-  });
-  page.el('#login-close').addEventListener('click', () => {
-    dialog.close();
-  });
   page.el('#logout').addEventListener('click', () => {
     signOut(page);
   });
   page.el('#access-logout').addEventListener('click', () => {
     signOut(page);
   });
-  (page.el('#login-form') as HTMLFormElement).addEventListener('submit', (event) => {
+  const loginForm = page.el('#login-form') as HTMLFormElement;
+  syncInvalidState(loginForm);
+  loginForm.addEventListener('submit', (event) => {
     event.preventDefault();
     void sendLink(page, event.currentTarget as HTMLFormElement);
   });

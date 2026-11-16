@@ -4,8 +4,9 @@ import { loadAccess, type Access } from './access.ts';
 import { loadCatalog, type CatalogData } from './catalog.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
-import { DataClient } from './client.ts';
+import { DataClient, REQUEST_TIMEOUT_MS } from './client.ts';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './environment.ts';
+import type { EventRequest } from '../app/tracker.ts';
 
 export const BASE = SUPABASE_URL;
 const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
@@ -16,7 +17,7 @@ export function data(token: string): DataClient {
   return new DataClient({ baseUrl: BASE, publicKey: PUBLIC_KEY, token });
 }
 
-function authHeaders(token?: string): HeadersInit {
+function authHeaders(token?: string): Record<string, string> {
   return {
     apikey: PUBLIC_KEY,
     Authorization: `Bearer ${token ?? PUBLIC_KEY}`,
@@ -25,7 +26,10 @@ function authHeaders(token?: string): HeadersInit {
 }
 
 export function currentUser(token: string): Promise<Response> {
-  return fetch(`${BASE}/auth/v1/user`, { headers: authHeaders(token) });
+  return fetch(`${BASE}/auth/v1/user`, {
+    headers: authHeaders(token),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
 }
 
 export function exchangeCode(code: string, verifier: string): Promise<Response> {
@@ -33,6 +37,7 @@ export function exchangeCode(code: string, verifier: string): Promise<Response> 
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 }
 
@@ -41,6 +46,7 @@ export function sendLink(email: string, redirect: string): Promise<Response> {
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ email, create_user: false }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 }
 
@@ -98,6 +104,14 @@ export function replaceContact(token: string, payload: Record<string, string>): 
   return data(token).supplierWrite('replace_supplier_contact', payload);
 }
 
-export function track(token: string, event: EventInsert): Promise<void> {
-  return data(token).insert('activity_events', event);
+/** The request that stores a batch of usage events; the tracker decides when it is sent. */
+export function eventRequest(token: string, events: EventInsert[]): EventRequest {
+  return {
+    url: `${BASE}/rest/v1/activity_events`,
+    init: {
+      method: 'POST',
+      headers: { ...authHeaders(token), Prefer: 'return=minimal' },
+      body: JSON.stringify(events),
+    },
+  };
 }

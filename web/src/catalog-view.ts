@@ -3,6 +3,7 @@ import { validity, type Membership, type Supplier, type Validity } from './catal
 
 let suppliers: Supplier[] = [];
 let openSupplier: ((id: string) => void) | null = null;
+let firstRender = true;
 
 export function setOpenHandler(handler: (id: string) => void): void {
   openSupplier = handler;
@@ -160,6 +161,9 @@ export function render(): void {
     fragment.append(card(row, current.today));
   });
   result.replaceChildren(fragment);
+  // Only the first list fades in; re-rendering on every keystroke must stay cheap.
+  result.classList.toggle('intro', firstRender);
+  firstRender = false;
   el('count').textContent = `${String(rows.length)} ספקים`;
   el('empty').hidden = rows.length > 0;
 }

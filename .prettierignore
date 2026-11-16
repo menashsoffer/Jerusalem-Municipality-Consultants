@@ -7,7 +7,6 @@ package-lock.json
 # Prose is reviewed by hand; Prettier reflows Hebrew tables badly
 *.md
 
-# Generated database types and copied legacy site assets
+# Generated database types and the hand-written page shell
 web/src/database.types.ts
-web/public/assets/
 web/index.html

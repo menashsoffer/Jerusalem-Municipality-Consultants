@@ -14,7 +14,7 @@ function fakeSite(access, supplies, events) {
     currentUser: async () => ({ok: true, json: async () => ({id: 'user'})}),
     access: async () => access,
     catalog: async () => { calls++; return supplies(); },
-    track: async (_token, event) => { events.push(event); },
+    eventRequest: (_token, batch) => ({url: 'https://example.test/events', init: {body: JSON.stringify(batch)}}),
     exchangeCode: async () => ({ok: false}),
     sendLink: async () => ({ok: true}),
   };
@@ -32,6 +32,7 @@ async function page(access, supplies, options = {}) {
       JSON.stringify({token: 'token', exp: Date.now() + 60000}));
   }
   const events = [];
+  window.fetch = async (_url, init) => { events.push(...JSON.parse(init.body)); return new Response(null); };
   const {site, calls} = fakeSite(access, supplies, events);
   const view = {setSuppliers: () => {}, options: () => {}, render: () => {}, setOpenHandler: () => {}};
   await (await app).start({
@@ -40,7 +41,8 @@ async function page(access, supplies, options = {}) {
     write: {bind: () => {}, open: async () => {}},
   });
   const $ = (s) => window.document.querySelector(s);
-  return {window, $, calls, events, dialogOpened: () => dialogOpened, close: () => window.close()};
+  const close = () => { window.dispatchEvent(new window.Event('pagehide')); window.close(); };
+  return {window, $, calls, events, dialogOpened: () => dialogOpened, close};
 }
 
 test('pending user sees waiting screen without requesting supplier data', async () => {
@@ -65,6 +67,7 @@ test('viewer cannot see add action while the catalog is readable', async () => {
   assert.equal(p.$('#private-content').hidden, false);
   assert.equal(p.$('#add-open').hidden, true);
   assert.equal(p.calls(), 1);
+  p.window.dispatchEvent(new p.window.Event('pagehide'));
   assert.deepEqual(p.events.map((e) => e.event_type), ['page_view']);
   p.close();
 });
