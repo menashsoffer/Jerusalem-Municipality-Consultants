@@ -429,3 +429,7 @@ enabled = true
 # which also accepts tokens signed with the new asymmetric keys. CORS preflight carries no token.
 [functions.route-check]
 verify_jwt = false
+
+# Called by the daily schedule without a token; takes no input (see its index.ts).
+[functions.threshold-index]
+verify_jwt = false

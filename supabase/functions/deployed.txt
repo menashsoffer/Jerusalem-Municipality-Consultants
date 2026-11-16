@@ -2,3 +2,4 @@
 # A function is listed here only after it has a caller check, rate limit and tests,
 # and the product owner has agreed to deploy it. Lines starting with # are ignored.
 route-check
+threshold-index
