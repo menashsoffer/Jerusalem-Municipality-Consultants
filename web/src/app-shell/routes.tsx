@@ -23,6 +23,15 @@ export const routes: RouteObject[] = [
     hydrateFallbackElement: <Skeleton />,
     children: [
       {
+        path: 'categories',
+        handle: { title: 'בקשות קטגוריה' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/categories/categories-page.tsx');
+          return { Component: m.CategoriesPage, loader: m.loader };
+        },
+      },
+      {
         path: 'identifiers',
         handle: { title: 'מועמדי מזהה ספק' },
         errorElement: <ScreenError />,

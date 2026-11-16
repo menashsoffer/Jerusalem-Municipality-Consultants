@@ -1,0 +1,12 @@
+@layer features {
+  .card {
+    padding: var(--space-lg);
+    margin-block: var(--space-xl);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+  }
+  .card button {
+    margin-block: var(--space-sm);
+  }
+}
