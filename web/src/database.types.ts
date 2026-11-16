@@ -330,6 +330,56 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "identifier_candidates": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "scheme": string;
+      "value": string;
+      "source": string;
+      "registrar_name": string | null;
+      "registrar_status": string | null;
+      "searched_name": string;
+      "status": string;
+      "found_at": string;
+      "found_by": string | null;
+      "decided_at": string | null;
+      "decided_by": string | null;
+      "identifier_id": string | null;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "scheme": string;
+      "value": string;
+      "source": string;
+      "registrar_name"?: string | null;
+      "registrar_status"?: string | null;
+      "searched_name": string;
+      "status"?: string;
+      "found_at"?: string;
+      "found_by"?: string | null;
+      "decided_at"?: string | null;
+      "decided_by"?: string | null;
+      "identifier_id"?: string | null;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "scheme"?: string;
+      "value"?: string;
+      "source"?: string;
+      "registrar_name"?: string | null;
+      "registrar_status"?: string | null;
+      "searched_name"?: string;
+      "status"?: string;
+      "found_at"?: string;
+      "found_by"?: string | null;
+      "decided_at"?: string | null;
+      "decided_by"?: string | null;
+      "identifier_id"?: string | null;
+    };
+  };
   "import_batches": {
     Row: {
       "id": string;

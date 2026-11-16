@@ -433,3 +433,7 @@ verify_jwt = false
 # Called by the daily schedule without a token; takes no input (see its index.ts).
 [functions.threshold-index]
 verify_jwt = false
+
+# Checks the caller's token itself through public.identifier_lookup_input.
+[functions.supplier-identifiers]
+verify_jwt = false
