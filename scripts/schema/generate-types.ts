@@ -1,6 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 import { migratedDatabase } from '../../supabase/tests/pglite.ts';
+import { rpcTypes } from './rpc-types.ts';
 
 interface Column {
   table_name: string;
@@ -85,7 +86,7 @@ async function generate(): Promise<string> {
         on t.table_schema = c.table_schema and t.table_name = c.table_name
       where c.table_schema = 'public' and t.table_type in ('BASE TABLE', 'VIEW')
       order by c.table_name, c.ordinal_position`);
-    return render(result.rows);
+    return render(result.rows) + (await rpcTypes(db));
   } finally {
     await db.close();
   }
