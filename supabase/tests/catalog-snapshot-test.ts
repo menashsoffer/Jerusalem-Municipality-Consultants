@@ -127,8 +127,14 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
       assert.equal(rollback.unchanged, true);
     }
     const triggers = await db.query<{ n: number }>(`select count(*)::int as n from pg_trigger
-      where tgname = 'catalog_version' and tgtype = 28`);
+      where tgname = 'catalog_version' and tgtype = 60`);
     assert.equal(triggers.rows[0]?.n, tables.length);
+    const counter = 'select counter::int as n from private.catalog_version';
+    const start = (await db.query<{ n: number }>(counter)).rows[0]?.n ?? 0;
+    await db.exec('begin; truncate public.registry_field_categories');
+    const truncated = (await db.query<{ n: number }>(counter)).rows[0]?.n;
+    await db.exec('rollback');
+    assert.equal(truncated, start + 1, 'a truncate also invalidates cached catalogs');
   });
 
   it('invalidates after a grant changes, is revoked, or the profile is blocked', async () => {
