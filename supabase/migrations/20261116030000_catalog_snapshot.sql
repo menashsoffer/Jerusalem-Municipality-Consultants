@@ -33,8 +33,8 @@ begin
   foreach target in array array['suppliers', 'supplier_names', 'memberships',
     'supplier_contacts', 'registries', 'registry_versions', 'registry_fields',
     'categories', 'registry_field_categories', 'org_units', 'source_documents'] loop
-    execute format('create trigger catalog_version after insert or update or delete on public.%I '
-      'for each statement execute function private.bump_catalog_version()', target);
+    execute format('create trigger catalog_version after insert or update or delete or truncate '
+      'on public.%I for each statement execute function private.bump_catalog_version()', target);
   end loop;
 end;
 $$;
