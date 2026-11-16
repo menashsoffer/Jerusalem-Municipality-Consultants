@@ -3,3 +3,4 @@
 # and the product owner has agreed to deploy it. Lines starting with # are ignored.
 route-check
 threshold-index
+supplier-identifiers

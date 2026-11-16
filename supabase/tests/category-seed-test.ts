@@ -8,6 +8,8 @@ import { applyMigrations, count, migratedDatabase } from './pglite.ts';
 
 const PRIOR = '20261113020000_registry_field_categories.sql';
 const SEED = '20261113021000_seed_categories.sql';
+const PRE_CLEANUP = '20261116020000_identifier_candidates.sql';
+const CLEANUP = '20261116021000_cleanup_duplicate_road_field.sql';
 const DUPLICATE = '3dfb2369-695b-47ed-9a52-d255a245bfa3';
 const KEPT = 'e744ea22-d6d2-4f2f-9ca6-1c77cf148f15';
 const LATER = '50000000-0000-0000-0000-0000000000ff';
@@ -51,30 +53,6 @@ describe('reviewed category seed', () => {
   });
   after(async () => db.close());
 
-  it('stops on conflicting memberships and preserves both records', async () => {
-    const field = fields.find((item) => item.id === DUPLICATE);
-    assert.ok(field);
-    await db.exec(`insert into public.registry_versions (id, registry_id)
-      values ('60000000-0000-0000-0000-000000000001', '${field.registry_id}');
-      insert into public.suppliers (id, display_name)
-      values ('60000000-0000-0000-0000-000000000002', 'Test supplier');
-      insert into public.memberships (supplier_id, registry_version_id, registry_field_id)
-      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${DUPLICATE}'),
-             ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${KEPT}')`);
-    await assert.rejects(
-      applyMigrations(db, { after: PRIOR, until: SEED }),
-      /Conflicting memberships/,
-    );
-    assert.equal(
-      await count(
-        db,
-        `select 1 from public.memberships where registry_field_id in ('${DUPLICATE}', '${KEPT}')`,
-      ),
-      2,
-    );
-    await db.exec(`delete from public.memberships where registry_field_id = '${KEPT}'`);
-  });
-
   it('refuses a changed snapshot before adding categories', async () => {
     const first = fields[0];
     assert.ok(first);
@@ -106,7 +84,7 @@ describe('reviewed category seed', () => {
   });
 
   it('adds the proposed links while preserving existing manual mappings', async () => {
-    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 202);
+    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 208);
     assert.equal(
       await count(
         db,
@@ -120,16 +98,70 @@ describe('reviewed category seed', () => {
       36,
     );
     await applyMigrations(db, { after: PRIOR, until: SEED });
-    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 202);
+    assert.equal(await count(db, 'select 1 from public.registry_field_categories'), 208);
   });
 
-  it('consolidates the duplicate before seeding and keeps the six proposed links', async () => {
+  it('gives the extraction duplicate the same categories as the field it duplicates', async () => {
+    const links = (field: string) =>
+      db.query<{ category_id: string }>(
+        `select category_id from public.registry_field_categories
+         where registry_field_id = $1 order by category_id`,
+        [field],
+      );
+    const [duplicate, kept] = await Promise.all([links(DUPLICATE), links(KEPT)]);
+    assert.equal(kept.rows.length, 6);
+    assert.deepEqual(duplicate.rows, kept.rows);
+  });
+  it('moves memberships and all category links after seeding without losing manual links', async () => {
+    await applyMigrations(db, { after: SEED, until: PRE_CLEANUP });
+    const field = fields.find((item) => item.id === DUPLICATE);
+    assert.ok(field);
+    await db.exec(`insert into public.registry_versions (id, registry_id)
+      values ('60000000-0000-0000-0000-000000000001', '${field.registry_id}');
+      insert into public.suppliers (id, display_name)
+      values ('60000000-0000-0000-0000-000000000002', 'Test supplier');
+      insert into public.memberships (supplier_id, registry_version_id, registry_field_id, note)
+      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${DUPLICATE}', 'source evidence');
+      insert into public.registry_field_categories (registry_field_id, category_id)
+      values ('${DUPLICATE}', '${MANUAL}');`);
+    const before = await db.query<{ category_id: string }>(
+      `select category_id from public.registry_field_categories where registry_field_id = $1 order by category_id`,
+      [DUPLICATE],
+    );
+    assert.equal(before.rows.length, 7);
+    await db.exec(`insert into public.memberships (supplier_id, registry_version_id, registry_field_id)
+      values ('60000000-0000-0000-0000-000000000002', '60000000-0000-0000-0000-000000000001', '${KEPT}')`);
+    await assert.rejects(
+      applyMigrations(db, { after: PRE_CLEANUP, until: CLEANUP }),
+      /Conflicting memberships/,
+    );
+    assert.equal(
+      await count(db, `select 1 from public.registry_fields where id = '${DUPLICATE}'`),
+      1,
+    );
+    assert.equal(
+      await count(
+        db,
+        `select 1 from public.registry_field_categories where registry_field_id = '${DUPLICATE}'`,
+      ),
+      7,
+    );
+    await db.exec(`delete from public.memberships where registry_field_id = '${KEPT}'`);
+    await applyMigrations(db, { after: PRE_CLEANUP, until: CLEANUP });
+    const after = await db.query<{ category_id: string }>(
+      `select category_id from public.registry_field_categories where registry_field_id = $1 order by category_id`,
+      [KEPT],
+    );
+    assert.deepEqual(after.rows, before.rows);
     assert.equal(
       await count(db, `select 1 from public.registry_fields where id = '${DUPLICATE}'`),
       0,
     );
     assert.equal(
-      await count(db, `select 1 from public.memberships where registry_field_id = '${KEPT}'`),
+      await count(
+        db,
+        `select 1 from public.memberships where registry_field_id = '${KEPT}' and note = 'source evidence'`,
+      ),
       1,
     );
     assert.equal(
@@ -139,12 +171,13 @@ describe('reviewed category seed', () => {
       ),
       1,
     );
+    await applyMigrations(db, { after: PRE_CLEANUP, until: CLEANUP });
     assert.equal(
       await count(
         db,
         `select 1 from public.registry_field_categories where registry_field_id = '${KEPT}'`,
       ),
-      6,
+      7,
     );
   });
 });

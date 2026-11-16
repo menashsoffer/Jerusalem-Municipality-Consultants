@@ -1,4 +1,4 @@
--- Consolidate the known extraction duplicate before category seeding. Refuse to
+-- Consolidate the known extraction duplicate after category seeding. Refuse to
 -- discard conflicting memberships or changed source records; a person must review them.
 do $$
 declare
