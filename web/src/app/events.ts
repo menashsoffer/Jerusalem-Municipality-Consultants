@@ -69,7 +69,7 @@ async function signOut(page: Page): Promise<void> {
   page.deps.win.sessionStorage.removeItem(SESSION_KEY);
   page.el('#private-content').hidden = true;
   page.deps.view.setSuppliers([]);
-  await page.deps.site.clearCatalog(page.state.userId ?? undefined);
+  await page.deps.site.clearCatalog(page.state.userId ?? undefined, false);
   page.deps.win.location.reload();
 }
 

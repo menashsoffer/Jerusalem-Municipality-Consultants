@@ -79,12 +79,21 @@ export async function loadSnapshot(
   });
 }
 
-export async function clearCatalog(userId?: string): Promise<void> {
+/** `notify: false` clears silently, for a sign-out that reloads the page right after. */
+export async function clearCatalog(userId?: string, notify = true): Promise<void> {
   const id = userId ?? tokenUserId(currentToken ?? '') ?? undefined;
   currentToken = null;
   const clearing = loader.clear(id);
-  publishState(null);
+  if (notify) publishState(null);
   await clearing;
+}
+
+/** A card opened while the cached catalog is revalidating waits for server access. */
+async function confirmed(token: string) {
+  const state = await loader.settled();
+  if (!state?.access || !state.catalog || currentToken !== token)
+    throw new Error('יש להתחבר מחדש.');
+  return { ...state, access: state.access, catalog: state.catalog };
 }
 
 export function getAccess() {
@@ -96,9 +105,7 @@ export async function catalog(token: string) {
 }
 
 export async function detail(token: string, supplierId: string): Promise<SupplierDetail> {
-  const state = loader.state;
-  if (!state?.access || !state.catalog || currentToken !== token)
-    throw new Error('יש להתחבר מחדש.');
+  const state = await confirmed(token);
   return supplierDetail(data(token), state.catalog, supplierId);
 }
 
@@ -110,9 +117,7 @@ export function canAddSupplier(): boolean {
 }
 
 export async function writeContext(token: string): Promise<WriteContext> {
-  const state = loader.state;
-  if (!state?.access || !state.catalog || currentToken !== token)
-    throw new Error('יש להתחבר מחדש.');
+  const state = await confirmed(token);
   return loadWriteContext(data(token), state.catalog, state.access);
 }
 
