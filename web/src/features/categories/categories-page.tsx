@@ -10,7 +10,6 @@ export function CategoriesPage() {
   return (
     <>
       <h1 tabIndex={-1}>בקשות קטגוריה</h1>
-      <p>אישור או קישור בקשה מחייבים מנהל אחר ממי שיצר אותה.</p>
       {navigation.state === 'loading' ? (
         <Skeleton />
       ) : data.requests.length === 0 ? (
@@ -19,12 +18,7 @@ export function CategoriesPage() {
         </EmptyState>
       ) : (
         data.requests.map((request) => (
-          <RequestCard
-            key={request.id}
-            request={request}
-            categories={data.categories}
-            userId={data.userId}
-          />
+          <RequestCard key={request.id} request={request} categories={data.categories} />
         ))
       )}
     </>

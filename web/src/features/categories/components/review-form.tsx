@@ -8,10 +8,9 @@ import { decideRequest } from '../api/requests.ts';
 interface Props {
   id: string;
   name: string;
-  own: boolean;
   categories: { id: string; name: string }[];
 }
-export function ReviewForm({ id, name, own, categories }: Props) {
+export function ReviewForm({ id, name, categories }: Props) {
   const refresh = useRevalidator();
   const [result, action, pending] = useActionState(
     (_previous: { error: string; committed: boolean }, form: FormData) =>
@@ -21,12 +20,12 @@ export function ReviewForm({ id, name, own, categories }: Props) {
   const disabled = pending || result.committed;
   return (
     <form action={action} aria-label={`החלטה על ${name}`}>
-      <ReviewChoice own={own} categories={categories} disabled={disabled} />
+      <ReviewChoice categories={categories} disabled={disabled} />
       <FormField
         field={{ label: 'נימוק להחלטה', hint: 'נימוק נדרש בעת דחייה.' }}
         input={{ name: 'note', disabled }}
       />
-      <DecisionButtons own={own} disabled={disabled} hasCategories={categories.length > 0} />
+      <DecisionButtons disabled={disabled} hasCategories={categories.length > 0} />
       <StatusMessage>
         {pending ? 'שומר החלטה…' : result.committed ? 'ההחלטה נשמרה.' : ''}
       </StatusMessage>
@@ -35,63 +34,42 @@ export function ReviewForm({ id, name, own, categories }: Props) {
   );
 }
 
-function ReviewChoice({
-  own,
-  categories,
-  disabled,
-}: Pick<Props, 'own' | 'categories'> & { disabled: boolean }) {
+function ReviewChoice({ categories, disabled }: Pick<Props, 'categories'> & { disabled: boolean }) {
   return (
-    <>
-      {own ? (
-        <p>מנהל אחר צריך לאשר או לקשר בקשה שיצרת. אפשר לדחות אותה בעצמך.</p>
-      ) : (
-        <SelectField
-          field={{ label: 'קטגוריה קיימת לקישור' }}
-          select={{
-            name: 'category_id',
-            disabled,
-            children: (
-              <>
-                <option value="">בחירת קטגוריה</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </>
-            ),
-          }}
-        />
-      )}
-    </>
+    <SelectField
+      field={{ label: 'קטגוריה קיימת לקישור' }}
+      select={{
+        name: 'category_id',
+        disabled,
+        children: (
+          <>
+            <option value="">בחירת קטגוריה</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
+            ))}
+          </>
+        ),
+      }}
+    />
   );
 }
 function DecisionButtons({
-  own,
   disabled,
   hasCategories,
 }: {
-  own: boolean;
   disabled: boolean;
   hasCategories: boolean;
 }) {
   return (
     <>
-      {!own && (
-        <>
-          <Button type="submit" name="decision" value="approved" disabled={disabled}>
-            אישור ויצירת קטגוריה
-          </Button>{' '}
-          <Button
-            type="submit"
-            name="decision"
-            value="linked"
-            disabled={disabled || !hasCategories}
-          >
-            קישור לקטגוריה קיימת
-          </Button>{' '}
-        </>
-      )}
+      <Button type="submit" name="decision" value="approved" disabled={disabled}>
+        אישור ויצירת קטגוריה
+      </Button>{' '}
+      <Button type="submit" name="decision" value="linked" disabled={disabled || !hasCategories}>
+        קישור לקטגוריה קיימת
+      </Button>{' '}
       <Button type="submit" name="decision" value="rejected" disabled={disabled}>
         דחיית הבקשה
       </Button>

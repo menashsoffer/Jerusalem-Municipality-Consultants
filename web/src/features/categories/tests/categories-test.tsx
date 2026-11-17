@@ -35,13 +35,12 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 describe('category review', () => {
-  it('does not offer approval or linking on an own request', () => {
+  it('offers approval and linking on an own request, since one administrator decides', () => {
     const value = data();
     value.requests = value.requests.map((request) => ({ ...request, created_by: 'admin' }));
     page(value);
-    expect(screen.queryByRole('button', { name: 'אישור ויצירת קטגוריה' })).toBeNull();
-    expect(screen.queryByRole('button', { name: 'קישור לקטגוריה קיימת' })).toBeNull();
-    expect(screen.getByText(/מנהל אחר צריך/)).toBeDefined();
+    expect(screen.getByRole('button', { name: 'אישור ויצירת קטגוריה' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'קישור לקטגוריה קיימת' })).toBeDefined();
   });
   it('requires a reason before rejection', async () => {
     page();
