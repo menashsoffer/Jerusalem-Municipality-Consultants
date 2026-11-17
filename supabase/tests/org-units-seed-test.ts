@@ -10,6 +10,7 @@ const SEED = '20261117100000_org_units_from_site.sql';
 const SPORT = '7d28baab-f5ad-4583-9b10-62733a81c2f7';
 const LEGAL = 'a71241e2-454d-4d43-8f36-d9e404e8f8d3';
 const PLANNING = 'c056e833-4c83-4e7d-88ca-1fdc856d3613';
+const SURVEYORS = '42cda5a1-f528-473b-b3ad-1c84283fd002';
 
 async function owner(db: PGlite, id: string): Promise<string | null> {
   const result = await db.query<{ name: string | null }>(
@@ -27,7 +28,8 @@ describe('municipal units from the site', () => {
     await db.exec(`insert into public.registries (id, name) values
       ('${SPORT}', 'מאגר יועצים אגף הספורט (2021)'),
       ('${LEGAL}', 'הליך שליחויות - אגף היועץ המשפטי'),
-      ('${PLANNING}', 'מאגר יועצים אגף תכנון - 2024')`);
+      ('${PLANNING}', 'מאגר יועצים אגף תכנון - 2024'),
+      ('${SURVEYORS}', 'מאגר מודדים')`);
   });
   after(async () => db.close());
 
@@ -61,9 +63,10 @@ describe('municipal units from the site', () => {
     );
   });
 
-  it('sets owners only where the registry name states the unit', async () => {
+  it('sets stated and approved owners and leaves the rest for review', async () => {
     assert.equal(await owner(db, SPORT), 'אגף הספורט');
     assert.equal(await owner(db, LEGAL), 'מינהל היועץ המשפטי');
-    assert.equal(await owner(db, PLANNING), null);
+    assert.equal(await owner(db, PLANNING), 'אגף תכנון עיר');
+    assert.equal(await owner(db, SURVEYORS), null);
   });
 });

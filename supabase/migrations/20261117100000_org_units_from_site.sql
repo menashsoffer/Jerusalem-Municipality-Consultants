@@ -1,8 +1,8 @@
 -- Municipal units from the organization page of the municipality site
 -- (https://www.jerusalem.muni.il/he/city/municipality/structure/), as Menash pasted it on
--- 17.11.2026. Names only: no people or phone numbers. Every unit is
--- unverified. Registries get an owning unit only where the registry name states the unit
--- outright (documentation/org-units/proposed-units.csv, match "מפורש"); the rest wait for review.
+-- 17.11.2026. Names only: no people or phone numbers. Every unit is unverified. Registries get
+-- an owning unit where the registry name states it, or where Menash approved the proposal
+-- (documentation/org-units/proposed-units.csv); the rest wait for review.
 create temporary table org_unit_seed (
   administration text not null, department text
 ) on commit drop;
@@ -135,7 +135,26 @@ insert into registry_owner_seed values
   ('406f7bd5-057f-4ace-93c4-411cc44479d1',
     'מאגר יועצי חירום וביטחון 2020', 'מינהל תפעול', 'אגף חירום ובטחון'),
   ('1d834395-39b2-441d-98fa-a4be2a80d34f',
-    'מאגר יועצי דיגיטל דוברות והסברה', 'הנהלת העירייה', 'אגף דוברות והסברה');
+    'מאגר יועצי דיגיטל דוברות והסברה', 'הנהלת העירייה', 'אגף דוברות והסברה'),
+  -- Similar names and inferred owners, approved by Menash on 17.11.2026.
+  ('dcb07dbc-d378-41f2-a1b4-2ac08f2db740',
+    'מאגר המרצים של מחלקת ההדרכה (2020)', 'מינהל משאבי אנוש ומינהל עירוני', 'אגף פיתוח הון אנושי'),
+  ('19243036-b4ad-4ae8-95ae-6fc220f27bf8',
+    'מאגר עורכי דין חיצוניים (12/2021)', 'מינהל היועץ המשפטי', null),
+  ('cdd0a533-d3ea-4746-9dca-3b9f9fc9d0de',
+    'פיתוח המשאב האנושי', 'מינהל משאבי אנוש ומינהל עירוני', 'אגף פיתוח הון אנושי'),
+  ('7fb43410-4aa1-41bb-a3fa-fbfd535c51e2',
+    'מאגר יועצים אגף שירות וחוויית לקוח 2025', 'מינהל אסטרטגיה וחדשנות',
+    'אגף לשירות עירוני וחווית לקוח'),
+  ('c056e833-4c83-4e7d-88ca-1fdc856d3613',
+    'מאגר יועצים אגף תכנון - 2024', 'מינהל תכנון ותשתיות', 'אגף תכנון עיר'),
+  ('6bdacc11-3d4f-4874-8a2b-d2d08fbb6ef2',
+    'מאגר יועצים ומתכננים - אגף תכנון', 'מינהל תכנון ותשתיות', 'אגף תכנון עיר'),
+  ('c694f61d-19f4-45f6-ae02-72aa9132eb3b',
+    'מאגר יועצים לשכת התאגידים והחברות העירונית', 'הנהלת העירייה',
+    'אגף התאגידים והחברות העירוניות'),
+  ('701a4488-79bc-413a-bb01-d31c41bcb114',
+    'מאגר יועצים לתחום התרבות והאמנות', 'מינהל תרבות חברה וספורט', 'אגף תרבות ואמנויות');
 
 do $$
 begin
