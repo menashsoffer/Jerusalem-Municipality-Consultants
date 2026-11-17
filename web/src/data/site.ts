@@ -96,6 +96,11 @@ async function confirmed(token: string) {
   return { ...state, access: state.access, catalog: state.catalog };
 }
 
+/** Stable object reference between publications, for React external-store readers. */
+export function getCatalogState(): CatalogState | null {
+  return loader.state;
+}
+
 export function getAccess() {
   return loader.state?.access ?? null;
 }
