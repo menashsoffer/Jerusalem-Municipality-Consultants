@@ -1,4 +1,5 @@
 import { StatusMessage } from '../../../ui/status-message.tsx';
+import styles from './route-check.module.css';
 import { STATUS_LABELS, routeLabel, money, type CheckResult } from '../model/result.ts';
 interface MessagesProps {
   title: string;
@@ -19,9 +20,14 @@ function Messages({ title, items }: MessagesProps) {
 interface Props {
   result: CheckResult;
 }
+const TONES = { ok: 'ok', needs_review: 'needs_review', blocked: 'blocked_route' } as const;
+
 export function ResultPanel({ result }: Props) {
   return (
-    <>
+    <section
+      aria-label="תוצאת בדיקת המסלול"
+      className={[styles.verdict, styles[TONES[result.status]]].join(' ')}
+    >
       <StatusMessage>{STATUS_LABELS[result.status]}</StatusMessage>
       <h3>{routeLabel(result.route)}</h3>
       <p>
@@ -37,6 +43,6 @@ export function ResultPanel({ result }: Props) {
       <Messages title="דרישות המסלול" items={result.requirements} />
       <Messages title="נתונים חסרים" items={result.missing} />
       <Messages title="הערות לבדיקה" items={result.warnings} />
-    </>
+    </section>
   );
 }

@@ -1,4 +1,5 @@
 import { Button } from '../../../ui/button.tsx';
+import styles from './route-check.module.css';
 import { approachLabel, type PickedSupplier } from '../model/engagement.ts';
 
 interface Props {
@@ -8,14 +9,22 @@ interface Props {
 
 export function PickedList({ suppliers, remove }: Props) {
   return (
-    <ul aria-label="ספקים בבקשה">
+    <ul aria-label="ספקים בבקשה" className={styles.picked}>
       {suppliers.map((supplier) => (
         <li key={supplier.id}>
-          <strong>{supplier.name}</strong>
-          {supplier.inactive && <span> · לא פעיל, לא ניתן לפנות אליו</span>}
-          <span> · {approachLabel(supplier.lastApproached)}</span>
-          <span> · {supplier.emails.length ? 'יש דוא״ל' : 'אין דוא״ל במאגר'}</span>{' '}
+          <span>
+            <strong>{supplier.name}</strong>
+            <br />
+            <span className={styles.pickedMeta}>
+              {supplier.inactive && (
+                <span className={styles.blocked}>לא פעיל, לא ניתן לפנות אליו · </span>
+              )}
+              {approachLabel(supplier.lastApproached)} ·{' '}
+              {supplier.emails.length ? 'יש דוא״ל' : 'אין דוא״ל במאגר'}
+            </span>
+          </span>
           <Button
+            variant="secondary"
             aria-label={`הסרה מהבקשה: ${supplier.name}`}
             onClick={() => {
               remove(supplier.id);
