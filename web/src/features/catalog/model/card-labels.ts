@@ -53,14 +53,24 @@ const VENUE_LABELS: [VenueIcon, keyof NonNullable<Supplier['venue']>, string][] 
   ['lighting', 'lighting', 'תאורה'],
 ];
 
+/** Right-to-left cells can store "1,000" as "000,1": a last group shorter than three digits. */
+const REVERSED_THOUSANDS = /\d{3}(?:,\d{3})*,\d{1,2}(?!\d)/;
+
+function capacityText(venue: NonNullable<Supplier['venue']>): string | null {
+  const text = venue.capacity_text;
+  if (text === null || venue.capacity === null || !REVERSED_THOUSANDS.test(text)) return text;
+  return text.replace(REVERSED_THOUSANDS, venue.capacity.toLocaleString('en-US'));
+}
+
 /** Each published hall detail with its own text label; empty fields are left out. */
 export function venueFacts(venue: Supplier['venue']): VenueFact[] {
   if (!venue) return [];
+  const shown = { ...venue, capacity_text: capacityText(venue) };
   const facts = VENUE_LABELS.flatMap(([icon, key, label]): VenueFact[] => {
-    const value = venue[key];
+    const value = shown[key];
     return value === null || value === '' ? [] : [{ icon, text: `${label}: ${String(value)}` }];
   });
-  return venue.survey_year === null
+  return venue.survey_year === null || facts.length === 0
     ? facts
     : [...facts, { icon: null, text: `לפי מאגר ${String(venue.survey_year)}` }];
 }

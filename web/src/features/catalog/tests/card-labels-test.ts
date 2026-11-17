@@ -53,4 +53,35 @@ describe('venue facts', () => {
     );
     assert.deepEqual(venueFacts(null), []);
   });
+
+  it('writes reversed thousands the right way round', () => {
+    const venue = {
+      capacity: 11014,
+      capacity_text: '014,11 מקומות',
+      hall_size: null,
+      stage_size: null,
+      screen: null,
+      sound: null,
+      lighting: null,
+      survey_year: 2024,
+    };
+    assert.deepEqual(
+      venueFacts(venue).map((fact) => fact.text),
+      ['קיבולת: 11,014 מקומות', 'לפי מאגר 2024'],
+    );
+  });
+
+  it('shows nothing when the registry published only the year', () => {
+    const venue = {
+      capacity: null,
+      capacity_text: null,
+      hall_size: null,
+      stage_size: null,
+      screen: null,
+      sound: null,
+      lighting: null,
+      survey_year: 2021,
+    };
+    assert.deepEqual(venueFacts(venue), []);
+  });
 });
