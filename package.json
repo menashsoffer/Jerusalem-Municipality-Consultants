@@ -25,6 +25,7 @@
   "devDependencies": {
     "@babel/core": "7.29.13",
     "@electric-sql/pglite": "0.5.8",
+    "@electric-sql/pglite-pgtap": "0.0.9",
     "@eslint/js": "10.0.1",
     "@rolldown/plugin-babel": "0.3.1",
     "@testing-library/dom": "10.4.2",
