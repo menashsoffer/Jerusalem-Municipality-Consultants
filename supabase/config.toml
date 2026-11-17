@@ -434,6 +434,10 @@ verify_jwt = false
 [functions.threshold-index]
 verify_jwt = false
 
+# Called by the hourly schedule and by the site after a save; takes no input.
+[functions.address-check]
+verify_jwt = false
+
 # Checks the caller's token itself through public.identifier_lookup_input.
 [functions.supplier-identifiers]
 verify_jwt = false
