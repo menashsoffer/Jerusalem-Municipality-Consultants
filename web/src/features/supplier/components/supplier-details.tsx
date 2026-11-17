@@ -24,6 +24,18 @@ function Info({ data }: Props) {
       <Fact text={supplier.review_status === 'verified' ? 'ספק מאומת' : 'ספק לא מאומת'}>
         <span>מקור: מצב האימות במערכת</span>
       </Fact>
+      {supplier.status === 'inactive' && (
+        <p role="note">
+          {[
+            'הספק אינו פעיל',
+            supplier.status_reason && `סיבה: ${supplier.status_reason}`,
+            supplier.status_source && `מקור: ${supplier.status_source}`,
+            supplier.status_changed_on && `מתאריך ${supplier.status_changed_on}`,
+          ]
+            .filter(Boolean)
+            .join(' · ')}
+        </p>
+      )}
       <Fact text={`סוג ישות: ${ENTITY_KINDS[supplier.entity_kind] ?? 'לא ידוע'}`}>{NO_RECORD}</Fact>
       {supplier.website && <Fact text={`אתר: ${supplier.website}`}>{NO_RECORD}</Fact>}
       {supplier.note && <Fact text={`הערה: ${supplier.note}`}>{NO_RECORD}</Fact>}

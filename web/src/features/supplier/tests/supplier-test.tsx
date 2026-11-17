@@ -7,10 +7,17 @@ import { supplierDetail, type SupplierDetail } from '../../../data/supplier-deta
 import { writableVersions, type WriteContext } from '../../../data/write-context.ts';
 import * as rpc from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
-import { access, client, SUPPLIER, wireCatalog } from '../../../../tests/catalog-fixture.ts';
+import {
+  access,
+  client,
+  SUPPLIER,
+  wireCatalog,
+  wireDetail,
+} from '../../../../tests/catalog-fixture.ts';
 import { SupplierDetails } from '../components/supplier-details.tsx';
 import { EditForms } from '../components/edit-forms.tsx';
 import { AddForm } from '../components/add-form.tsx';
+import { StatusForm } from '../components/status-form.tsx';
 
 afterEach(() => {
   cleanup();
@@ -18,7 +25,7 @@ afterEach(() => {
 });
 
 async function detail(audit: unknown = null): Promise<SupplierDetail> {
-  const api = client(() => Response.json({ identifiers: [], audit }));
+  const api = client(() => Response.json(wireDetail({ audit })));
   return supplierDetail(api, compactCatalog(wireCatalog()), SUPPLIER);
 }
 
@@ -103,6 +110,24 @@ describe('supplier edits', () => {
       contact_id: 'contact1',
       kind: 'email',
       value: 'a@example.test',
+    });
+  });
+});
+
+describe('supplier status', () => {
+  it('requires a reason before asking the database to deactivate', async () => {
+    mockWrites();
+    const call = vi.spyOn(rpc, 'rpc').mockResolvedValue(null);
+    show(<StatusForm data={await detail()} today="2026-11-17" />);
+    await userEvent.click(await screen.findByRole('button', { name: 'סימון כלא פעיל' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('יש למלא סיבה ותאריך.');
+    expect(call).not.toHaveBeenCalled();
+    await userEvent.type(screen.getByRole('textbox', { name: 'סיבה' }), 'מונתה לשופטת');
+    await userEvent.click(screen.getByRole('button', { name: 'סימון כלא פעיל' }));
+    expect(await screen.findByText('הספק סומן כלא פעיל.')).toBeDefined();
+    expect(call.mock.calls[0]?.[1]).toEqual({
+      target: SUPPLIER,
+      change: { active: false, reason: 'מונתה לשופטת', source: '', changedOn: '2026-11-17' },
     });
   });
 });

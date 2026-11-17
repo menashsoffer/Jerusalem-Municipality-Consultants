@@ -26,6 +26,9 @@ export function HomePage() {
         <Link to="/thresholds">אישור הסף החודשי</Link>
       </p>
       <p>
+        <Link to="/load-control">בקרת טעינה</Link>
+      </p>
+      <p>
         <Link to="/auth">כניסה והרשאות</Link>
       </p>
       <p>בחרו את המסך המתאים לפעולה שברצונכם לבצע.</p>

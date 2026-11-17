@@ -11,6 +11,15 @@
     --color-error: #9d2727;
     --color-subtle: #e3efec;
     --color-backdrop: #10283099;
+    --color-badge-success-text: #14532d;
+    --color-badge-success-surface: #e8f5ec;
+    --color-badge-success-border: #2f7a45;
+    --color-badge-warning-text: #713f12;
+    --color-badge-warning-surface: #fdf3dc;
+    --color-badge-warning-border: #a16207;
+    --color-badge-danger-text: #7f1d1d;
+    --color-badge-danger-surface: #fdecec;
+    --color-badge-danger-border: #b42318;
     --font-body: system-ui, -apple-system, sans-serif;
     --font-weight-label: 650;
     --font-weight-strong: 700;

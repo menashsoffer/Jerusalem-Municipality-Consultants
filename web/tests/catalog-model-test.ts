@@ -15,10 +15,23 @@ const FILTERS: Filters = {
   subcategory: '',
   unit: '',
   validity: '',
+  identifier: '',
+  venue: '',
+  showInactive: false,
+  showClosed: false,
   today: '2026-11-16',
 };
 
 describe('compact catalog and precomputed search', () => {
+  it('rejects a nested position that points past its array', () => {
+    const wire = wireCatalog();
+    const [row] = wire.suppliers;
+    assert.ok(row);
+    const broken = [...row];
+    broken[8] = [[9, null, 0, null, null, null, null, null, null]];
+    assert.throws(() => compactCatalog({ ...wire, suppliers: [broken] }));
+  });
+
   it('restores inherited names and encoded defaults without replacing genuinely missing names', () => {
     const catalog = compactCatalog({
       ...wireCatalog(),
@@ -33,10 +46,13 @@ describe('compact catalog and precomputed search', () => {
           null,
           [[0, null, null]],
           [
-            ['v1', 'f1', 0, null, null, null, null, null, null],
-            ['v2', 'f2', null, null, null, null, null, null, null],
+            [0, 0, 0, null, null, null, null, null, null],
+            [1, 1, null, null, null, null, null, null, null],
           ],
           [],
+          null,
+          null,
+          null,
         ],
       ],
     });
@@ -50,12 +66,14 @@ describe('compact catalog and precomputed search', () => {
     assert.equal(catalog.memberships[1]?.name_as_published, null);
   });
 
-  it('retains source information, dates, invalid contacts and all field categories', () => {
+  it('retains source information, dates, contact kinds and all field categories', () => {
     const data = compactCatalog(wireCatalog());
     const [supplier] = buildCatalog(data);
     assert.ok(supplier);
-    assert.equal(data.contacts[0]?.status, 'current');
-    assert.equal(supplier.contacts[0]?.valid, false);
+    assert.deepEqual(supplier.contactKinds, ['email']);
+    assert.equal(data.names[0]?.source_document_id, 'd1');
+    assert.equal(data.versions[1]?.registry_id, 'r2');
+    assert.equal(data.fields[1]?.registry_id, 'r2');
     assert.equal(supplier.memberships[0]?.source, 'https://example.test/source');
     assert.equal(supplier.memberships[0].validUntil, '2028-01-01');
     assert.deepEqual(
@@ -174,5 +192,60 @@ describe('catalog filters on a 533-supplier catalog', () => {
     const start = performance.now();
     assert.ok(filterCatalog(rows, { ...FILTERS, query: 'ספק 5' }).length > 0);
     assert.ok(performance.now() - start < 1000);
+  });
+});
+
+describe('status filters', () => {
+  function catalog(status: string | null, registryStatus: string) {
+    const wire = wireCatalog();
+    const [row] = wire.suppliers;
+    assert.ok(row);
+    const supplier: unknown[] = [...row];
+    supplier[3] = status;
+    supplier[11] = status === 'inactive' ? ['מונתה לשופטת', null, '2026-09-01'] : null;
+    const registries = wire.registries.map((r) =>
+      r[0] === 'r1' ? [r[0], r[1], r[2], registryStatus] : r,
+    );
+    return buildCatalog(compactCatalog({ ...wire, registries, suppliers: [supplier] }));
+  }
+
+  it('hides an inactive supplier unless asked for or found by its own name', () => {
+    const suppliers = catalog('inactive', 'active');
+    assert.equal(suppliers[0]?.inactive?.reason, 'מונתה לשופטת');
+    assert.equal(filterCatalog(suppliers, FILTERS).length, 0);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, showInactive: true }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, query: 'שם נוכחי' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, query: 'כבישים' }).length, 0);
+  });
+
+  it('hides memberships in closed registries by default', () => {
+    const suppliers = catalog(null, 'closed');
+    assert.equal(suppliers[0]?.memberships[0]?.registryClosed, true);
+    assert.equal(filterCatalog(suppliers, FILTERS).length, 0);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, showClosed: true }).length, 1);
+  });
+
+  it('filters by identifier state', () => {
+    const suppliers = catalog(null, 'active');
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'verified' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'pending' }).length, 0);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'none' }).length, 0);
+  });
+
+  it('keeps only venues, and only those with enough seats when asked', () => {
+    const wire = wireCatalog();
+    const [row] = wire.suppliers;
+    assert.ok(row);
+    const hall: unknown[] = [...row];
+    hall[12] = [180, '180 מקומות', null, null, null, null, null, 2024];
+    const suppliers = buildCatalog(compactCatalog({ ...wire, suppliers: [hall] }));
+    assert.equal(suppliers[0]?.venue?.capacity, 180);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, venue: 'venue' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, venue: '100' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, venue: '200' }).length, 0);
+    const plain = catalog(null, 'active');
+    assert.equal(filterCatalog(plain, { ...FILTERS, venue: 'venue' }).length, 0);
+    hall[12] = [180];
+    assert.throws(() => compactCatalog({ ...wire, suppliers: [hall] }));
   });
 });

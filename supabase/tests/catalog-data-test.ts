@@ -58,7 +58,7 @@ describe('new catalog respects database visibility', () => {
     }
   });
 
-  it('shows only current contact details in the catalog and supplier details', async () => {
+  it('keeps contact values out of the catalog and shows current ones in details', async () => {
     await db.exec(`insert into public.supplier_contacts (supplier_id, kind, value, status) values
       ('${SUPPLIER}', 'phone', '0501111111', 'outdated'),
       ('${SUPPLIER}', 'phone', '0502222222', 'current'),
@@ -66,15 +66,30 @@ describe('new catalog respects database visibility', () => {
     await as(db, USERS.editor, async () => {
       const client = clientFor(db);
       const cached = compactCatalog(object(await client.rpc('catalog_snapshot', {})).catalog);
-      assert.deepEqual(
-        buildCatalog(cached)[0]?.contacts.map((contact) => contact.value),
-        ['0502222222'],
-      );
+      // The catalog carries only the kinds; values come with the supplier's details.
+      assert.deepEqual(buildCatalog(cached)[0]?.contactKinds, ['phone']);
+      assert.equal(JSON.stringify(cached).includes('0502222222'), false);
       const detail = await supplierDetail(client, cached, SUPPLIER);
       assert.deepEqual(
         detail.contacts.map((contact) => contact.value),
         ['0502222222'],
       );
     });
+  });
+
+  it('returns a personal ID number in details to editors but never to a viewer', async () => {
+    for (const [user, expected] of [
+      [USERS.viewer, ['company']],
+      [USERS.editor, ['company', 'personal_id']],
+    ] as const) {
+      await as(db, user, async () => {
+        const result = await db.query<{ value: { identifiers: { scheme: string }[] } }>(
+          'select public.supplier_detail($1) as value',
+          [SUPPLIER],
+        );
+        const schemes = result.rows[0]?.value.identifiers.map((row) => row.scheme).sort();
+        assert.deepEqual(schemes, expected);
+      });
+    }
   });
 });

@@ -1140,6 +1140,9 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "status_reason": string | null;
+      "status_source": string | null;
+      "status_changed_on": string | null;
     };
     Insert: {
       "id"?: string;
@@ -1156,6 +1159,9 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "status_reason"?: string | null;
+      "status_source"?: string | null;
+      "status_changed_on"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -1172,6 +1178,9 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "status_reason"?: string | null;
+      "status_source"?: string | null;
+      "status_changed_on"?: string | null;
     };
   };
   "threshold_coverage": {
@@ -1264,6 +1273,56 @@ export interface PublicSchema {
       "index_value"?: number | null;
       "source"?: string;
       "is_official"?: boolean;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
+  "venue_specs": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "capacity": number | null;
+      "capacity_text": string | null;
+      "hall_size": string | null;
+      "stage_size": string | null;
+      "screen": string | null;
+      "sound": string | null;
+      "lighting": string | null;
+      "survey_year": number | null;
+      "source_registry_id": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "capacity"?: number | null;
+      "capacity_text"?: string | null;
+      "hall_size"?: string | null;
+      "stage_size"?: string | null;
+      "screen"?: string | null;
+      "sound"?: string | null;
+      "lighting"?: string | null;
+      "survey_year"?: number | null;
+      "source_registry_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "capacity"?: number | null;
+      "capacity_text"?: string | null;
+      "hall_size"?: string | null;
+      "stage_size"?: string | null;
+      "screen"?: string | null;
+      "sound"?: string | null;
+      "lighting"?: string | null;
+      "survey_year"?: number | null;
+      "source_registry_id"?: string | null;
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;

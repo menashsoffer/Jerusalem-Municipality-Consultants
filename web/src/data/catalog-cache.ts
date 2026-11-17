@@ -51,7 +51,7 @@ export class IndexedCatalogCache implements CatalogCache {
   private readonly factory: () => IDBFactory;
 
   constructor(name: string, factory: () => IDBFactory = () => indexedDB) {
-    this.name = `consultants-catalog-v1:${name}`;
+    this.name = `consultants-catalog-v2:${name}`;
     this.factory = factory;
   }
 

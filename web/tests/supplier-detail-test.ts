@@ -3,7 +3,14 @@ import { it } from 'node:test';
 
 import { supplierDetail } from '../src/data/supplier-detail.ts';
 import { compactCatalog } from '../src/data/compact-catalog.ts';
-import { client, requestBody, requestUrl, SUPPLIER, wireCatalog } from './catalog-fixture.ts';
+import {
+  client,
+  requestBody,
+  requestUrl,
+  SUPPLIER,
+  wireCatalog,
+  wireDetail,
+} from './catalog-fixture.ts';
 
 const AUDIT = {
   id: 1,
@@ -14,7 +21,7 @@ const AUDIT = {
   created_at: '2026-11-12T12:00:00Z',
 };
 
-it('loads identifiers and permitted audit in one RPC, including deleted related rows', async () => {
+it('loads identifiers, contacts and permitted audit in one RPC, including deleted rows', async () => {
   const cached = compactCatalog(wireCatalog());
   for (const audit of [null, [AUDIT]]) {
     let requests = 0;
@@ -22,12 +29,16 @@ it('loads identifiers and permitted audit in one RPC, including deleted related 
       requests++;
       assert.match(requestUrl(url), /rpc\/supplier_detail$/);
       assert.deepEqual(requestBody(init), { supplier_id: SUPPLIER });
-      return Response.json({ identifiers: [], audit });
+      return Response.json(wireDetail({ audit }));
     });
     const detail = await supplierDetail(api, cached, SUPPLIER);
     assert.equal(requests, 1);
     assert.equal(detail.supplier.display_name, 'שם נוכחי');
     assert.deepEqual(detail.audit, audit);
+    assert.deepEqual(
+      detail.contacts.map((row) => [row.value, row.is_valid, row.supplier_id]),
+      [['bad', false, SUPPLIER]],
+    );
   }
 });
 
