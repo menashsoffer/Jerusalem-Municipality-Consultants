@@ -1,4 +1,5 @@
 import type { Access, Role } from '../../../data/access.ts';
+import { check, decisionNote } from '../../../lib/rules/forms.ts';
 import { grantInputSchema, type GrantInput, type GrantRow, type Unit } from '../api/users.ts';
 export const ROLE_LABELS: Record<Role, string> = {
   viewer: 'צופה',
@@ -43,6 +44,8 @@ function mayGrant(input: GrantInput, scope: { admin: boolean; units: Unit[] }): 
     (scope.admin || ['viewer', 'editor'].includes(input.wanted_role))
   );
 }
+/** The review note by the shared rules: required to reject, and meaningful when written. */
 export function noteError(decision: string, note: string): string {
-  return decision === 'rejected' && note.trim().length < 2 ? 'יש לנמק דחייה בשני תווים לפחות.' : '';
+  const checked = check(decisionNote(decision), { note });
+  return checked.ok ? '' : (checked.errors.note ?? '');
 }

@@ -4,7 +4,7 @@ import { after, before, describe, it } from 'node:test';
 import type { PGlite } from '@electric-sql/pglite';
 
 import { RULE_CASES } from '../../web/src/lib/rules/tests/rule-cases.ts';
-import { ACCESS_FIXTURE, SUPPLIER, USERS, VERSION } from './access-fixture.ts';
+import { ACCESS_FIXTURE, SUPPLIER, UNIT_1, USERS, VERSION } from './access-fixture.ts';
 import { as, migratedDatabase } from './pglite.ts';
 
 async function rejection(db: PGlite, sql: string, params: unknown[] = []): Promise<string> {
@@ -130,6 +130,42 @@ describe('one save for the edit dialog', () => {
     const rename = JSON.stringify({ supplier_id: SUPPLIER, display_name: 'שם אחר', contacts: [] });
     await as(db, USERS.viewer, async () => {
       assert.notEqual(await rejection(db, update, [rename]), '');
+    });
+  });
+});
+
+describe('request and note rules', () => {
+  let db: PGlite;
+  before(async () => {
+    db = await migratedDatabase();
+    await db.exec(ACCESS_FIXTURE);
+  });
+  after(async () => {
+    await db.close();
+  });
+
+  it('refuses a junk subject or a zero estimate for an engagement request', async () => {
+    const create = 'select public.create_engagement_request($1::jsonb)';
+    const draft = {
+      unit_id: UNIT_1,
+      subject: 'ייעוץ ארגוני',
+      estimated_value: 100000,
+      value_includes_vat: false,
+      requested_exemption: null,
+    };
+    await as(db, USERS.admin, async () => {
+      const junk = JSON.stringify({ ...draft, subject: '1234' });
+      assert.equal(await rejection(db, create, [junk]), 'invalid:needs_letters');
+      const zero = JSON.stringify({ ...draft, estimated_value: 0 });
+      assert.equal(await rejection(db, create, [zero]), 'invalid:bad_amount');
+      assert.equal(await rejection(db, create, [JSON.stringify(draft)]), '');
+    });
+  });
+
+  it('refuses a review note that says nothing', async () => {
+    await as(db, USERS.admin, async () => {
+      const decide = "select public.decide_profile($1::uuid, 'rejected', $2)";
+      assert.equal(await rejection(db, decide, [USERS.pending, '!!!']), 'invalid:needs_letters');
     });
   });
 });

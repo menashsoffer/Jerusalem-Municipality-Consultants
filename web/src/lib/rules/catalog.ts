@@ -1,5 +1,6 @@
 import { dateProblem } from './dates.ts';
 import type { RuleKey } from './messages.ts';
+import { amountProblem, exemptionProblem, noteProblem, subjectProblem } from './requests.ts';
 import {
   addressProblem,
   emailProblem,
@@ -28,6 +29,10 @@ export const RULES: Record<string, (value: string) => RuleKey | null> = {
   'identifier:company': (value) => identifierProblem('company', value),
   'identifier:nonprofit': (value) => identifierProblem('nonprofit', value),
   'identifier:vat_dealer': (value) => identifierProblem('vat_dealer', value),
+  engagement_subject: subjectProblem,
+  amount: amountProblem,
+  exemption: exemptionProblem,
+  decision_note: noteProblem,
   /** Dates are checked against a fixed "today" so the contract does not depend on the clock. */
   date: (value) => dateProblem(value, '2026-11-17'),
 };

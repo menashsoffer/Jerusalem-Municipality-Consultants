@@ -9,9 +9,13 @@ function form(decision: string, note = '', category = '') {
   return data;
 }
 describe('category decision input', () => {
-  it('requires a rejection reason and a link destination', () => {
-    assert.deepEqual(parseDecision(form('rejected', ' ')), { error: 'יש לציין נימוק לדחייה.' });
-    assert.deepEqual(parseDecision(form('linked')), { error: 'יש לבחור קטגוריה קיימת לקישור.' });
+  it('requires a meaningful reason for every decision, and a link destination', () => {
+    assert.deepEqual(parseDecision(form('rejected', ' ')), { error: 'נימוק: שדה חובה.' });
+    assert.deepEqual(parseDecision(form('approved', '')), { error: 'נימוק: שדה חובה.' });
+    assert.match((parseDecision(form('approved', '!!')) as { error: string }).error, /מילים/);
+    assert.deepEqual(parseDecision(form('linked', 'כפילות')), {
+      error: 'יש לבחור קטגוריה קיימת לקישור.',
+    });
   });
   it('sends no category target when approving or rejecting', () => {
     assert.deepEqual(parseDecision(form('approved', ' נדרש ', 'irrelevant')), {
@@ -19,9 +23,9 @@ describe('category decision input', () => {
       note: 'נדרש',
       category_id: null,
     });
-    assert.deepEqual(parseDecision(form('linked', '', 'chosen')), {
+    assert.deepEqual(parseDecision(form('linked', 'כפילות', 'chosen')), {
       decision: 'linked',
-      note: '',
+      note: 'כפילות',
       category_id: 'chosen',
     });
   });

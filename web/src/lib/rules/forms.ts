@@ -14,6 +14,12 @@ import {
   supplierName,
 } from './supplier.ts';
 import { optional, ruled } from './text.ts';
+import {
+  amountProblem,
+  decisionNoteProblem,
+  exemptionProblem,
+  subjectProblem,
+} from './requests.ts';
 
 /** The schemas behind each supplier write form; the database runs the same checks again. */
 export const renameForm = z.object({ display_name: supplierName });
@@ -85,6 +91,23 @@ export const membershipForm = z
     const order = datesOrderProblem(form.registered_from, form.registered_until);
     if (order) issue('registered_until', order);
   });
+
+/** The route-check form; a subject is needed only when the request is saved to a unit. */
+export const draftForm = z
+  .object({
+    subject: cleanText,
+    estimated_value: ruled(amountProblem).transform((value) => Number(value.replaceAll(',', ''))),
+    requested_exemption: optional(exemptionProblem),
+    unit_id: cleanText,
+  })
+  .superRefine(({ subject, unit_id: unit }, context) => {
+    const key = unit || subject ? subjectProblem(subject) : null;
+    if (key) context.addIssue({ code: 'custom', path: ['subject'], message: key });
+  });
+
+export function decisionNote(decision: string, noteAlways = false) {
+  return z.object({ note: ruled((value) => decisionNoteProblem(decision, value, noteAlways)) });
+}
 
 export type FieldErrors = Record<string, string>;
 export type Checked<T> = { ok: true; value: T } | { ok: false; errors: FieldErrors };

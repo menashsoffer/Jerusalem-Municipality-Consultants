@@ -55,11 +55,17 @@ describe('category review', () => {
       value.requests = [];
       return Promise.resolve(schema.parse('new-category'));
     });
+    await userEvent.type(screen.getByRole('textbox', { name: 'נימוק להחלטה' }), 'תחום חדש נדרש');
     await userEvent.click(screen.getByRole('button', { name: 'אישור ויצירת קטגוריה' }));
     expect(await screen.findByRole('heading', { name: 'אין בקשות קטגוריה ממתינות' })).toBeDefined();
     expect(call.mock.calls[0]?.slice(0, 2)).toEqual([
       'decide_category_request',
-      { request_id: 'request', decision: 'approved', note: '', category_id: null },
+      {
+        request_id: 'request',
+        decision: 'approved',
+        note: 'תחום חדש נדרש',
+        category_id: null,
+      },
     ]);
   });
   it('links to the selected category and sends the reason', async () => {
@@ -84,6 +90,7 @@ describe('category review', () => {
   it('keeps the request visible when the database denies approval', async () => {
     page();
     vi.spyOn(rpc, 'rpc').mockRejectedValue(new DataError(403));
+    await userEvent.type(screen.getByRole('textbox', { name: 'נימוק להחלטה' }), 'תחום חדש נדרש');
     await userEvent.click(screen.getByRole('button', { name: 'אישור ויצירת קטגוריה' }));
     expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
     expect(screen.getByRole('heading', { name: 'ייעוץ אקוסטי' })).toBeDefined();
@@ -95,6 +102,7 @@ describe('category review', () => {
       value.requests = [];
       return Promise.reject(new DataError(404));
     });
+    await userEvent.type(screen.getByRole('textbox', { name: 'נימוק להחלטה' }), 'תחום חדש נדרש');
     await userEvent.click(screen.getByRole('button', { name: 'אישור ויצירת קטגוריה' }));
     expect(await screen.findByRole('heading', { name: 'אין בקשות קטגוריה ממתינות' })).toBeDefined();
   });
