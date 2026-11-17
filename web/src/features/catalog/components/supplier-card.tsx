@@ -1,39 +1,27 @@
 import { Link } from 'react-router';
-import { type Supplier, type Membership, validity } from '../../../catalog-model.ts';
+import type { Supplier } from '../../../catalog-model.ts';
 import {
   contactSummary,
   inactiveLine,
-  membershipState,
   supplierBadges,
+  supplierFields,
 } from '../model/card-labels.ts';
-import { sourceUrl } from '../model/filters.ts';
 import { Button } from '../../../ui/button.tsx';
 import { SHORTLIST_MAX, toggleShortlist } from '../../../lib/shortlist.ts';
 import { VenueFacts } from './venue-facts.tsx';
 import styles from './catalog.module.css';
-const LABELS = { valid: 'בתוקף', expired: 'פג תוקף', undated: 'ללא תאריך סיום', future: 'טרם החל' };
-/** Pool and field on the first line; validity, review state and the source on the second. */
-function MembershipLine({ member, today }: { member: Membership; today: string }) {
-  const source = sourceUrl(member.source);
-  const details = [LABELS[validity(member, today)], ...membershipState(member)];
+const FIELDS_SHOWN = 3;
+/** What the supplier does, as quiet tags; the rest of the listings wait on the supplier screen. */
+function Fields({ supplier, today }: { supplier: Supplier; today: string }) {
+  const fields = supplierFields(supplier.memberships, today);
+  const more = fields.length - FIELDS_SHOWN;
   return (
-    <li>
-      <span className={styles.pool}>
-        <span className={styles.dot} aria-hidden="true" />
-        {[member.registry, member.field].filter(Boolean).join(' · ')}
-      </span>
-      <span className={styles.memberMeta}>
-        {details.join(' · ')}
-        {source && (
-          <>
-            {' · '}
-            <a href={source} target="_blank" rel="noopener noreferrer">
-              פתיחת המקור{member.page ? ` · עמוד ${String(member.page)}` : ''}
-            </a>
-          </>
-        )}
-      </span>
-    </li>
+    <ul className={styles.fields} aria-label="תחום">
+      {fields.slice(0, FIELDS_SHOWN).map((field) => (
+        <li key={field}>{field}</li>
+      ))}
+      {more > 0 && <li className={styles.more}>ועוד {String(more)}</li>}
+    </ul>
   );
 }
 interface Props {
@@ -98,11 +86,7 @@ export function SupplierCard({ supplier, today, deferred, picked }: Props) {
             {inactiveLine(supplier.inactive)}
           </p>
         )}
-        <ul className={styles.members} aria-label="מאגרים">
-          {supplier.memberships.map((member, index) => (
-            <MembershipLine key={index} member={member} today={today} />
-          ))}
-        </ul>
+        <Fields supplier={supplier} today={today} />
         <VenueFacts venue={supplier.venue} />
         <footer className={styles.cardFoot}>
           <span className={styles.contact}>{contactSummary(supplier.contactKinds)}</span>

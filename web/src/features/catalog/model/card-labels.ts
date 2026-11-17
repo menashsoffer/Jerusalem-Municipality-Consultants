@@ -1,4 +1,4 @@
-import type { Membership, Supplier } from '../../../catalog-model.ts';
+import { type Membership, type Supplier, validity } from '../../../catalog-model.ts';
 
 /** Contact values load with the supplier's details, so the card only says what exists. */
 export function contactSummary(kinds: string[]): string {
@@ -32,11 +32,15 @@ export function inactiveLine(inactive: NonNullable<Supplier['inactive']>): strin
   return parts.join(' · ');
 }
 
-export function membershipState(member: Pick<Membership, 'reviewStatus' | 'registryClosed'>) {
-  return [
-    member.registryClosed ? 'מאגר סגור' : '',
-    member.reviewStatus === 'verified' ? '' : 'בבדיקה',
-  ].filter(Boolean);
+/**
+ * The card names what the supplier does, not where each listing came from: the field of every
+ * current listing (the registry when a listing has no field), each once. Expired listings count
+ * only when nothing current is left. Sources and pages stay on the supplier screen.
+ */
+export function supplierFields(memberships: readonly Membership[], today: string): string[] {
+  const current = memberships.filter((member) => validity(member, today) !== 'expired');
+  const shown = current.length ? current : memberships;
+  return [...new Set(shown.map((member) => member.field || member.registry))];
 }
 
 export type VenueIcon = 'seats' | 'size' | 'stage' | 'screen' | 'sound' | 'lighting';

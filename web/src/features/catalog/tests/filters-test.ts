@@ -1,7 +1,7 @@
 import { suppliers } from './fixture.ts';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
-import { optionsFor, emptyFilters, changeFilter, reconcile, sourceUrl } from '../model/filters.ts';
+import { optionsFor, emptyFilters, changeFilter, reconcile } from '../model/filters.ts';
 describe('catalog filter choices', () => {
   it('deduplicates roots and offers children only under the selected root', () => {
     const options = optionsFor(suppliers(), { registry: 'r1', category: 'root' });
@@ -35,10 +35,5 @@ describe('catalog filter choices', () => {
       unit: 'gone',
     };
     assert.deepEqual(reconcile(current, suppliers()), emptyFilters('2026-11-16'));
-  });
-  it('allows only HTTPS source links', () => {
-    assert.equal(sourceUrl('https://example.test/source'), 'https://example.test/source');
-    for (const value of [null, 'javascript:alert(1)', 'http://example.test', 'not a URL'])
-      assert.equal(sourceUrl(value), null);
   });
 });

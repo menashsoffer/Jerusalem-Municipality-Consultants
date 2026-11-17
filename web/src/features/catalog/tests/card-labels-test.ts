@@ -5,9 +5,10 @@ import {
   contactSummary,
   venueFacts,
   inactiveLine,
-  membershipState,
+  supplierFields,
   supplierBadges,
 } from '../model/card-labels.ts';
+import type { Membership } from '../../../catalog-model.ts';
 
 it('answers the identifier and activity questions with separate badges', () => {
   assert.deepEqual(
@@ -25,14 +26,22 @@ it('answers the identifier and activity questions with separate badges', () => {
   assert.equal(inactiveLine(inactive), 'סיבה: מונתה לשופטת · מקור: פרסום · מתאריך 2026-09-01');
 });
 
-it('says which contact kinds exist and marks memberships under review or closed', () => {
+it('says which contact kinds exist', () => {
   assert.equal(contactSummary(['email', 'phone']), 'יש במאגר: טלפון ודוא״ל');
   assert.equal(contactSummary(['address']), 'אין טלפון או דוא״ל במאגר');
-  assert.deepEqual(membershipState({ reviewStatus: 'needs_review', registryClosed: true }), [
-    'מאגר סגור',
-    'בבדיקה',
-  ]);
-  assert.deepEqual(membershipState({ reviewStatus: 'verified', registryClosed: false }), []);
+});
+
+describe('supplier fields on the card', () => {
+  const listing = (field: string, validUntil: string | null) =>
+    ({ registry: 'מאגר יועצים', field, validFrom: null, validUntil }) as Membership;
+  it('lists each current field once, using the registry when a listing has no field', () => {
+    const rows = [listing('ניהול פרויקטים', null), listing('ניהול פרויקטים', '2027-01-01')];
+    rows.push(listing('', null), listing('תכנון', '2020-01-01'));
+    assert.deepEqual(supplierFields(rows, '2026-11-17'), ['ניהול פרויקטים', 'מאגר יועצים']);
+  });
+  it('falls back to expired listings when nothing current is left', () => {
+    assert.deepEqual(supplierFields([listing('תכנון', '2020-01-01')], '2026-11-17'), ['תכנון']);
+  });
 });
 
 describe('venue facts', () => {
