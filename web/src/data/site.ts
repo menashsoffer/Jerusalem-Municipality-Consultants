@@ -13,12 +13,20 @@ const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
 
 type EventInsert = PublicSchema['activity_events']['Insert'];
 
+type Unauthorized = (token: string) => Promise<void>;
+let unauthorized: Unauthorized = () => clearCatalog();
+/** What a 401 for the catalog's own token does: by default it forgets the catalog. */
+export function setUnauthorizedHandler(handler: Unauthorized): void {
+  unauthorized = handler;
+}
+
 export function data(token: string): DataClient {
   return new DataClient({
     baseUrl: BASE,
     publicKey: PUBLIC_KEY,
     token,
-    onUnauthorized: () => (token === currentToken ? clearCatalog() : Promise.resolve()),
+    onUnauthorized: () =>
+      currentToken && sameUser(currentToken, token) ? unauthorized(token) : Promise.resolve(),
   });
 }
 
@@ -35,6 +43,25 @@ export function exchangeCode(code: string, verifier: string): Promise<Response> 
     method: 'POST',
     headers: authHeaders(),
     body: JSON.stringify({ auth_code: code, code_verifier: verifier }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+}
+
+/** Trades a refresh token for a new access token (and a new refresh token). */
+export function refreshGrant(refreshToken: string): Promise<Response> {
+  return fetch(`${BASE}/auth/v1/token?grant_type=refresh_token`, {
+    method: 'POST',
+    headers: authHeaders(),
+    body: JSON.stringify({ refresh_token: refreshToken }),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+}
+
+/** Ends this browser's session on the server, so its refresh token stops working. */
+export function logout(token: string): Promise<Response> {
+  return fetch(`${BASE}/auth/v1/logout?scope=local`, {
+    method: 'POST',
+    headers: authHeaders(token),
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   });
 }
@@ -64,12 +91,19 @@ function publishState(state: CatalogState | null): void {
   for (const listener of listeners) listener(state);
 }
 
+/** The same token, or a renewed one for the same signed-in user. */
+function sameUser(a: string, b: string): boolean {
+  const id = tokenUserId(a);
+  return a === b || (id !== null && id === tokenUserId(b));
+}
+
 export async function loadSnapshot(
   token: string,
   publish: (state: CatalogState) => void = () => undefined,
   onRequest: () => void = () => undefined,
 ): Promise<CatalogState> {
-  if (currentToken && currentToken !== token) await loader.clear();
+  // A renewed token for the same user keeps the cache; another user's does not.
+  if (currentToken && !sameUser(currentToken, token)) await loader.clear();
   currentToken = token;
   return loader.load(data(token), token, {
     publish: (state) => {
@@ -92,8 +126,8 @@ export async function clearCatalog(userId?: string, notify = true): Promise<void
 /** A card opened while the cached catalog is revalidating waits for server access. */
 async function confirmed(token: string) {
   const state = await loader.settled();
-  if (!state?.access || !state.catalog || currentToken !== token)
-    throw new Error('יש להתחבר מחדש.');
+  const current = currentToken !== null && sameUser(currentToken, token);
+  if (!state?.access || !state.catalog || !current) throw new Error('יש להתחבר מחדש.');
   return { ...state, access: state.access, catalog: state.catalog };
 }
 

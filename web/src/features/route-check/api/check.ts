@@ -1,8 +1,6 @@
-import { z, rows, requireRoles, sessionToken, setAdminSession } from '../../../data/rpc.ts';
+import { z, rows, requireRoles, freshToken, recoverSession } from '../../../data/rpc.ts';
 import { DataError, REQUEST_TIMEOUT_MS } from '../../../data/client.ts';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../../../data/environment.ts';
-import { clearCatalog } from '../../../data/site.ts';
-import { SESSION_KEY } from '../../../data/session.ts';
 import { checkInputSchema, resultSchema, type CheckInput } from '../model/result.ts';
 const requestSchema = z.object({
   id: z.string(),
@@ -44,7 +42,7 @@ class CheckError extends DataError {
 }
 export async function checkRoute(input: CheckInput, fetcher: typeof fetch = fetch) {
   const body = checkInputSchema.parse(input);
-  const token = sessionToken();
+  const token = await freshToken();
   let response: Response;
   try {
     response = await fetcher(`${SUPABASE_URL}/functions/v1/route-check`, {
@@ -60,11 +58,8 @@ export async function checkRoute(input: CheckInput, fetcher: typeof fetch = fetc
   } catch {
     throw new DataError(0);
   }
-  if (response.status === 401) {
-    setAdminSession(null);
-    await clearCatalog().catch(() => undefined);
-    if (typeof window !== 'undefined') window.sessionStorage.removeItem(SESSION_KEY);
-  }
+  // Renews the session for the next try, or signs out when it cannot be renewed.
+  if (response.status === 401) await recoverSession(token).catch(() => null);
   if (!response.ok) throw new CheckError(response.status);
   let raw: unknown;
   try {

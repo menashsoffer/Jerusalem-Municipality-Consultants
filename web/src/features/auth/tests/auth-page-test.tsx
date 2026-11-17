@@ -1,11 +1,13 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { AuthPage } from '../auth-page.tsx';
+import { AuthPage, EXPIRED_NOTICE, loader } from '../auth-page.tsx';
 import type { Access, Role } from '../../../data/access.ts';
+import * as rpc from '../../../data/rpc.ts';
 import { setAdminSession } from '../../../data/rpc.ts';
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   setAdminSession(null);
 });
 function page(access: Access | null) {
@@ -14,7 +16,7 @@ function page(access: Access | null) {
       {
         path: '/',
         Component: AuthPage,
-        loader: () => (access ? { userId: 'user', access } : null),
+        loader: () => ({ who: access ? { userId: 'user', access } : null, expired: false }),
       },
     ],
     { initialEntries: ['/'] },
@@ -59,5 +61,39 @@ describe('admin identity screen', () => {
     setAdminSession(null, 'תוקף ניסיון ההתחברות פג.');
     page(null);
     expect((await screen.findByRole('alert')).textContent).toContain('פג');
+  });
+});
+describe('arriving at sign-in from another screen', () => {
+  it('explains that the sign-in ended and offers the sign-in controls', async () => {
+    const router = createMemoryRouter([{ path: '/auth', Component: AuthPage, loader }], {
+      initialEntries: ['/auth?next=%2Fusers&reason=expired'],
+    });
+    render(<RouterProvider router={router} />);
+    expect((await screen.findByRole('alert')).textContent).toBe(EXPIRED_NOTICE);
+    expect(screen.getByRole('button', { name: 'כניסה באמצעות Google' })).toBeDefined();
+  });
+
+  it('sends an active user straight back to the screen they came from', async () => {
+    vi.spyOn(rpc, 'identity').mockResolvedValue({
+      userId: 'user',
+      access: {
+        state: 'active',
+        member: true,
+        admin: true,
+        editor: false,
+        manager: false,
+        grants: [],
+      },
+    });
+    setAdminSession({ token: 't', exp: Date.now() + 3_600_000, refresh: 'r' });
+    const router = createMemoryRouter(
+      [
+        { path: '/auth', Component: AuthPage, loader },
+        { path: '/users', element: <h1>משתמשים</h1> },
+      ],
+      { initialEntries: ['/auth?next=%2Fusers'] },
+    );
+    render(<RouterProvider router={router} />);
+    expect(await screen.findByRole('heading', { name: 'משתמשים' })).toBeDefined();
   });
 });

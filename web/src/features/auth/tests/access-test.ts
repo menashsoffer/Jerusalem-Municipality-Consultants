@@ -58,7 +58,7 @@ describe('admin auth and route permissions', () => {
   }
   it('loads existing access functions and rejects a viewer on an admin-only route', async () => {
     const token = `x.${Buffer.from(JSON.stringify({ sub: USER, app_metadata: { role: 'admin' } })).toString('base64url')}.x`;
-    setAdminSession({ token, exp: Date.now() + 60_000 });
+    setAdminSession({ token, exp: Date.now() + 60_000, refresh: null });
     const calls: string[] = [];
     globalThis.fetch = (input) => {
       const url = new URL(input instanceof Request ? input.url : input);
@@ -96,7 +96,7 @@ describe('admin auth and route permissions', () => {
     );
   });
   it('rejects an expired session before requesting roles', async () => {
-    setAdminSession({ token: 'expired', exp: 1 });
+    setAdminSession({ token: 'expired', exp: 1, refresh: null });
     globalThis.fetch = () => {
       throw Error('must not fetch');
     };
@@ -119,7 +119,7 @@ describe('admin auth and route permissions', () => {
     const expired = context('https://test.invalid/#error=access_denied&error_code=otp_expired');
     expired.storage.setItem(
       SESSION_KEY,
-      JSON.stringify({ token: 'previous', exp: Date.now() + 60_000 }),
+      JSON.stringify({ token: 'previous', exp: Date.now() + 60_000, refresh: null }),
     );
     const result = await prepareAdmin(expired);
     assert.equal(result.session, null);

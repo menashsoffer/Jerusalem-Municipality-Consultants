@@ -2,8 +2,10 @@ import { z, type ZodType } from 'zod';
 z.config({ jitless: true });
 export { z };
 import type { PublicSchema } from '../database.types.ts';
-import { SESSION_KEY, type Session } from './session.ts';
-import { data, clearCatalog, loadSnapshot } from './site.ts';
+import type { Session } from './session.ts';
+import { data, loadSnapshot, refreshGrant } from './site.ts';
+import { SessionKeeper } from './auth-session.ts';
+import { MemoryStorage } from './memory-storage.ts';
 import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
 
@@ -74,52 +76,71 @@ const accessSchema = z.object({
     }),
   ),
 });
-let session: Session | null = null;
+let keeper = new SessionKeeper({ storage: new MemoryStorage(), refresh: refreshGrant });
 let bootMessage = '';
+/** The browser entry installs a keeper backed by localStorage before the router starts. */
+export function installKeeper(value: SessionKeeper): void {
+  keeper = value;
+}
+export function getKeeper(): SessionKeeper {
+  return keeper;
+}
 export function setAdminSession(value: Session | null, message = ''): void {
-  session = value;
+  keeper.adopt(value);
   bootMessage = message;
 }
 export function getAdminSession(): Session | null {
-  return session;
+  return keeper.current();
 }
 export function getBootMessage(): string {
   return bootMessage;
 }
+/** The current access token, without renewing it; loaders that cannot wait use this. */
 export function sessionToken(): string {
+  const session = keeper.current();
   if (!session || session.exp <= Date.now()) throw new DataError(401);
   return session.token;
+}
+/** An access token with time left, renewed first when it is about to expire. */
+export async function freshToken(): Promise<string> {
+  const session = await keeper.fresh();
+  if (!session) throw new DataError(401);
+  return session.token;
+}
+/** After a 401: a renewed token, or null once the session cannot be renewed. */
+export async function recoverSession(failedToken: string): Promise<string | null> {
+  const session = await keeper.recover(failedToken);
+  return session?.token ?? null;
 }
 export interface Identity {
   userId: string;
   access: Access;
 }
-async function clearExpired(error: unknown): Promise<void> {
-  if (error instanceof DataError && error.status === 401) {
-    session = null;
-    await clearCatalog();
-    if (typeof window !== 'undefined') window.sessionStorage.removeItem(SESSION_KEY);
+function unauthorized(error: unknown): boolean {
+  return error instanceof DataError && error.status === 401;
+}
+/** Runs a request with a fresh token, and once more with a renewed token after a 401. */
+async function authorized<T>(request: (token: string) => Promise<T>): Promise<T> {
+  const token = await freshToken();
+  try {
+    return await request(token);
+  } catch (error) {
+    if (!unauthorized(error)) throw error;
+    const renewed = await recoverSession(token);
+    if (!renewed) throw error;
+    return request(renewed);
   }
 }
-async function validated<T>(request: () => Promise<unknown>, schema: ZodType<T>): Promise<T> {
-  try {
-    return schema.parse(await request());
-  } catch (error) {
-    await clearExpired(error);
-    throw error;
-  }
+async function validated<T>(
+  request: (token: string) => Promise<unknown>,
+  schema: ZodType<T>,
+): Promise<T> {
+  return schema.parse(await authorized(request));
 }
 /** All roles come from the existing server access loader, never from JWT app_metadata. */
 export async function identity(): Promise<Identity> {
-  try {
-    const token = sessionToken();
-    const state = await loadSnapshot(token);
-    const access = accessSchema.parse(state.access);
-    return { userId: state.userId, access };
-  } catch (error) {
-    await clearExpired(error);
-    throw error;
-  }
+  const state = await authorized((token) => loadSnapshot(token));
+  return { userId: state.userId, access: accessSchema.parse(state.access) };
 }
 export function permitted(access: Access, roles: readonly Role[]): boolean {
   return (
@@ -136,12 +157,12 @@ export async function rpc<K extends keyof AdminRpc, T>(
   args: AdminRpc[K],
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated(() => data(sessionToken()).rpc(name, args), schema);
+  return validated((token) => data(token).rpc(name, args), schema);
 }
 export async function rows<T>(
   table: keyof PublicSchema,
   filters: Record<string, string>,
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated(() => data(sessionToken()).list(table, filters), schema);
+  return validated((token) => data(token).list(table, filters), schema);
 }

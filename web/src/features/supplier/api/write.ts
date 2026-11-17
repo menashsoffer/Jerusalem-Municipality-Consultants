@@ -1,4 +1,4 @@
-import { rpc, sessionToken, z } from '../../../data/rpc.ts';
+import { rpc, freshToken, z } from '../../../data/rpc.ts';
 import {
   loadSnapshot,
   saveMembership,
@@ -22,7 +22,7 @@ export async function saveAndRefresh(
 ): Promise<SaveResult> {
   let token: string;
   try {
-    token = sessionToken();
+    token = await freshToken();
     await request(token);
   } catch (error) {
     return { message: '', error: error instanceof Error ? error.message : 'השמירה נכשלה.' };
@@ -58,6 +58,6 @@ export const status = (supplierId: string, change: StatusChange) => async () => 
 export const membership = (payload: Record<string, string>) => (token: string) =>
   saveMembership(token, payload);
 
-export function loadWriteContext(): Promise<WriteContext> {
-  return writeContext(sessionToken());
+export async function loadWriteContext(): Promise<WriteContext> {
+  return writeContext(await freshToken());
 }

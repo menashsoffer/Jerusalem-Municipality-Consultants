@@ -37,6 +37,7 @@ function show(element: React.ReactNode) {
 
 function mockWrites() {
   vi.spyOn(rpc, 'sessionToken').mockReturnValue('token');
+  vi.spyOn(rpc, 'freshToken').mockResolvedValue('token');
   vi.spyOn(site, 'loadSnapshot').mockResolvedValue(
     {} as Awaited<ReturnType<typeof site.loadSnapshot>>,
   );

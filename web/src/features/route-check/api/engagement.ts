@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router';
-import { z, identity, rpc, sessionToken } from '../../../data/rpc.ts';
+import { z, identity, rpc, freshToken } from '../../../data/rpc.ts';
 import { DataError } from '../../../data/client.ts';
 import { mayWriteUnit } from '../../../data/access.ts';
 import { detail, getCatalogState } from '../../../data/site.ts';
@@ -21,7 +21,7 @@ function pickedIds(url: URL): string[] {
 
 async function loadSuppliers(ids: string[]): Promise<PickedSupplier[]> {
   if (!ids.length) return [];
-  const token = sessionToken();
+  const token = await freshToken();
   const [details, last] = await Promise.all([
     Promise.all(ids.map((id) => detail(token, id).catch(() => null))),
     rpc('last_approaches', { suppliers: ids }, lastSchema),

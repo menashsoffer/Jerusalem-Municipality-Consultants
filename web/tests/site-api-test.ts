@@ -27,7 +27,7 @@ function snapshotOr(reply: Reply, overrides: Record<string, unknown> = {}): Repl
 }
 
 function signIn(): void {
-  rpc.setAdminSession({ token: TOKEN, exp: Date.now() + 60_000 });
+  rpc.setAdminSession({ token: TOKEN, exp: Date.now() + 60_000, refresh: null });
 }
 
 afterEach(async () => {
@@ -48,6 +48,37 @@ describe('sign-in requests', () => {
       /\/auth\/v1\/otp\?redirect_to=https%3A%2F%2Fsite\.test%2Fa%20b$/,
     );
     assert.deepEqual(requestBody(calls[1]?.init), { email: 'a@x.test', create_user: false });
+  });
+});
+
+describe('session renewal requests', () => {
+  it('renews with the refresh token and signs out on the server', async () => {
+    const calls = stubFetch(() => new Response(null, { status: 200 }));
+    await site.refreshGrant('r1');
+    await site.logout('tok');
+    assert.match(calls[0]?.url ?? '', /\/auth\/v1\/token\?grant_type=refresh_token$/);
+    assert.deepEqual(requestBody(calls[0]?.init), { refresh_token: 'r1' });
+    assert.match(calls[1]?.url ?? '', /\/auth\/v1\/logout\?scope=local$/);
+    const headers = calls[1]?.init?.headers as Record<string, string>;
+    assert.equal(headers.Authorization, 'Bearer tok');
+  });
+
+  it('hands a 401 for the catalog token to the installed handler', async () => {
+    signIn();
+    stubFetch(snapshotOr(() => new Response(null, { status: 401 })));
+    await site.loadSnapshot(TOKEN);
+    const seen: string[] = [];
+    site.setUnauthorizedHandler((token) => {
+      seen.push(token);
+      return Promise.resolve();
+    });
+    try {
+      await assert.rejects(site.data(TOKEN).rpc('load_control', {}));
+    } finally {
+      site.setUnauthorizedHandler(() => site.clearCatalog());
+    }
+    assert.deepEqual(seen, [TOKEN]);
+    assert.notEqual(site.getAccess(), null);
   });
 });
 
@@ -117,7 +148,7 @@ describe('catalog state', () => {
 describe('admin RPC helpers', () => {
   it('requires a live session for every call', async () => {
     assert.throws(() => rpc.sessionToken(), DataError);
-    rpc.setAdminSession({ token: TOKEN, exp: Date.now() - 1 }, 'expired');
+    rpc.setAdminSession({ token: TOKEN, exp: Date.now() - 1, refresh: null }, 'expired');
     assert.equal(rpc.getBootMessage(), 'expired');
     assert.throws(() => rpc.sessionToken(), /פג תוקף/);
     await assert.rejects(rpc.identity(), DataError);
