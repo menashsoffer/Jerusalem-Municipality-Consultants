@@ -39,6 +39,15 @@ describe('supplier fields on the card', () => {
     rows.push(listing('', null), listing('תכנון', '2020-01-01'));
     assert.deepEqual(supplierFields(rows, '2026-11-17'), ['ניהול פרויקטים', 'מאגר יועצים']);
   });
+  it('splits a field the registry published as one ";" list into separate tags', () => {
+    const rows = [listing("א'2 מוכנות לחרום; ב'1 חרום מזרח העיר", null)];
+    rows.push(listing("ב'1 חרום מזרח העיר ;  ;כתיבת תיק אב", null));
+    assert.deepEqual(supplierFields(rows, '2026-11-17'), [
+      "א'2 מוכנות לחרום",
+      "ב'1 חרום מזרח העיר",
+      'כתיבת תיק אב',
+    ]);
+  });
   it('falls back to expired listings when nothing current is left', () => {
     assert.deepEqual(supplierFields([listing('תכנון', '2020-01-01')], '2026-11-17'), ['תכנון']);
   });

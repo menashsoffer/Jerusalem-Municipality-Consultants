@@ -40,7 +40,19 @@ export function inactiveLine(inactive: NonNullable<Supplier['inactive']>): strin
 export function supplierFields(memberships: readonly Membership[], today: string): string[] {
   const current = memberships.filter((member) => validity(member, today) !== 'expired');
   const shown = current.length ? current : memberships;
-  return [...new Set(shown.map((member) => member.field || member.registry))];
+  return [...new Set(shown.flatMap((member) => splitFields(member.field) ?? [member.registry]))];
+}
+
+/**
+ * Some registries publish several fields as one ";"-separated text. Each becomes its own tag.
+ * Returns null when the text holds no field at all.
+ */
+export function splitFields(text: string): string[] | null {
+  const parts = text
+    .split(';')
+    .map((part) => part.trim())
+    .filter(Boolean);
+  return parts.length ? parts : null;
 }
 
 export type VenueIcon = 'seats' | 'size' | 'stage' | 'screen' | 'sound' | 'lighting';
