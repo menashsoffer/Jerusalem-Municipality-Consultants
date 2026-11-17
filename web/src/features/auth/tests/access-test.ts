@@ -116,9 +116,7 @@ describe('admin auth and route permissions', () => {
     const normal = context('https://test.invalid/#/auth');
     await prepareAdmin(normal);
     assert.equal(normal.location.hash, '#/auth');
-    const expired = context(
-      'https://test.invalid/#error=access_denied&error_code=otp_expired',
-    );
+    const expired = context('https://test.invalid/#error=access_denied&error_code=otp_expired');
     expired.storage.setItem(
       SESSION_KEY,
       JSON.stringify({ token: 'previous', exp: Date.now() + 60_000 }),
