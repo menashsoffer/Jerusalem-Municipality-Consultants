@@ -100,12 +100,3 @@ export function changeFilter(
   const next = { ...filters, [key]: value };
   return reconcile(next, suppliers);
 }
-export function sourceUrl(value: string | null): string | null {
-  if (!value) return null;
-  try {
-    const url = new URL(value);
-    return url.protocol === 'https:' ? url.href : null;
-  } catch {
-    return null;
-  }
-}
