@@ -1,3 +1,4 @@
+import type { TelemetryEvent } from '../lib/vitals-model.ts';
 import type { PublicSchema } from '../database.types.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
@@ -147,5 +148,13 @@ export function eventRequest(token: string, events: EventInsert[]): EventRequest
       headers: { ...authHeaders(token), Prefer: 'return=minimal' },
       body: JSON.stringify(events),
     },
+  };
+}
+
+/** The anonymous monitoring endpoint has no actor, user, session or route identifier. */
+export function telemetryRequest(token: string, events: TelemetryEvent[]): EventRequest {
+  return {
+    url: `${BASE}/rest/v1/rpc/record_web_telemetry`,
+    init: { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ events }) },
   };
 }
