@@ -43,24 +43,6 @@ export const CONTACT_KINDS: Record<string, string> = {
   website: 'אתר',
   contact_person: 'איש קשר',
 };
-const DATE_SOURCES: Record<string, string> = {
-  registry_document: 'מסמך המאגר',
-  internal_registry: 'המאגר הפנימי',
-  municipal_registry: 'מאגר העירייה',
-  unknown: 'לא תועד',
-};
-const OPERATIONS: Record<string, string> = {
-  INSERT: 'נוספה רשומה',
-  UPDATE: 'עודכנה רשומה',
-  DELETE: 'נמחקה רשומה',
-};
-const TABLES: Record<string, string> = {
-  suppliers: 'ספק',
-  supplier_names: 'שם',
-  supplier_identifiers: 'מזהה',
-  supplier_contacts: 'פרט קשר',
-  memberships: 'רישום במאגר',
-};
 const FIELDS: Record<string, string> = {
   display_name: 'שם',
   name: 'שם',
@@ -76,37 +58,11 @@ const FIELDS: Record<string, string> = {
   website: 'אתר',
 };
 
-interface MembershipDates {
-  registered_from: string | null;
-  registered_until: string | null;
-  engagement_started_on: string | null;
-  dates_source: string;
-}
-export function membershipDates(item: MembershipDates): string {
-  const dates = `רישום: ${item.registered_from ?? 'לא צוין'} עד ${item.registered_until ?? 'לא צוין'}`;
-  const from = `תחילת התקשרות: ${item.engagement_started_on ?? 'לא צוין'}`;
-  const origin = `מקור התאריכים: ${DATE_SOURCES[item.dates_source] ?? 'לא תועד'}`;
-  return `${dates} · ${from} · ${origin}`;
-}
-
 /** The labelled names of the fields an audit entry changed, without their values. */
 export function changedFields(changes: Json): string {
   if (!changes || typeof changes !== 'object' || Array.isArray(changes)) return '';
   const labels = Object.keys(changes).flatMap((key) => FIELDS[key] ?? []);
   return [...new Set(labels)].join(', ');
-}
-
-interface AuditEntry {
-  operation: string;
-  table_name: string;
-  created_at: string;
-  changes: Json;
-}
-export function auditLine(item: AuditEntry): string {
-  const date = new Date(item.created_at).toLocaleString('he-IL', { timeZone: 'Asia/Jerusalem' });
-  const changed = changedFields(item.changes);
-  const parts = [OPERATIONS[item.operation] ?? 'שינוי', TABLES[item.table_name] ?? 'רשומה', date];
-  return [...parts, ...(changed ? [changed] : [])].join(' · ');
 }
 
 /** Only https links to source documents are shown; anything else is reported as unavailable. */

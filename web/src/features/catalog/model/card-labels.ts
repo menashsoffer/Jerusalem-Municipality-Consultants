@@ -1,4 +1,5 @@
 import { type Membership, type Supplier, validity } from '../../../catalog-model.ts';
+import { splitFields } from '../../../lib/fields.ts';
 
 /** Contact values load with the supplier's details, so the card only says what exists. */
 export function contactSummary(kinds: string[]): string {
@@ -41,18 +42,6 @@ export function supplierFields(memberships: readonly Membership[], today: string
   const current = memberships.filter((member) => validity(member, today) !== 'expired');
   const shown = current.length ? current : memberships;
   return [...new Set(shown.flatMap((member) => splitFields(member.field) ?? [member.registry]))];
-}
-
-/**
- * Some registries publish several fields as one ";"-separated text. Each becomes its own tag.
- * Returns null when the text holds no field at all.
- */
-export function splitFields(text: string): string[] | null {
-  const parts = text
-    .split(';')
-    .map((part) => part.trim())
-    .filter(Boolean);
-  return parts.length ? parts : null;
 }
 
 export type VenueIcon = 'seats' | 'size' | 'stage' | 'screen' | 'sound' | 'lighting';

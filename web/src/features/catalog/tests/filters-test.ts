@@ -2,6 +2,7 @@ import { suppliers } from './fixture.ts';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { optionsFor, emptyFilters, changeFilter, reconcile } from '../model/filters.ts';
+import { restoreFilters, saveFilters } from '../model/saved-filters.ts';
 describe('catalog filter choices', () => {
   it('deduplicates roots and offers children only under the selected root', () => {
     const options = optionsFor(suppliers(), { registry: 'r1', category: 'root' });
@@ -35,5 +36,24 @@ describe('catalog filter choices', () => {
       unit: 'gone',
     };
     assert.deepEqual(reconcile(current, suppliers()), emptyFilters('2026-11-16'));
+  });
+});
+
+describe('saved catalog search', () => {
+  it('restores filters saved for the same history entry and rejects other shapes', () => {
+    const values = new Map<string, string>();
+    const fake = {
+      getItem: (k: string) => values.get(k) ?? null,
+      setItem: (k: string, v: string) => values.set(k, v),
+    };
+    Object.defineProperty(globalThis, 'sessionStorage', { value: fake, configurable: true });
+    const fresh = emptyFilters('2026-11-17');
+    saveFilters('a', { ...fresh, query: 'חירום', today: '2026-11-01' });
+    assert.deepEqual(restoreFilters('a', fresh), { ...fresh, query: 'חירום' });
+    assert.equal(restoreFilters('b', fresh), null);
+    values.set('catalog-filters:c', JSON.stringify({ ...fresh, showInactive: 'yes' }));
+    assert.equal(restoreFilters('c', fresh), null);
+    values.set('catalog-filters:d', '{broken');
+    assert.equal(restoreFilters('d', fresh), null);
   });
 });
