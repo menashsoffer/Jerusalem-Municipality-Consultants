@@ -7,6 +7,7 @@ import { prepareAdmin } from './features/auth/api/bootstrap.ts';
 import { Skeleton } from './ui/skeleton.tsx';
 import { setAdminSession } from './data/rpc.ts';
 import './styles/layers.css';
+import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './app-shell/shell.css';
