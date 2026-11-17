@@ -1,16 +1,17 @@
 import type { CatalogData } from './catalog.ts';
-import { array, boolean, nullable, number, object, rows, text, tuple } from './parse.ts';
+import { array, nullable, number, object, rows, text, tuple } from './parse.ts';
 import { DataError } from './client.ts';
 
 const optionalText = nullable(text);
+const position = nullable(number);
 const defaults =
   (fallback: string) =>
   (value: unknown): string =>
     value === null ? fallback : text(value);
-const NAME = { name: text, kind: defaults('as_published'), source_document_id: optionalText };
+const NAME = { name: text, kind: defaults('as_published'), document: position };
 const MEMBER = {
-  registry_version_id: text,
-  registry_field_id: optionalText,
+  version: position,
+  field: position,
   name_as_published: optionalText,
   source_page: nullable(number),
   registered_from: optionalText,
@@ -18,13 +19,6 @@ const MEMBER = {
   engagement_started_on: optionalText,
   dates_source: defaults('unknown'),
   review_status: defaults('needs_review'),
-};
-const CONTACT = {
-  id: text,
-  kind: text,
-  value: text,
-  is_valid: nullable(boolean),
-  source_document_id: optionalText,
 };
 const SUPPLIER = {
   id: text,
@@ -35,6 +29,14 @@ const SUPPLIER = {
   review_status: defaults('needs_review'),
   note: optionalText,
 };
+
+/** A nested row names a sibling array entry by its position; resolve it back to an id. */
+function idAt(list: { id: string }[], at: number | null): string | null {
+  if (at === null) return null;
+  const row = list[at];
+  if (!row) throw new DataError(0);
+  return row.id;
+}
 
 function inheritedName(value: unknown, index: number, name: string): unknown[] {
   const values = [...array(value)];
@@ -47,25 +49,50 @@ function supplier(value: unknown, result: CatalogData): void {
   if (raw.length !== 10) throw new DataError(0);
   const row = tuple(raw.slice(0, 7), SUPPLIER);
   result.suppliers.push(row);
-  result.names.push(
-    ...rows(
-      array(raw[7]).map((value) => inheritedName(value, 0, row.display_name)),
-      NAME,
-    ).map((child) => ({ ...child, supplier_id: row.id })),
-  );
-  result.memberships.push(
-    ...rows(
-      array(raw[8]).map((value) => inheritedName(value, 2, row.display_name)),
-      MEMBER,
-    ).map((child) => ({ ...child, supplier_id: row.id })),
-  );
-  result.contacts.push(
-    ...rows(raw[9], CONTACT).map((child) => ({
-      ...child,
+  const names = array(raw[7]).map((value) => inheritedName(value, 0, row.display_name));
+  for (const { document, ...name } of rows(names, NAME)) {
+    const source_document_id = idAt(result.documents, document);
+    result.names.push({ ...name, source_document_id, supplier_id: row.id });
+  }
+  const members = array(raw[8]).map((value) => inheritedName(value, 2, row.display_name));
+  for (const { version, field, ...member } of rows(members, MEMBER)) {
+    const registry_version_id = idAt(result.versions, version);
+    if (registry_version_id === null) throw new DataError(0);
+    const registry_field_id = idAt(result.fields, field);
+    result.memberships.push({
+      ...member,
+      registry_version_id,
+      registry_field_id,
       supplier_id: row.id,
-      status: 'current',
-    })),
+    });
+  }
+  for (const kind of array(raw[9]))
+    result.contactKinds.push({ supplier_id: row.id, kind: text(kind) });
+}
+
+function references(raw: Record<string, unknown>) {
+  const registries = rows(raw.registries, {
+    id: text,
+    name: text,
+    owner_unit_id: optionalText,
+    status: text,
+  });
+  const documents = rows(raw.documents, { id: text, url: text });
+  const versions = rows(raw.versions, {
+    id: text,
+    registry: position,
+    document: position,
+    valid_from: optionalText,
+    valid_until: optionalText,
+  }).map(({ registry, document, ...version }) => ({
+    ...version,
+    registry_id: idAt(registries, registry) ?? '',
+    source_document_id: idAt(documents, document),
+  }));
+  const fields = rows(raw.fields, { id: text, registry: position, source_text: text }).map(
+    ({ registry, ...field }) => ({ ...field, registry_id: idAt(registries, registry) ?? '' }),
   );
+  return { registries, documents, versions, fields };
 }
 
 /** See documentation/catalog-snapshot-contract-he.md for the ordered wire columns. */
@@ -75,25 +102,11 @@ export function compactCatalog(value: unknown): CatalogData {
     suppliers: [],
     names: [],
     memberships: [],
-    contacts: [],
-    registries: rows(raw.registries, {
-      id: text,
-      name: text,
-      owner_unit_id: optionalText,
-      status: text,
-    }),
-    versions: rows(raw.versions, {
-      id: text,
-      registry_id: text,
-      source_document_id: optionalText,
-      valid_from: optionalText,
-      valid_until: optionalText,
-    }),
-    fields: rows(raw.fields, { id: text, registry_id: text, source_text: text }),
+    contactKinds: [],
+    ...references(raw),
     categories: rows(raw.categories, { id: text, name: text, parent_id: optionalText }),
     fieldCategories: rows(raw.fieldCategories, { registry_field_id: text, category_id: text }),
     units: rows(raw.units, { id: text, name: text }),
-    documents: rows(raw.documents, { id: text, url: text }),
   };
   for (const value of array(raw.suppliers)) supplier(value, result);
   return result;

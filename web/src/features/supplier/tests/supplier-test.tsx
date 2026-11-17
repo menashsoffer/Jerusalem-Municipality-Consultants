@@ -7,7 +7,13 @@ import { supplierDetail, type SupplierDetail } from '../../../data/supplier-deta
 import { writableVersions, type WriteContext } from '../../../data/write-context.ts';
 import * as rpc from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
-import { access, client, SUPPLIER, wireCatalog } from '../../../../tests/catalog-fixture.ts';
+import {
+  access,
+  client,
+  SUPPLIER,
+  wireCatalog,
+  wireDetail,
+} from '../../../../tests/catalog-fixture.ts';
 import { SupplierDetails } from '../components/supplier-details.tsx';
 import { EditForms } from '../components/edit-forms.tsx';
 import { AddForm } from '../components/add-form.tsx';
@@ -18,7 +24,7 @@ afterEach(() => {
 });
 
 async function detail(audit: unknown = null): Promise<SupplierDetail> {
-  const api = client(() => Response.json({ identifiers: [], audit }));
+  const api = client(() => Response.json(wireDetail({ audit })));
   return supplierDetail(api, compactCatalog(wireCatalog()), SUPPLIER);
 }
 

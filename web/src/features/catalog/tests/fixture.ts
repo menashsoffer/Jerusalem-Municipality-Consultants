@@ -15,7 +15,7 @@ export function suppliers(): Supplier[] {
       id: 'other',
       name: 'ספק אחר',
       searchNames: ['ספק אחר'],
-      contacts: [],
+      contactKinds: [],
       memberships: [
         {
           ...member,

@@ -1,5 +1,6 @@
 import { Link } from 'react-router';
 import { type Supplier, type Membership, validity } from '../../../catalog-model.ts';
+import { contactSummary } from '../model/contact-summary.ts';
 import { sourceUrl } from '../model/filters.ts';
 import styles from './catalog.module.css';
 const LABELS = { valid: 'בתוקף', expired: 'פג תוקף', undated: 'ללא תאריך סיום', future: 'טרם החל' };
@@ -34,14 +35,7 @@ export function SupplierCard({ supplier, today, deferred }: Props) {
         {supplier.memberships.map((member, index) => (
           <MembershipLine key={index} member={member} today={today} />
         ))}
-        {supplier.contacts
-          .filter((c) => c.kind === 'phone' || c.kind === 'email')
-          .map((contact, index) => (
-            <p key={index}>
-              {contact.kind === 'phone' ? 'טלפון' : 'דוא״ל'}: <bdi dir="ltr">{contact.value}</bdi>
-              {contact.valid === false ? ' (לא תקין)' : ''}
-            </p>
-          ))}
+        <p>{contactSummary(supplier.contactKinds)}</p>
         <Link
           to={`/supplier/${encodeURIComponent(supplier.id)}`}
           aria-label={`פרטי ספק: ${supplier.name}`}

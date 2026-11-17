@@ -29,7 +29,8 @@ export interface Supplier {
   searchNames: string[];
   verified: boolean;
   memberships: Membership[];
-  contacts: { kind: string; value: string; valid: boolean | null }[];
+  /** Kinds of current contact details on record; the values load with the supplier. */
+  contactKinds: string[];
 }
 
 export function validity(membership: Membership, today: string): Validity {
@@ -129,7 +130,7 @@ export function buildCatalog(data: CatalogData): Supplier[] {
     data.memberships.filter((row) => !['rejected', 'removed'].includes(row.review_status)),
     (row) => row.supplier_id,
   );
-  const contacts = groupBy(data.contacts, (row) => row.supplier_id);
+  const contactKinds = groupBy(data.contactKinds, (row) => row.supplier_id);
   return (
     data.suppliers
       .filter((row) => row.status !== 'merged')
@@ -146,11 +147,7 @@ export function buildCatalog(data: CatalogData): Supplier[] {
         memberships: (memberships.get(row.id) ?? [])
           .map((item) => member(item, refs))
           .filter((item): item is Membership => item !== null),
-        contacts: (contacts.get(row.id) ?? []).map((item) => ({
-          kind: item.kind,
-          value: item.value,
-          valid: item.is_valid,
-        })),
+        contactKinds: (contactKinds.get(row.id) ?? []).map((item) => item.kind),
       }))
       // A supplier whose memberships are hidden by access rules must not be
       // displayed without the registry and source needed to interpret it.

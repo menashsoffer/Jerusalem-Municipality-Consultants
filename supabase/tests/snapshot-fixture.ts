@@ -64,7 +64,6 @@ export const PROJECTIONS = {
     'dates_source',
     'review_status',
   ],
-  contacts: ['id', 'kind', 'value', 'is_valid', 'source_document_id'],
   registries: ['id', 'name', 'owner_unit_id', 'status'],
   versions: ['id', 'registry_id', 'source_document_id', 'valid_from', 'valid_until'],
   fields: ['id', 'registry_id', 'source_text'],
@@ -101,6 +100,20 @@ function compactValue(column: string, value: unknown, displayName: unknown): unk
   return DEFAULTS[column] === value ? null : value;
 }
 
+/** Columns that point at a sibling array, mapped to that array, as the snapshot encodes them. */
+const POSITIONS: Record<string, keyof typeof TABLES> = {
+  registry_version_id: 'versions',
+  registry_field_id: 'fields',
+  source_document_id: 'documents',
+  registry_id: 'registries',
+};
+type Positions = Record<string, Map<unknown, number>>;
+function encode(column: string, value: unknown, positions: Positions): unknown {
+  const target = POSITIONS[column];
+  if (!target || value === null) return value;
+  return positions[target]?.get(value) ?? null;
+}
+
 export async function directCatalog(db: PGlite): Promise<Records> {
   const tables: Record<string, Records[]> = {};
   for (const [key, [table, where]] of Object.entries(TABLES)) {
@@ -109,24 +122,43 @@ export async function directCatalog(db: PGlite): Promise<Records> {
       await db.query<Records>(`select * from public.${table} where ${where} order by ${order}`)
     ).rows;
   }
+  const positions: Positions = Object.fromEntries(
+    Object.values(POSITIONS).map((key) => [
+      key,
+      new Map((tables[key] ?? []).map((row, index) => [row.id, index])),
+    ]),
+  );
   const result: Records = {};
-  for (const key of Object.keys(TABLES) as (keyof typeof TABLES)[]) {
+  for (const key of [
+    'registries',
+    'categories',
+    'fieldCategories',
+    'units',
+    'documents',
+  ] as const) {
     result[key] = (tables[key] ?? []).map((row) => PROJECTIONS[key].map((col) => row[col]));
+  }
+  for (const key of ['versions', 'fields'] as const) {
+    result[key] = (tables[key] ?? []).map((row) =>
+      PROJECTIONS[key].map((col) => (col === 'id' ? row[col] : encode(col, row[col], positions))),
+    );
   }
   result.suppliers = (tables.suppliers ?? []).map((row) => [
     ...PROJECTIONS.suppliers.map((col) => compactValue(col, row[col], row.display_name)),
-    ...(['names', 'memberships', 'contacts'] as const).map((key) =>
+    ...(['names', 'memberships'] as const).map((key) =>
       (tables[key] ?? [])
-        .filter((child) => child.supplier_id === row.id)
-        .map((child) =>
+        .filter((item) => item.supplier_id === row.id)
+        .map((item) =>
           PROJECTIONS[key].map((col) =>
-            key === 'contacts' ? child[col] : compactValue(col, child[col], row.display_name),
+            encode(col, compactValue(col, item[col], row.display_name), positions),
           ),
         ),
     ),
+    [
+      ...new Set(
+        (tables.contacts ?? []).filter((c) => c.supplier_id === row.id).map((c) => c.kind),
+      ),
+    ].sort(),
   ]);
-  delete result.names;
-  delete result.memberships;
-  delete result.contacts;
   return result;
 }

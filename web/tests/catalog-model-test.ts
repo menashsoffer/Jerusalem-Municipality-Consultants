@@ -19,6 +19,15 @@ const FILTERS: Filters = {
 };
 
 describe('compact catalog and precomputed search', () => {
+  it('rejects a nested position that points past its array', () => {
+    const wire = wireCatalog();
+    const [row] = wire.suppliers;
+    assert.ok(row);
+    const broken = [...row];
+    broken[8] = [[9, null, 0, null, null, null, null, null, null]];
+    assert.throws(() => compactCatalog({ ...wire, suppliers: [broken] }));
+  });
+
   it('restores inherited names and encoded defaults without replacing genuinely missing names', () => {
     const catalog = compactCatalog({
       ...wireCatalog(),
@@ -33,8 +42,8 @@ describe('compact catalog and precomputed search', () => {
           null,
           [[0, null, null]],
           [
-            ['v1', 'f1', 0, null, null, null, null, null, null],
-            ['v2', 'f2', null, null, null, null, null, null, null],
+            [0, 0, 0, null, null, null, null, null, null],
+            [1, 1, null, null, null, null, null, null, null],
           ],
           [],
         ],
@@ -50,12 +59,14 @@ describe('compact catalog and precomputed search', () => {
     assert.equal(catalog.memberships[1]?.name_as_published, null);
   });
 
-  it('retains source information, dates, invalid contacts and all field categories', () => {
+  it('retains source information, dates, contact kinds and all field categories', () => {
     const data = compactCatalog(wireCatalog());
     const [supplier] = buildCatalog(data);
     assert.ok(supplier);
-    assert.equal(data.contacts[0]?.status, 'current');
-    assert.equal(supplier.contacts[0]?.valid, false);
+    assert.deepEqual(supplier.contactKinds, ['email']);
+    assert.equal(data.names[0]?.source_document_id, 'd1');
+    assert.equal(data.versions[1]?.registry_id, 'r2');
+    assert.equal(data.fields[1]?.registry_id, 'r2');
     assert.equal(supplier.memberships[0]?.source, 'https://example.test/source');
     assert.equal(supplier.memberships[0].validUntil, '2028-01-01');
     assert.deepEqual(

@@ -29,9 +29,11 @@ export interface CatalogData {
   fieldCategories: Pick<Row<'registry_field_categories'>, 'registry_field_id' | 'category_id'>[];
   categories: Pick<Row<'categories'>, 'id' | 'name' | 'parent_id'>[];
   units: Pick<Row<'org_units'>, 'id' | 'name'>[];
-  contacts: Pick<
-    Row<'supplier_contacts'>,
-    'id' | 'supplier_id' | 'kind' | 'value' | 'is_valid' | 'source_document_id' | 'status'
-  >[];
+  /** Kinds of current contact details per supplier; the values come from supplier_detail. */
+  contactKinds: { supplier_id: string; kind: string }[];
   documents: Pick<Row<'source_documents'>, 'id' | 'url'>[];
 }
+export type ContactRow = Pick<
+  Row<'supplier_contacts'>,
+  'id' | 'supplier_id' | 'kind' | 'value' | 'is_valid' | 'source_document_id' | 'status'
+>;

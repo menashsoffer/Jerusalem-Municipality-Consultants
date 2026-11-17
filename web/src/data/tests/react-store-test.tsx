@@ -48,7 +48,7 @@ describe('React adapters over the existing catalog', () => {
       requests++;
       return new Promise<Response>((resolve) => {
         finish = () => {
-          resolve(Response.json({ identifiers: [], audit: null }));
+          resolve(Response.json({ identifiers: [], contacts: [], audit: null }));
         };
       });
     });
@@ -87,7 +87,7 @@ describe('React adapters over the existing catalog', () => {
         Response.json(
           requestUrl(input).endsWith('/catalog_snapshot')
             ? response()
-            : { identifiers: [], audit: null },
+            : { identifiers: [], contacts: [], audit: null },
         ),
       ),
     );

@@ -31,21 +31,9 @@ export function wireCatalog() {
         null,
         'verified',
         null,
-        [['שם קודם', 'former_name', 'd1']],
-        [
-          [
-            'v1',
-            'f1',
-            'כתיב נוסף',
-            2,
-            '2020-01-01',
-            '2028-01-01',
-            null,
-            'registry_document',
-            'verified',
-          ],
-        ],
-        [['contact1', 'email', 'bad', false, 'd1']],
+        [['שם קודם', 'former_name', 0]],
+        [[0, 0, 'כתיב נוסף', 2, '2020-01-01', '2028-01-01', null, 'registry_document', 'verified']],
+        ['email'],
       ],
     ],
     registries: [
@@ -53,12 +41,12 @@ export function wireCatalog() {
       ['r2', 'מאגר ב', 'u2', 'active'],
     ],
     versions: [
-      ['v1', 'r1', 'd1', null, null],
-      ['v2', 'r2', null, null, null],
+      ['v1', 0, 0, null, null],
+      ['v2', 1, null, null, null],
     ],
     fields: [
-      ['f1', 'r1', 'תכנון כבישים'],
-      ['f2', 'r2', 'ניהול'],
+      ['f1', 0, 'תכנון כבישים'],
+      ['f2', 1, 'ניהול'],
     ],
     categories: [
       ['root', 'הנדסה', null],
@@ -74,6 +62,24 @@ export function wireCatalog() {
       ['u2', 'אגף ב'],
     ],
     documents: [['d1', 'https://example.test/source']],
+  };
+}
+/** What supplier_detail returns for SUPPLIER, contact values included. */
+export function wireDetail(overrides: Record<string, unknown> = {}) {
+  return {
+    identifiers: [],
+    contacts: [
+      {
+        id: 'contact1',
+        kind: 'email',
+        value: 'bad',
+        is_valid: false,
+        source_document_id: 'd1',
+        status: 'current',
+      },
+    ],
+    audit: null,
+    ...overrides,
   };
 }
 export function response(overrides: Record<string, unknown> = {}) {
