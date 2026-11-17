@@ -5,9 +5,8 @@ import styles from './request.module.css';
 interface Props {
   request: CategoryRequest;
   categories: { id: string; name: string }[];
-  userId: string;
 }
-export function RequestCard({ request, categories, userId }: Props) {
+export function RequestCard({ request, categories }: Props) {
   const heading = useId();
   return (
     <article className={styles.card} aria-labelledby={heading}>
@@ -22,12 +21,7 @@ export function RequestCard({ request, categories, userId }: Props) {
       <p>
         מקור הבקשה: <bdi>{request.source_reference ?? 'לא צורף מקור'}</bdi>
       </p>
-      <ReviewForm
-        id={request.id}
-        name={request.proposed_name}
-        own={request.created_by === userId}
-        categories={categories}
-      />
+      <ReviewForm id={request.id} name={request.proposed_name} categories={categories} />
     </article>
   );
 }

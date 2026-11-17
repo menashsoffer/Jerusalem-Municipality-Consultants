@@ -3,7 +3,7 @@ import { after, before, describe, it } from 'node:test';
 import type { PGlite } from '@electric-sql/pglite';
 import { ACCESS_FIXTURE, USERS } from './access-fixture.ts';
 import { as, migratedDatabase } from './pglite.ts';
-describe('R8 category request decisions require another administrator', () => {
+describe('R8 category request decisions', () => {
   let db: PGlite;
   before(async () => {
     db = await migratedDatabase();
@@ -12,10 +12,11 @@ describe('R8 category request decisions require another administrator', () => {
   after(async () => {
     await db.close();
   });
-  async function request(user: string = USERS.viewer) {
+  async function request(user: string = USERS.viewer, name = 'תחום חדש') {
     return as(db, user, async () => {
       const result = await db.query<{ id: string }>(
-        "insert into public.category_requests(proposed_name,description) values('תחום חדש','בקשת קטגוריה לדוגמה') returning id",
+        "insert into public.category_requests(proposed_name,description) values($1,'בקשת קטגוריה לדוגמה') returning id",
+        [name],
       );
       return result.rows[0]?.id ?? '';
     });
@@ -44,20 +45,24 @@ describe('R8 category request decisions require another administrator', () => {
     );
     assert.equal(result.rows[0]?.status, 'pending');
   });
-  it('prevents self approval and self linking even through a direct RPC', async () => {
-    const id = await request(USERS.admin);
-    await as(db, USERS.admin, async () => {
-      for (const decision of ['approved', 'linked'])
-        await assert.rejects(
-          db.query('select public.decide_category_request($1,$2,$3)', [id, decision, 'בדיקה']),
-          /different administrator/i,
-        );
-    });
-    const result = await db.query<{ status: string; decided_by: string | null }>(
-      'select status,decided_by from public.category_requests where id=$1',
-      [id],
+  it('lets the only administrator approve and link their own request', async () => {
+    const first = await request(USERS.admin, 'תחום של המנהל'),
+      second = await request(USERS.admin);
+    const category = await db.query<{ id: string }>(
+      "insert into public.categories(name,description) values('קטגוריה לקישור','תיאור') returning id",
     );
-    assert.deepEqual(result.rows, [{ status: 'pending', decided_by: null }]);
+    await as(db, USERS.admin, async () => {
+      await db.query("select public.decide_category_request($1,'approved','נדרש')", [first]);
+      await db.query("select public.decide_category_request($1,'linked','קישור',$2)", [
+        second,
+        category.rows[0]?.id,
+      ]);
+    });
+    const result = await db.query<{ status: string }>(
+      'select status from public.category_requests where id = any($1) order by status',
+      [[first, second]],
+    );
+    assert.deepEqual(result.rows, [{ status: 'approved' }, { status: 'linked' }]);
   });
   it('allows a different administrator to approve and records the reviewer', async () => {
     const id = await request();
