@@ -7,7 +7,7 @@ async function authorize(): Promise<string> {
     await googleSignIn({
       location: window.location,
       history: window.history,
-      storage: window.sessionStorage,
+      storage: window.localStorage,
     });
     return '';
   } catch {

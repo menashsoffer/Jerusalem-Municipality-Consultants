@@ -4,7 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 
 import * as rpc from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
-import { PKCE_KEY, SESSION_KEY } from '../../../data/session.ts';
+import { PKCE_KEY, SESSION_KEY, takeNext } from '../../../data/session.ts';
 import { googleSignIn, requestLink, signOut } from '../api/session.ts';
 import { GoogleLogin } from '../components/google-login.tsx';
 
@@ -24,7 +24,7 @@ function quietNavigation() {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
-  window.sessionStorage.clear();
+  window.localStorage.clear();
 });
 
 describe('magic link', () => {
@@ -60,9 +60,21 @@ describe('Google and sign-out', () => {
     await googleSignIn({
       location: window.location,
       history: window.history,
-      storage: window.sessionStorage,
+      storage: window.localStorage,
     });
-    expect(window.sessionStorage.getItem(PKCE_KEY)).toMatch(/^[0-9a-f]{64}$/u);
+    expect(window.localStorage.getItem(PKCE_KEY)).toMatch(/^[0-9a-f]{64}$/u);
+  });
+
+  it('remembers the screen to return to after Google', async () => {
+    quietNavigation();
+    window.location.hash = '#/auth?next=%2Fusers';
+    await googleSignIn({
+      location: window.location,
+      history: window.history,
+      storage: window.localStorage,
+    });
+    window.location.hash = '';
+    expect(takeNext(window.localStorage)).toBe('/users');
   });
 
   it('shows an error when the Google sign-in cannot start', async () => {
@@ -74,14 +86,24 @@ describe('Google and sign-out', () => {
     );
   });
 
-  it('forgets the session and the cached catalog on sign-out', async () => {
+  it('forgets the saved session and the cached catalog, and ends it on the server', async () => {
     quietNavigation();
-    window.sessionStorage.setItem(SESSION_KEY, 'x');
-    const setSession = vi.spyOn(rpc, 'setAdminSession');
+    rpc.setAdminSession({ token: 'tok', exp: Date.now() + 3_600_000, refresh: 'r' });
     const clear = vi.spyOn(site, 'clearCatalog').mockResolvedValue();
+    const logout = vi.spyOn(site, 'logout').mockResolvedValue(new Response(null));
     await signOut();
-    expect(window.sessionStorage.getItem(SESSION_KEY)).toBeNull();
-    expect(setSession).toHaveBeenCalledWith(null);
+    expect(window.localStorage.getItem(SESSION_KEY)).toBeNull();
+    expect(rpc.getAdminSession()).toBeNull();
     expect(clear).toHaveBeenCalledOnce();
+    expect(logout).toHaveBeenCalledWith('tok');
+  });
+
+  it('signs out here even when the server cannot be reached', async () => {
+    quietNavigation();
+    rpc.setAdminSession({ token: 'tok', exp: Date.now() + 3_600_000, refresh: 'r' });
+    vi.spyOn(site, 'clearCatalog').mockResolvedValue();
+    vi.spyOn(site, 'logout').mockRejectedValue(new Error('offline'));
+    await signOut();
+    expect(rpc.getAdminSession()).toBeNull();
   });
 });

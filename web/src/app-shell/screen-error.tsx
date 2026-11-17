@@ -1,16 +1,26 @@
 import { useErrorReport } from './use-error-report.ts';
-import { Link, isRouteErrorResponse, useRouteError, useRevalidator } from 'react-router';
+import {
+  Navigate,
+  isRouteErrorResponse,
+  useLocation,
+  useRouteError,
+  useRevalidator,
+} from 'react-router';
+import { getAdminSession } from '../data/rpc.ts';
+import { signInPath } from './session-watch.ts';
 import { DataError } from '../data/client.ts';
 import { Button } from '../ui/button.tsx';
-import controls from '../ui/control.module.css';
 export function ScreenError() {
   const error = useRouteError();
   useErrorReport(error, 'route');
   const revalidator = useRevalidator();
+  const location = useLocation();
   const status = error instanceof DataError || isRouteErrorResponse(error) ? error.status : 0;
+  // Signed out or never signed in: show the sign-in screen, never an empty page.
+  if (status === 401 && !getAdminSession()) return <Navigate to={signInPath(location)} replace />;
   const title =
     status === 401
-      ? 'פג תוקף ההתחברות'
+      ? 'החיבור חודש'
       : status === 403
         ? 'אין הרשאה למסך'
         : status === 404
@@ -18,7 +28,7 @@ export function ScreenError() {
           : 'משהו השתבש';
   const message =
     status === 401
-      ? 'יש להתחבר מחדש כדי להמשיך.'
+      ? 'יש לנסות שוב כדי לטעון את המסך.'
       : status === 403
         ? 'המסך זמין רק למשתמשים עם תפקיד מתאים.'
         : 'לא ניתן להציג את המסך. אפשר לנסות שוב.';
@@ -26,19 +36,13 @@ export function ScreenError() {
     <section role="alert" className="shell-notice">
       <h1 tabIndex={-1}>{title}</h1>
       <p>{message}</p>
-      {status === 401 ? (
-        <Link to="/auth" className={controls.button}>
-          כניסה למערכת
-        </Link>
-      ) : (
-        <Button
-          onClick={() => {
-            void revalidator.revalidate();
-          }}
-        >
-          נסו שוב
-        </Button>
-      )}
+      <Button
+        onClick={() => {
+          void revalidator.revalidate();
+        }}
+      >
+        נסו שוב
+      </Button>
     </section>
   );
 }

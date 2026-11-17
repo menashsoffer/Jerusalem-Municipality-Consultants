@@ -5,7 +5,8 @@ import { createRoot } from 'react-dom/client';
 import { AppRouter, createAdminRouter } from './app-shell/router.tsx';
 import { prepareAdmin } from './features/auth/api/bootstrap.ts';
 import { Skeleton } from './ui/skeleton.tsx';
-import { setAdminSession, getAdminSession } from './data/rpc.ts';
+import { setAdminSession, getAdminSession, installKeeper } from './data/rpc.ts';
+import { browserKeeper, endedStart, watchSession } from './app-shell/session-watch.ts';
 import { getAccess, telemetryRequest } from './data/site.ts';
 import { EventBatcher } from './lib/tracker.ts';
 import { observeVitals } from './lib/vitals.ts';
@@ -47,13 +48,21 @@ const mounted = createRoot(root, {
 });
 mounted.render(<Skeleton />);
 try {
+  const keeper = browserKeeper();
+  installKeeper(keeper);
   const initialized = await prepareAdmin({
     location: window.location,
     history: window.history,
-    storage: window.sessionStorage,
+    storage: window.localStorage,
   });
   setAdminSession(initialized.session, initialized.message);
+  // A browser opened after the access token expired renews it before any screen loads.
+  const renewed = await keeper.fresh().catch(() => keeper.current());
+  const ended = initialized.session !== null && renewed === null;
+  const start = ended ? endedStart(window.location.hash) : initialized.next;
+  if (start) window.history.replaceState(null, '', `#${start}`);
   const router = createAdminRouter();
+  watchSession(keeper, router);
   mounted.render(
     <StrictMode>
       <AppRouter router={router} />

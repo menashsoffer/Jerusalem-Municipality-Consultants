@@ -112,7 +112,7 @@ describe('takeSession', () => {
     }
     ctx.storage.setItem(SESSION_KEY, JSON.stringify({ token: 'old', exp: Date.now() - 1 }));
     assert.equal(takeSession(ctx), null);
-    storeSession(ctx.storage, 'live', 10);
+    storeSession(ctx.storage, { token: 'live', expiresIn: 10, refresh: null });
     assert.equal(takeSession(ctx)?.token, 'live');
   });
 });

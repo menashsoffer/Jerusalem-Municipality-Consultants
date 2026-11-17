@@ -1,10 +1,19 @@
-/* Browser sign-in state: the session token, the PKCE verifier and errors returned by Supabase. */
-export const SESSION_KEY = 'consultants-session-v1';
+/* Browser sign-in state: the session tokens, the PKCE verifier and errors returned by Supabase.
+   The session lives in localStorage, so closing the browser does not sign the user out. */
+export const SESSION_KEY = 'consultants-session-v2';
 export const PKCE_KEY = 'consultants-pkce-v1';
 
 export interface Session {
   token: string;
   exp: number;
+  /** Trades for a new access token when `token` expires; null for an old session without one. */
+  refresh: string | null;
+}
+/** What Supabase returns for a sign-in or a refresh, already parsed. */
+export interface Grant {
+  token: string;
+  expiresIn: number;
+  refresh: string | null;
 }
 export interface BrowserContext {
   location: Pick<Location, 'href' | 'pathname' | 'search' | 'hash'>;
@@ -38,22 +47,45 @@ export function takeAuthError(ctx: BrowserContext): string {
   return EXPIRED_CODES.has(code) ? EXPIRED_MESSAGE : FAILED_MESSAGE;
 }
 
-export function storeSession(storage: Storage, token: string, expiresIn: number): void {
-  const session: Session = { token, exp: Date.now() + expiresIn * 1000 };
-  storage.setItem(SESSION_KEY, JSON.stringify(session));
+export function sessionFrom(grant: Grant, now = Date.now()): Session {
+  return { token: grant.token, exp: now + grant.expiresIn * 1000, refresh: grant.refresh };
 }
 
-function parseSession(raw: string | null): Session | null {
-  if (!raw) return null;
+export function storeSession(storage: Storage, grant: Grant): Session {
+  const session = sessionFrom(grant);
+  storage.setItem(SESSION_KEY, JSON.stringify(session));
+  return session;
+}
+
+/** Reads a Supabase token response; null when it is not a usable session. */
+export function parseGrant(value: unknown): Grant | null {
+  const data = (value ?? {}) as Record<string, unknown>;
+  const { access_token: token, expires_in: expiresIn, refresh_token: refresh } = data;
+  if (typeof token !== 'string' || !token || !Number(expiresIn)) return null;
+  return {
+    token,
+    expiresIn: Number(expiresIn),
+    refresh: typeof refresh === 'string' && refresh ? refresh : null,
+  };
+}
+
+function storedFields(raw: string): Record<string, unknown> | null {
   try {
     const value: unknown = JSON.parse(raw);
-    if (value === null || typeof value !== 'object') return null;
-    const { token, exp } = value as Record<string, unknown>;
-    if (typeof token !== 'string' || typeof exp !== 'number') return null;
-    return exp > Date.now() ? { token, exp } : null;
+    return value !== null && typeof value === 'object' ? (value as Record<string, unknown>) : null;
   } catch {
     return null;
   }
+}
+
+/** A stored session, kept after its access token expires as long as it can be refreshed. */
+export function parseSession(raw: string | null, now = Date.now()): Session | null {
+  const fields = raw ? storedFields(raw) : null;
+  if (!fields) return null;
+  const { token, exp, refresh } = fields;
+  if (typeof token !== 'string' || typeof exp !== 'number') return null;
+  const renewable = typeof refresh === 'string' && refresh !== '' ? refresh : null;
+  return exp > now || renewable ? { token, exp, refresh: renewable } : null;
 }
 
 /** Keeps a token from a magic-link redirect, then returns the stored session if still valid. */
@@ -61,7 +93,12 @@ export function takeSession(ctx: BrowserContext): Session | null {
   const params = new URLSearchParams(ctx.location.hash.slice(1));
   const token = params.get('access_token');
   if (token) {
-    storeSession(ctx.storage, token, Number(params.get('expires_in')) || 3600);
+    const refresh = params.get('refresh_token');
+    storeSession(ctx.storage, {
+      token,
+      expiresIn: Number(params.get('expires_in')) || 3600,
+      refresh,
+    });
     ctx.history.replaceState(null, '', ctx.location.pathname + ctx.location.search);
   }
   return parseSession(ctx.storage.getItem(SESSION_KEY));
@@ -111,10 +148,35 @@ export async function exchangeGoogleCode(ctx: BrowserContext, exchange: Exchange
   if (!verifier) throw new Error('missing verifier');
   const response = await exchange(code, verifier);
   if (!response.ok) throw new Error('exchange failed');
-  const data: unknown = await response.json();
-  const { access_token: token, expires_in: expiresIn } = (data ?? {}) as Record<string, unknown>;
-  if (typeof token !== 'string' || !token || !Number(expiresIn)) {
-    throw new Error('invalid session');
-  }
-  storeSession(ctx.storage, token, Number(expiresIn));
+  const grant = parseGrant(await response.json());
+  if (!grant) throw new Error('invalid session');
+  storeSession(ctx.storage, grant);
+}
+
+const NEXT_KEY = 'consultants-next-v1';
+
+/** Only a path inside this site, so a crafted link cannot send the user elsewhere. */
+function safePath(path: string | null): string | null {
+  return path?.startsWith('/') && !path.startsWith('//') ? path : null;
+}
+
+/** Remembers the screen to return to after a sign-in that leaves the site (Google, email). */
+export function rememberNext(storage: Storage, path: string | null): void {
+  const safe = safePath(path);
+  if (safe) storage.setItem(NEXT_KEY, safe);
+  else storage.removeItem(NEXT_KEY);
+}
+
+export function takeNext(storage: Storage): string | null {
+  const path = safePath(storage.getItem(NEXT_KEY));
+  storage.removeItem(NEXT_KEY);
+  return path;
+}
+
+export { safePath };
+
+/** The `next` screen in a hash address such as `#/auth?next=%2Fusers`. */
+export function nextFromHash(hash: string): string | null {
+  const query = hash.split('?')[1] ?? '';
+  return safePath(new URLSearchParams(query).get('next'));
 }

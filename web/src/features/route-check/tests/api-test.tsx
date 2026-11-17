@@ -5,7 +5,6 @@ import { DataError } from '../../../data/client.ts';
 import * as rpc from '../../../data/rpc.ts';
 import type * as RpcModule from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
-import { SESSION_KEY } from '../../../data/session.ts';
 import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 import { checkRoute, loadRequests } from '../api/check.ts';
 import { loadEngagement, recordApproaches, saveRequest } from '../api/engagement.ts';
@@ -17,6 +16,7 @@ vi.mock('../../../data/site.ts', () => ({
   clearCatalog: vi.fn(() => Promise.resolve()),
   detail: vi.fn(),
   getCatalogState: vi.fn(),
+  refreshGrant: vi.fn(),
 }));
 vi.mock('../../../data/rpc.ts', async (original) => ({
   ...(await original<typeof RpcModule>()),
@@ -25,6 +25,8 @@ vi.mock('../../../data/rpc.ts', async (original) => ({
   rows: vi.fn(),
   rpc: vi.fn(),
   sessionToken: vi.fn(() => 'token'),
+  freshToken: vi.fn(() => Promise.resolve('token')),
+  recoverSession: vi.fn(() => Promise.resolve(null)),
   setAdminSession: vi.fn(),
 }));
 
@@ -236,12 +238,10 @@ describe('checkRoute', () => {
     expect((error as DataError).message).toBe(new DataError(500).message);
   });
 
-  it('signs the user out locally when the session expired', async () => {
-    window.sessionStorage.setItem(SESSION_KEY, 'old');
-    vi.mocked(site.clearCatalog).mockRejectedValueOnce(new Error('blocked'));
+  it('renews the session, or signs out, when the server rejects the token', async () => {
+    vi.mocked(rpc.recoverSession).mockRejectedValueOnce(new Error('offline'));
     const fetcher = () => Promise.resolve(new Response(null, { status: 401 }));
     await expect(checkRoute(DRAFT_INPUT, fetcher)).rejects.toMatchObject({ status: 401 });
-    expect(rpc.setAdminSession).toHaveBeenCalledWith(null);
-    expect(window.sessionStorage.getItem(SESSION_KEY)).toBeNull();
+    expect(rpc.recoverSession).toHaveBeenCalledWith('token');
   });
 });
