@@ -8,6 +8,7 @@ import { DraftForm } from './components/draft-form.tsx';
 import { PickedList } from './components/picked-list.tsx';
 import { ResultPanel } from './components/result-panel.tsx';
 import { ShortlistTools } from './components/shortlist-tools.tsx';
+import styles from './components/route-check.module.css';
 
 export const loader = loadEngagement;
 
@@ -28,9 +29,9 @@ export function EngagementPage() {
     );
   }
   return (
-    <>
+    <div className={styles.page}>
       <h1 tabIndex={-1}>בקשת התקשרות</h1>
-      <p>
+      <p className={styles.intro}>
         הכלי מחשב מסלול לפי הנתונים שהוזנו. הוא אינו מאשר התקשרות ואינו קובע שספק זכאי. כמה הצעות
         נדרשות ומאיזה מאגר מופיע בתוצאת הבדיקה.
       </p>
@@ -55,6 +56,6 @@ export function EngagementPage() {
         today={data.today}
         requestId={checked?.requestId ?? null}
       />
-    </>
+    </div>
   );
 }

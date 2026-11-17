@@ -8,6 +8,7 @@ import type { CheckResult } from './model/result.ts';
 import { RequestChoice } from './components/request-choice.tsx';
 import { RequestReview } from './components/request-review.tsx';
 import { ResultPanel } from './components/result-panel.tsx';
+import styles from './components/route-check.module.css';
 export const loader = loadRequests;
 const STEPS = { choose: 'בחירת בקשה', review: 'בדיקת הנתונים', result: 'תוצאת הבדיקה' };
 export function RouteCheckPage() {
@@ -42,8 +43,8 @@ function Wizard({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
   const visible = request ? step : 'choose';
   const state = { visible, request, selected, setSelected, date, setDate, result, setResult, move };
   return (
-    <>
-      <ol aria-label="שלבי בדיקת המסלול">
+    <div className={styles.page}>
+      <ol aria-label="שלבי בדיקת המסלול" className={styles.steps}>
         {Object.entries(STEPS).map(([key, label]) => (
           <li key={key} aria-current={visible === key ? 'step' : undefined}>
             {label}
@@ -54,7 +55,7 @@ function Wizard({ data }: { data: Awaited<ReturnType<typeof loader>> }) {
         {STEPS[visible]}
       </h2>
       <WizardStage state={state} data={data} />
-    </>
+    </div>
   );
 }
 
