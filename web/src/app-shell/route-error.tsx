@@ -1,3 +1,4 @@
+import { useErrorReport } from './use-error-report.ts';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
 
 const NOT_FOUND = 404;
@@ -5,6 +6,7 @@ const NOT_FOUND = 404;
 /** Shown instead of a screen that failed, so one broken screen never takes down the page. */
 export function RouteError() {
   const error = useRouteError();
+  useErrorReport(error, 'root');
   const missing = isRouteErrorResponse(error) && error.status === NOT_FOUND;
   return (
     <main className="shell-main">
