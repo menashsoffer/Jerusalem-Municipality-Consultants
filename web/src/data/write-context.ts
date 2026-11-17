@@ -10,6 +10,9 @@ export interface RegistryOption {
   name: string;
   validFrom: string | null;
   validUntil: string | null;
+  /** False for a pool whose status nobody has confirmed yet (most pools loaded from files). */
+  statusKnown: boolean;
+  hasSource: boolean;
 }
 export interface WriteContext {
   catalog: CatalogData;
@@ -17,11 +20,15 @@ export interface WriteContext {
   versions: RegistryOption[];
 }
 
+/**
+ * The pool versions the user may add to: every pool that is not closed (the database does not
+ * restrict by status, and most pools have an unconfirmed status), sorted by name.
+ */
 export function writableVersions(catalog: CatalogData, access: Access): RegistryOption[] {
   const registries = new Map(catalog.registries.map((row) => [row.id, row]));
-  return catalog.versions.flatMap((version) => {
+  const rows = catalog.versions.flatMap((version) => {
     const registry = registries.get(version.registry_id);
-    if (registry?.status !== 'active') return [];
+    if (!registry || registry.status === 'closed') return [];
     const permitted =
       access.state === 'active' &&
       (access.admin ||
@@ -34,9 +41,12 @@ export function writableVersions(catalog: CatalogData, access: Access): Registry
         name: registry.name,
         validFrom: version.valid_from,
         validUntil: version.valid_until,
+        statusKnown: registry.status === 'active',
+        hasSource: version.source_document_id !== null,
       },
     ];
   });
+  return rows.sort((a, b) => a.name.localeCompare(b.name, 'he'));
 }
 
 export async function loadWriteContext(
