@@ -68,6 +68,7 @@ export function SupplierCard({ supplier, today, deferred, picked }: Props) {
           <h3>
             <Link
               to={`/supplier/${encodeURIComponent(supplier.id)}`}
+              state={{ fromCatalog: true }}
               aria-label={`פרטי ספק: ${supplier.name}`}
             >
               {supplier.name}

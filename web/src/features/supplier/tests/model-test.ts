@@ -5,7 +5,7 @@ import { writableVersions, type WriteContext } from '../../../data/write-context
 import { access } from '../../../../tests/catalog-fixture.ts';
 import { OFFERED_FIELD, fieldsOf, parseAddForm, versionLabel } from '../model/add-form.ts';
 import { duplicates } from '../model/duplicates.ts';
-import { auditLine, changedFields, membershipDates, safeSourceUrl } from '../model/labels.ts';
+import { changedFields, safeSourceUrl } from '../model/labels.ts';
 
 const catalog = {
   suppliers: [
@@ -152,31 +152,13 @@ describe('add-supplier form', () => {
 });
 
 describe('detail labels', () => {
-  it('names changed fields without values and dates the entry in Jerusalem time', () => {
+  it('names changed fields without values', () => {
     const changes = { display_name: { old: 'א', new: 'ב' }, name: {}, secret: {} };
     assert.equal(changedFields(changes), 'שם');
     assert.equal(changedFields(null), '');
-    const line = auditLine({
-      operation: 'DELETE',
-      table_name: 'supplier_contacts',
-      created_at: '2026-11-12T22:30:00Z',
-      changes,
-    });
-    assert.match(line, /^נמחקה רשומה · פרט קשר · 13\.11\.2026/);
-    assert.doesNotMatch(line, /secret/);
   });
 
-  it('shows date provenance and only https source links', () => {
-    const dates = membershipDates({
-      registered_from: '2024-01-01',
-      registered_until: null,
-      engagement_started_on: '2024-02-01',
-      dates_source: 'municipal_registry',
-    });
-    assert.equal(
-      dates,
-      'רישום: 2024-01-01 עד לא צוין · תחילת התקשרות: 2024-02-01 · מקור התאריכים: מאגר העירייה',
-    );
+  it('allows only https source links', () => {
     assert.equal(safeSourceUrl('https://example.test/a'), 'https://example.test/a');
     assert.equal(safeSourceUrl('javascript:alert(1)'), null);
     assert.equal(safeSourceUrl('not a url'), null);

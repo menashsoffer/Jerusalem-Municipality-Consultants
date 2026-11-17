@@ -42,17 +42,20 @@ function mockWrites() {
 }
 
 describe('supplier details', () => {
-  it('shows invalid contacts, source links and date provenance, without audit for a viewer', async () => {
+  it('shows invalid contacts, listing dates and source links, without history for a viewer', async () => {
     const data = await detail();
     data.memberships = data.memberships.map((m) => ({
       ...m,
       engagement_started_on: '2024-02-01',
       dates_source: 'municipal_registry',
     }));
-    show(<SupplierDetails data={data} />);
-    expect(await screen.findByText(/לא תקין לפי בדיקה אוטומטית/)).toBeDefined();
-    expect(screen.getByText(/מקור התאריכים: מאגר העירייה/)).toBeDefined();
-    const links = screen.getAllByRole('link', { name: /מסמך מקור/ });
+    show(<SupplierDetails data={data} today="2026-11-17" />);
+    expect(await screen.findByText('ייתכן שאינו תקין')).toBeDefined();
+    expect(screen.getByText('תחילת התקשרות: 01.02.2024')).toBeDefined();
+    expect(screen.queryByText(/לא תועד/)).toBeNull();
+    expect(screen.getByText('bad').closest('a')).toBeNull();
+    const links = screen.getAllByRole('link', { name: /מסמך המאגר|מסמך מקור/ });
+    expect(links.length).toBeGreaterThan(0);
     expect(links.every((link) => link.getAttribute('href') === 'https://example.test/source')).toBe(
       true,
     );
@@ -60,7 +63,7 @@ describe('supplier details', () => {
     expect(screen.queryByRole('heading', { name: 'היסטוריית שינויים' })).toBeNull();
   });
 
-  it('shows the audit trail, with changed field names only, to roles that receive it', async () => {
+  it('shows the history as sentences with field names only, when the server sends it', async () => {
     const entry = {
       id: 1,
       row_id: 'x',
@@ -69,9 +72,10 @@ describe('supplier details', () => {
       changes: { display_name: { old: 'ישן', new: 'חדש' } },
       created_at: '2026-11-12T12:00:00Z',
     };
-    show(<SupplierDetails data={await detail([entry])} />);
+    show(<SupplierDetails data={await detail([entry])} today="2026-11-17" />);
     expect(await screen.findByRole('heading', { name: 'היסטוריית שינויים' })).toBeDefined();
-    expect(screen.getByText(/עודכנה רשומה · ספק · .* · שם$/)).toBeDefined();
+    expect(screen.getByText('עודכנו פרטי הספק: שם')).toBeDefined();
+    expect(screen.getByText('גלוי למנהלי מערכת בלבד')).toBeDefined();
     expect(screen.queryByText(/ישן/)).toBeNull();
   });
 });

@@ -138,10 +138,9 @@ function ContactForm({ data }: Props) {
 /** Shown to editors only. The database checks the unit grant again on every write. */
 export function EditForms({ data }: Props) {
   return (
-    <section aria-labelledby="supplier-edit">
-      <h2 id="supplier-edit">עריכת פרטי הספק</h2>
+    <>
       <NameForm data={data} />
       <ContactForm data={data} />
-    </section>
+    </>
   );
 }
