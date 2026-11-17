@@ -100,4 +100,15 @@ describe('R8 category request decisions require another administrator', () => {
     );
     assert.deepEqual(result.rows, [{ status: 'linked', resolved_category_id: target }]);
   });
+
+  it('reports an already decided request as missing, so the site can refresh', async () => {
+    const id = await request();
+    await as(db, USERS.admin, async () => {
+      await db.query("select public.decide_category_request($1,'rejected','לא נדרש')", [id]);
+      await assert.rejects(
+        db.query("select public.decide_category_request($1,'rejected','שוב')", [id]),
+        (error: unknown) => (error as { code?: string }).code === 'P0002',
+      );
+    });
+  });
 });

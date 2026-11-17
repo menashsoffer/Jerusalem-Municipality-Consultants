@@ -19,6 +19,11 @@ export async function decideRequest(id: string, form: FormData, refresh: () => P
   try {
     await rpc('decide_category_request', { request_id: id, ...decision }, z.string().nullable());
   } catch (error) {
+    // 404: another administrator already decided the request.
+    if (error instanceof DataError && error.status === 404) {
+      await refresh().catch(() => undefined);
+      return { error: 'הבקשה כבר טופלה. הרשימה רועננה.', committed: false };
+    }
     return {
       error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',
       committed: false,

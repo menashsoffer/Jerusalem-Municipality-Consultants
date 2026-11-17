@@ -89,4 +89,14 @@ describe('category review', () => {
     expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
     expect(screen.getByRole('heading', { name: 'ייעוץ אקוסטי' })).toBeDefined();
   });
+
+  it('refreshes the list when another administrator already decided the request', async () => {
+    const value = page();
+    vi.spyOn(rpc, 'rpc').mockImplementation(() => {
+      value.requests = [];
+      return Promise.reject(new DataError(404));
+    });
+    await userEvent.click(screen.getByRole('button', { name: 'אישור ויצירת קטגוריה' }));
+    expect(await screen.findByRole('heading', { name: 'אין בקשות קטגוריה ממתינות' })).toBeDefined();
+  });
 });

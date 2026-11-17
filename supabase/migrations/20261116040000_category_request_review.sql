@@ -24,7 +24,8 @@ begin
   where id = request_id and status = 'pending'
   for update;
   if not found then
-    raise exception 'Request not found or already decided' using errcode = '22023';
+    -- P0002 arrives as 404, so the site knows to refresh the list.
+    raise exception 'Request not found or already decided' using errcode = 'P0002';
   end if;
   -- Approval and linking require a different person from the request's author.
   if request.created_by = auth.uid() and decision in ('approved', 'linked') then
