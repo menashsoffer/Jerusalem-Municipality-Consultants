@@ -22,8 +22,8 @@ export function ReviewForm({ id, name, categories }: Props) {
     <form action={action} aria-label={`החלטה על ${name}`}>
       <ReviewChoice categories={categories} disabled={disabled} />
       <FormField
-        field={{ label: 'נימוק להחלטה', hint: 'נימוק נדרש בעת דחייה.' }}
-        input={{ name: 'note', disabled }}
+        field={{ label: 'נימוק להחלטה', hint: 'נדרש נימוק לכל החלטה.' }}
+        input={{ name: 'note', disabled, maxLength: 2000 }}
       />
       <DecisionButtons disabled={disabled} hasCategories={categories.length > 0} />
       <StatusMessage>

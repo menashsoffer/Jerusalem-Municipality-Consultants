@@ -1,4 +1,5 @@
 import { z } from '../../../data/rpc.ts';
+import { check, decisionNote } from '../../../lib/rules/forms.ts';
 export const requestSchema = z.object({
   id: z.string(),
   proposed_name: z.string(),
@@ -22,7 +23,9 @@ export function parseDecision(form: FormData): Decision {
   const decision = parsed.data,
     note = formText(form, 'note'),
     category = formText(form, 'category_id');
-  if (decision === 'rejected' && note.length < 2) return { error: 'יש לציין נימוק לדחייה.' };
+  // The table requires a note for every decision on a category request.
+  const checked = check(decisionNote(decision, true), { note });
+  if (!checked.ok) return { error: `נימוק: ${checked.errors.note ?? ''}` };
   if (decision === 'linked' && !category) return { error: 'יש לבחור קטגוריה קיימת לקישור.' };
   return { decision, note, category_id: decision === 'linked' ? category : null };
 }

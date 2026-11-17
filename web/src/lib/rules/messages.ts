@@ -22,6 +22,8 @@ export const RULE_MESSAGES = {
   date_range: 'התאריך מחוץ לטווח הסביר.',
   dates_order: 'תאריך הסיום מוקדם מתאריך ההתחלה.',
   bad_choice: 'יש לבחור אחת מהאפשרויות.',
+  bad_amount: 'יש לכתוב סכום בש״ח, גדול מאפס, עם עד שתי ספרות אחרי הנקודה.',
+  bad_exemption: 'פטור נכתב כמו 3(8) או 3(29א).',
 } as const;
 
 export type RuleKey = keyof typeof RULE_MESSAGES;
