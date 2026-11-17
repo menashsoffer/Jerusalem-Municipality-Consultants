@@ -12,6 +12,7 @@ import { israelToday } from '../../lib/dates.ts';
 import { EditForms } from './components/edit-forms.tsx';
 import { StatusForm } from './components/status-form.tsx';
 import { SupplierDetails } from './components/supplier-details.tsx';
+import styles from './components/supplier.module.css';
 
 /** Confirms the session against the server, then starts the detail request before rendering. */
 export async function loader({ params }: LoaderFunctionArgs) {
@@ -38,9 +39,9 @@ export function SupplierPage() {
   const { resource } = useLoaderData<typeof loader>();
   return (
     <>
-      <p>
-        <Link to="/catalog">חזרה לאיתור ספקים</Link>
-      </p>
+      <Link to="/catalog" className={styles.back}>
+        חזרה לאיתור ספקים
+      </Link>
       <Suspense
         fallback={
           <>

@@ -23,14 +23,16 @@ export function Results({ suppliers, today }: Props) {
     );
   return (
     <section aria-label="תוצאות החיפוש">
-      <h2>
-        <bdi>{suppliers.length}</bdi> ספקים
-      </h2>
-      <StatusMessage>
-        {count < suppliers.length
-          ? `מציג ${String(count)} מתוך ${String(suppliers.length)} תוצאות…`
-          : 'כל התוצאות מוצגות.'}
-      </StatusMessage>
+      <div className={styles.resultsHead}>
+        <h2>
+          <bdi>{suppliers.length}</bdi> ספקים
+        </h2>
+        <StatusMessage>
+          {count < suppliers.length
+            ? `מציג ${String(count)} מתוך ${String(suppliers.length)} תוצאות…`
+            : 'כל התוצאות מוצגות.'}
+        </StatusMessage>
+      </div>
       <ul
         ref={(node) => {
           if (node) return batches.mount();
