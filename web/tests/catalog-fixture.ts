@@ -36,6 +36,7 @@ export function wireCatalog() {
         ['email'],
         'verified',
         null,
+        null,
       ],
     ],
     registries: [

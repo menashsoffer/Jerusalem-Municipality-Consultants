@@ -9,6 +9,7 @@ import {
 import { sourceUrl } from '../model/filters.ts';
 import { Button } from '../../../ui/button.tsx';
 import { SHORTLIST_MAX, toggleShortlist } from '../../../lib/shortlist.ts';
+import { VenueFacts } from './venue-facts.tsx';
 import styles from './catalog.module.css';
 const LABELS = { valid: 'בתוקף', expired: 'פג תוקף', undated: 'ללא תאריך סיום', future: 'טרם החל' };
 function MembershipLine({ member, today }: { member: Membership; today: string }) {
@@ -78,6 +79,7 @@ export function SupplierCard({ supplier, today, deferred, picked }: Props) {
             {inactiveLine(supplier.inactive)}
           </p>
         )}
+        <VenueFacts venue={supplier.venue} />
         {supplier.memberships.map((member, index) => (
           <MembershipLine key={index} member={member} today={today} />
         ))}

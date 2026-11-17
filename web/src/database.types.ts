@@ -1278,6 +1278,56 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "venue_specs": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "capacity": number | null;
+      "capacity_text": string | null;
+      "hall_size": string | null;
+      "stage_size": string | null;
+      "screen": string | null;
+      "sound": string | null;
+      "lighting": string | null;
+      "survey_year": number | null;
+      "source_registry_id": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "capacity"?: number | null;
+      "capacity_text"?: string | null;
+      "hall_size"?: string | null;
+      "stage_size"?: string | null;
+      "screen"?: string | null;
+      "sound"?: string | null;
+      "lighting"?: string | null;
+      "survey_year"?: number | null;
+      "source_registry_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "capacity"?: number | null;
+      "capacity_text"?: string | null;
+      "hall_size"?: string | null;
+      "stage_size"?: string | null;
+      "screen"?: string | null;
+      "sound"?: string | null;
+      "lighting"?: string | null;
+      "survey_year"?: number | null;
+      "source_registry_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
 }
 
 export interface PublicFunctions {

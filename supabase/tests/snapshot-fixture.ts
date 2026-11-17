@@ -87,6 +87,7 @@ const TABLES = {
   documents: ['source_documents', 'true'],
   identifiers: ['supplier_identifiers', "review_status <> 'rejected'"],
   candidates: ['identifier_candidates', "status = 'pending'"],
+  venues: ['venue_specs', 'true'],
 } as const;
 
 type Records = Record<string, unknown>;
@@ -123,10 +124,21 @@ function identifierState(tables: Record<string, Records[]>, supplier: unknown): 
   return own.length || candidate ? 'pending' : null;
 }
 
+const VENUE = ['capacity', 'capacity_text', 'hall_size', 'stage_size', 'screen', 'sound'];
+function venueRow(tables: Record<string, Records[]>, supplier: unknown): unknown[] | null {
+  const venue = (tables.venues ?? []).find((row) => row.supplier_id === supplier);
+  return venue ? [...VENUE, 'lighting', 'survey_year'].map((col) => venue[col]) : null;
+}
+
 export async function directCatalog(db: PGlite): Promise<Records> {
   const tables: Record<string, Records[]> = {};
   for (const [key, [table, where]] of Object.entries(TABLES)) {
-    const order = key === 'fieldCategories' ? 'registry_field_id, category_id' : 'id';
+    const order =
+      key === 'fieldCategories'
+        ? 'registry_field_id, category_id'
+        : key === 'venues'
+          ? 'supplier_id'
+          : 'id';
     tables[key] = (
       await db.query<Records>(`select * from public.${table} where ${where} order by ${order}`)
     ).rows;
@@ -172,6 +184,7 @@ export async function directCatalog(db: PGlite): Promise<Records> {
     row.status === 'inactive'
       ? [row.status_reason, row.status_source, row.status_changed_on]
       : null,
+    venueRow(tables, row.id),
   ]);
   return result;
 }

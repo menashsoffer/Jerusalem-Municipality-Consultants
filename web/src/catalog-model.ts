@@ -1,4 +1,4 @@
-import type { CatalogData, IdentifierState } from './data/catalog.ts';
+import type { CatalogData, IdentifierState, Venue } from './data/catalog.ts';
 import { normalize } from './catalog-search.ts';
 
 export type Validity = 'valid' | 'expired' | 'undated' | 'future';
@@ -37,6 +37,8 @@ export interface Supplier {
   memberships: Membership[];
   /** Kinds of current contact details on record; the values load with the supplier. */
   contactKinds: string[];
+  /** Hall details for a venue, null for every other supplier. */
+  venue: Venue | null;
 }
 
 export function validity(membership: Membership, today: string): Validity {
@@ -167,6 +169,7 @@ export function buildCatalog(data: CatalogData): Supplier[] {
           .map((item) => member(item, refs))
           .filter((item): item is Membership => item !== null),
         contactKinds: (contactKinds.get(row.id) ?? []).map((item) => item.kind),
+        venue: row.venue,
       }))
       // A supplier whose memberships are hidden by access rules must not be
       // displayed without the registry and source needed to interpret it.

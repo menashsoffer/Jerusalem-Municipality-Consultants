@@ -10,6 +10,8 @@ export interface Filters {
   unit: string;
   validity: Validity | '';
   identifier: IdentifierFilter;
+  /** `venue` keeps only halls; a number keeps halls with at least that many seats. */
+  venue: VenueFilter;
   /** Inactive suppliers stay hidden unless asked for or found by their own name. */
   showInactive: boolean;
   /** Memberships in closed registries (older versions) stay hidden unless asked for. */
@@ -17,6 +19,13 @@ export interface Filters {
   today: string;
 }
 export type IdentifierFilter = '' | 'verified' | 'pending' | 'none';
+export type VenueFilter = '' | 'venue' | '100' | '200' | '400';
+
+function venueMatches(supplier: Supplier, wanted: VenueFilter): boolean {
+  if (!wanted) return true;
+  if (!supplier.venue) return false;
+  return wanted === 'venue' || (supplier.venue.capacity ?? 0) >= Number(wanted);
+}
 
 function identifierMatches(supplier: Supplier, wanted: IdentifierFilter): boolean {
   if (!wanted) return true;
@@ -54,6 +63,7 @@ export function filterCatalog(suppliers: Supplier[], filters: Filters): Supplier
   return suppliers.filter((supplier) => {
     const members = supplier.memberships.filter((member) => membershipMatches(member, filters));
     if (members.length === 0 || !identifierMatches(supplier, filters.identifier)) return false;
+    if (!venueMatches(supplier, filters.venue)) return false;
     const byName = !!query && supplier.searchNames.some((name) => name.includes(query));
     if (supplier.inactive && !filters.showInactive && !byName) return false;
     if (!query) return true;

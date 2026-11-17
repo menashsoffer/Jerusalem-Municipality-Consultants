@@ -1,8 +1,9 @@
 import assert from 'node:assert/strict';
-import { it } from 'node:test';
+import { describe, it } from 'node:test';
 
 import {
   contactSummary,
+  venueFacts,
   inactiveLine,
   membershipState,
   supplierBadges,
@@ -32,4 +33,24 @@ it('says which contact kinds exist and marks memberships under review or closed'
     'בבדיקה',
   ]);
   assert.deepEqual(membershipState({ reviewStatus: 'verified', registryClosed: false }), []);
+});
+
+describe('venue facts', () => {
+  it('labels each published detail in words and skips empty ones', () => {
+    const venue = {
+      capacity: 360,
+      capacity_text: '360 מקומות ישיבה',
+      hall_size: '35X25',
+      stage_size: null,
+      screen: 'אין',
+      sound: '',
+      lighting: null,
+      survey_year: 2018,
+    };
+    assert.deepEqual(
+      venueFacts(venue).map((fact) => fact.text),
+      ['קיבולת: 360 מקומות ישיבה', 'גודל אולם: 35X25', 'מסך: אין', 'לפי מאגר 2018'],
+    );
+    assert.deepEqual(venueFacts(null), []);
+  });
 });

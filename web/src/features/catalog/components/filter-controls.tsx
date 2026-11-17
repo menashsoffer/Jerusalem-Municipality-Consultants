@@ -48,6 +48,7 @@ const KEYS = [
   'unit',
   'validity',
   'identifier',
+  'venue',
 ] as const;
 const LABELS = {
   registry: 'מאגר',
@@ -57,6 +58,7 @@ const LABELS = {
   unit: 'יחידה',
   validity: 'תוקף',
   identifier: 'ח.פ.',
+  venue: 'מתקנים ואולמות',
 };
 const VALIDITY_CHOICES = [
   { value: 'valid', label: 'בתוקף' },
@@ -69,14 +71,25 @@ const IDENTIFIER_CHOICES = [
   { value: 'pending', label: 'ח.פ. ממתין לאישור' },
   { value: 'none', label: 'אין ח.פ. מאושר' },
 ];
+const VENUE_CHOICES = [
+  { value: 'venue', label: 'כל המתקנים' },
+  { value: '100', label: 'לפחות 100 מקומות' },
+  { value: '200', label: 'לפחות 200 מקומות' },
+  { value: '400', label: 'לפחות 400 מקומות' },
+];
+const FIXED = {
+  validity: VALIDITY_CHOICES,
+  identifier: IDENTIFIER_CHOICES,
+  venue: VENUE_CHOICES,
+};
+type Listed = Exclude<(typeof KEYS)[number], keyof typeof FIXED>;
+function choicesFor(key: (typeof KEYS)[number], options: Record<Listed, Choice[]>): Choice[] {
+  return key in FIXED ? FIXED[key as keyof typeof FIXED] : options[key as Listed];
+}
 const TOGGLES: { key: ToggleKey; label: string }[] = [
   { key: 'showInactive', label: 'להציג גם ספקים לא פעילים' },
   { key: 'showClosed', label: 'להציג גם מאגרים סגורים וגרסאות קודמות' },
 ];
-function fixedChoices(key: (typeof KEYS)[number]): Choice[] | null {
-  if (key === 'validity') return VALIDITY_CHOICES;
-  return key === 'identifier' ? IDENTIFIER_CHOICES : null;
-}
 export function FilterControls({ filters, suppliers, change, toggle }: Props) {
   const options = optionsFor(suppliers, filters);
   return (
@@ -88,9 +101,7 @@ export function FilterControls({ filters, suppliers, change, toggle }: Props) {
             key={key}
             label={LABELS[key]}
             value={filters[key]}
-            choices={
-              fixedChoices(key) ?? options[key as Exclude<typeof key, 'validity' | 'identifier'>]
-            }
+            choices={choicesFor(key, options)}
             disabled={
               key === 'subcategory' && (!filters.category || options.subcategory.length === 0)
             }

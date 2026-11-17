@@ -1,4 +1,4 @@
-import type { CatalogData, IdentifierState } from './catalog.ts';
+import type { CatalogData, IdentifierState, Venue } from './catalog.ts';
 import { array, nullable, number, object, rows, text, tuple } from './parse.ts';
 import { DataError } from './client.ts';
 
@@ -60,13 +60,30 @@ function inactive(value: unknown) {
   };
 }
 
+const VENUE = {
+  capacity: position,
+  capacity_text: optionalText,
+  hall_size: optionalText,
+  stage_size: optionalText,
+  screen: optionalText,
+  sound: optionalText,
+  lighting: optionalText,
+  survey_year: position,
+};
+
+/** Column 12 is the venue's details in the order of VENUE, or null for other suppliers. */
+function venue(value: unknown): Venue | null {
+  return value === null ? null : tuple(array(value), VENUE);
+}
+
 function supplier(value: unknown, result: CatalogData): void {
   const raw = array(value);
-  if (raw.length !== 12) throw new DataError(0);
+  if (raw.length !== 13) throw new DataError(0);
   const row = {
     ...tuple(raw.slice(0, 7), SUPPLIER),
     identifier_state: identifierState(raw[10]),
     ...inactive(raw[11]),
+    venue: venue(raw[12]),
   };
   result.suppliers.push(row);
   const names = array(raw[7]).map((value) => inheritedName(value, 0, row.display_name));

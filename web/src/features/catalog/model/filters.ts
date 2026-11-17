@@ -1,12 +1,12 @@
 import type { Supplier, Validity } from '../../../catalog-model.ts';
-import type { Filters, IdentifierFilter } from '../../../catalog-filter.ts';
+import type { Filters, IdentifierFilter, VenueFilter } from '../../../catalog-filter.ts';
 export { israelToday } from '../../../lib/dates.ts';
 export interface Choice {
   value: string;
   label: string;
 }
 export type FilterKey =
-  'registry' | 'field' | 'category' | 'subcategory' | 'unit' | 'validity' | 'identifier';
+  'registry' | 'field' | 'category' | 'subcategory' | 'unit' | 'validity' | 'identifier' | 'venue';
 export type ToggleKey = 'showInactive' | 'showClosed';
 function choices(pairs: Iterable<readonly [string, string]>): Choice[] {
   return [...new Map(pairs)]
@@ -53,6 +53,7 @@ export function emptyFilters(today: string): Filters {
     unit: '',
     validity: '',
     identifier: '',
+    venue: '',
     showInactive: false,
     showClosed: false,
   };
@@ -67,6 +68,9 @@ export function parseValidity(value: string): Validity | '' {
 }
 export function parseIdentifier(value: string): IdentifierFilter {
   return value === 'verified' || value === 'pending' || value === 'none' ? value : '';
+}
+export function parseVenue(value: string): VenueFilter {
+  return ['venue', '100', '200', '400'].includes(value) ? (value as VenueFilter) : '';
 }
 /** Resets dependent selections just as the legacy selects do when their option disappears. */
 export function reconcile(filters: Filters, suppliers: Supplier[]): Filters {
@@ -84,6 +88,7 @@ export function reconcile(filters: Filters, suppliers: Supplier[]): Filters {
     subcategory: selected(options.subcategory, filters.subcategory),
     validity: parseValidity(filters.validity),
     identifier: parseIdentifier(filters.identifier),
+    venue: parseVenue(filters.venue),
   };
 }
 export function changeFilter(

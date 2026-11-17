@@ -94,4 +94,26 @@
     border-radius: var(--radius-control);
     background: var(--color-surface);
   }
+  .venue {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm) var(--space-md);
+    padding: 0;
+    list-style: none;
+  }
+  .venue li {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+  }
+  .venue svg {
+    inline-size: 1.25em;
+    block-size: 1.25em;
+    flex: none;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
 }

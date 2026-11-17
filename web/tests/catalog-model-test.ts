@@ -16,6 +16,7 @@ const FILTERS: Filters = {
   unit: '',
   validity: '',
   identifier: '',
+  venue: '',
   showInactive: false,
   showClosed: false,
   today: '2026-11-16',
@@ -49,6 +50,7 @@ describe('compact catalog and precomputed search', () => {
             [1, 1, null, null, null, null, null, null, null],
           ],
           [],
+          null,
           null,
           null,
         ],
@@ -228,5 +230,22 @@ describe('status filters', () => {
     assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'verified' }).length, 1);
     assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'pending' }).length, 0);
     assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'none' }).length, 0);
+  });
+
+  it('keeps only venues, and only those with enough seats when asked', () => {
+    const wire = wireCatalog();
+    const [row] = wire.suppliers;
+    assert.ok(row);
+    const hall: unknown[] = [...row];
+    hall[12] = [180, '180 מקומות', null, null, null, null, null, 2024];
+    const suppliers = buildCatalog(compactCatalog({ ...wire, suppliers: [hall] }));
+    assert.equal(suppliers[0]?.venue?.capacity, 180);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, venue: 'venue' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, venue: '100' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, venue: '200' }).length, 0);
+    const plain = catalog(null, 'active');
+    assert.equal(filterCatalog(plain, { ...FILTERS, venue: 'venue' }).length, 0);
+    hall[12] = [180];
+    assert.throws(() => compactCatalog({ ...wire, suppliers: [hall] }));
   });
 });

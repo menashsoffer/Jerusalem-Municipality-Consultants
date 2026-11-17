@@ -38,3 +38,29 @@ export function membershipState(member: Pick<Membership, 'reviewStatus' | 'regis
     member.reviewStatus === 'verified' ? '' : 'בבדיקה',
   ].filter(Boolean);
 }
+
+export type VenueIcon = 'seats' | 'size' | 'stage' | 'screen' | 'sound' | 'lighting';
+export interface VenueFact {
+  icon: VenueIcon | null;
+  text: string;
+}
+const VENUE_LABELS: [VenueIcon, keyof NonNullable<Supplier['venue']>, string][] = [
+  ['seats', 'capacity_text', 'קיבולת'],
+  ['size', 'hall_size', 'גודל אולם'],
+  ['stage', 'stage_size', 'במה'],
+  ['screen', 'screen', 'מסך'],
+  ['sound', 'sound', 'הגברה'],
+  ['lighting', 'lighting', 'תאורה'],
+];
+
+/** Each published hall detail with its own text label; empty fields are left out. */
+export function venueFacts(venue: Supplier['venue']): VenueFact[] {
+  if (!venue) return [];
+  const facts = VENUE_LABELS.flatMap(([icon, key, label]): VenueFact[] => {
+    const value = venue[key];
+    return value === null || value === '' ? [] : [{ icon, text: `${label}: ${String(value)}` }];
+  });
+  return venue.survey_year === null
+    ? facts
+    : [...facts, { icon: null, text: `לפי מאגר ${String(venue.survey_year)}` }];
+}
