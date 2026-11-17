@@ -245,7 +245,7 @@ begin
   if length(trim(coalesce(v ->> 'name', ''))) not between 1 and 300 then
     raise exception 'Invalid supplier name';
   end if;
-  if coalesce(v ->> 'entity_kind', 'unknown') not in
+  if coalesce(nullif(v ->> 'entity_kind', ''), 'unknown') not in
     ('company', 'sole_trader', 'nonprofit', 'partnership', 'public_body', 'individual', 'unknown')
     or (nullif(v ->> 'website', '') is not null and v ->> 'website' !~ '^https?://')
     or (nullif(v ->> 'value', '') is not null and (v ->> 'value' !~ '^[0-9]{5,9}$'
@@ -254,14 +254,14 @@ begin
   end if;
   if r.decision = 'new' then
     insert into public.suppliers (display_name, entity_kind, website)
-    values (trim(v ->> 'name'), coalesce(v ->> 'entity_kind', 'unknown'),
+    values (trim(v ->> 'name'), coalesce(nullif(v ->> 'entity_kind', ''), 'unknown'),
       nullif(v ->> 'website', '')) returning id into supplier;
   elsif r.decision = 'link' then
     select id into strict supplier from public.suppliers
       where id = r.target_supplier_id and status = 'active' for update;
     update public.suppliers set
-      entity_kind = case when entity_kind = 'unknown' then coalesce(v ->> 'entity_kind', 'unknown')
-        else entity_kind end,
+      entity_kind = case when entity_kind = 'unknown'
+        then coalesce(nullif(v ->> 'entity_kind', ''), 'unknown') else entity_kind end,
       website = coalesce(website, nullif(v ->> 'website', '')) where id = supplier;
   else
     raise exception 'Row has no decision';

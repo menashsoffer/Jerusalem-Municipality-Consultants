@@ -67,7 +67,7 @@ describe('Excel import decisions and promotion', () => {
         {
           row_number: 4,
           raw: { name: 'חדש נוסף' },
-          edited: { name: 'חדש נוסף', scheme: 'personal_id', value: '000001234' },
+          edited: { name: 'חדש נוסף', entity_kind: '', scheme: 'personal_id', value: '000001234' },
         },
       ] as const,
     };
