@@ -1,10 +1,12 @@
-import { useState, useDeferredValue } from 'react';
+import { useDeferredValue, useEffect, useState } from 'react';
+import { useLocation } from 'react-router';
 import { FormField } from '../../../ui/form-field.tsx';
 import { Button } from '../../../ui/button.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
 import { filterCatalog } from '../../../catalog-filter.ts';
 import type { CatalogState } from '../../../data/snapshot.ts';
 import { emptyFilters, reconcile, changeFilter } from '../model/filters.ts';
+import { restoreFilters, saveFilters } from '../model/saved-filters.ts';
 import { FilterControls } from './filter-controls.tsx';
 import { Results } from './results.tsx';
 import styles from './catalog.module.css';
@@ -12,8 +14,19 @@ interface Props {
   state: CatalogState;
   today: string;
 }
+/** The search survives a visit to a supplier and the way back (supplier page spec, section 3). */
+function useSavedFilters(today: string) {
+  const { key } = useLocation();
+  const state = useState(() => restoreFilters(key, emptyFilters(today)) ?? emptyFilters(today));
+  const [filters] = state;
+  useEffect(() => {
+    saveFilters(key, filters);
+  }, [key, filters]);
+  return state;
+}
+
 export function CatalogBrowser({ state, today }: Props) {
-  const [filters, setFilters] = useState(() => emptyFilters(today));
+  const [filters, setFilters] = useSavedFilters(today);
   const current = reconcile(filters, state.suppliers),
     query = useDeferredValue(filters.query);
   const matches = filterCatalog(state.suppliers, { ...current, query });

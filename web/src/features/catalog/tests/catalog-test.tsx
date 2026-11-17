@@ -18,7 +18,10 @@ function page() {
   );
   return value;
 }
-afterEach(cleanup);
+afterEach(() => {
+  cleanup();
+  sessionStorage.clear();
+});
 function detailLinks() {
   return screen
     .queryAllByRole('link', { name: /^פרטי ספק:/ })

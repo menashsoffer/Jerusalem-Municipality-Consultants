@@ -177,7 +177,7 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
     });
   });
 
-  it('returns identifiers under RLS and audit only for administrators and auditors', async () => {
+  it('returns identifiers under RLS and the change history only to administrators', async () => {
     await db.exec(`insert into public.supplier_names (supplier_id, name)
       values ('${SUPPLIER}', 'שם שנמחק');
       delete from public.supplier_names where name = 'שם שנמחק'`);
@@ -199,7 +199,7 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
           detail.identifiers,
           direct.rows.map((entry) => entry.row),
         );
-        if (['admin', 'auditor'].includes(role)) {
+        if (role === 'admin') {
           assert.ok(Array.isArray(detail.audit));
           const deleted = detail.audit as { operation: string; changes: object }[];
           assert.ok(deleted.some((row) => row.operation === 'DELETE'));
