@@ -1,0 +1,40 @@
+@layer features {
+  .disclosure {
+    margin-block: var(--space-lg);
+  }
+  .disclosure summary {
+    cursor: pointer;
+    padding-block: var(--space-md);
+    font-weight: var(--font-weight-label);
+  }
+  .filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: var(--space-lg);
+    padding-block: var(--space-lg);
+  }
+  .results {
+    list-style: none;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+    gap: var(--space-lg);
+  }
+  .card {
+    height: 100%;
+    min-block-size: var(--panel-min-size);
+    padding: var(--space-lg);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    overflow-wrap: anywhere;
+  }
+  .card h3 {
+    margin-block-start: 0;
+  }
+  /* The first batch stays eager. Later batches are far below the initial viewport. */
+  .deferred {
+    content-visibility: auto;
+    contain-intrinsic-size: auto none auto 20rem;
+  }
+}
