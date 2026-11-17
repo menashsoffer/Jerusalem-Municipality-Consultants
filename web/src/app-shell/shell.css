@@ -124,6 +124,32 @@
     }
   }
 
+  /* An error or notice that replaces a screen (screen-error.tsx). */
+  .shell-notice {
+    max-inline-size: 36rem;
+    display: grid;
+    justify-items: start;
+    gap: var(--space-sm);
+    padding: var(--space-xl);
+    background: var(--color-surface);
+    border: var(--border-width) solid var(--color-border);
+    border-radius: var(--radius-panel);
+    & h1 {
+      margin: 0;
+      font-size: var(--font-h2);
+    }
+    & p {
+      margin: 0 0 var(--space-sm);
+      color: var(--color-muted);
+    }
+    & a {
+      display: inline-grid;
+      place-items: center;
+      padding-block: 0;
+      text-decoration: none;
+    }
+  }
+
   /* Phones: tabs become a bottom bar; the top bar keeps the brand and the account link. */
   @media (width < 48rem) {
     .shell-header-inner {
