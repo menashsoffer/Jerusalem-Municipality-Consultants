@@ -34,6 +34,8 @@ export function wireCatalog() {
         [['שם קודם', 'former_name', 0]],
         [[0, 0, 'כתיב נוסף', 2, '2020-01-01', '2028-01-01', null, 'registry_document', 'verified']],
         ['email'],
+        'verified',
+        null,
       ],
     ],
     registries: [

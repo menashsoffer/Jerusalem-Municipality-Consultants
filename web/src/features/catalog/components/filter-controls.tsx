@@ -1,12 +1,13 @@
 import { SelectField } from '../../../ui/select-field.tsx';
 import type { Filters } from '../../../catalog-filter.ts';
 import type { Supplier } from '../../../catalog-model.ts';
-import { optionsFor, type Choice, type FilterKey } from '../model/filters.ts';
+import { optionsFor, type Choice, type FilterKey, type ToggleKey } from '../model/filters.ts';
 import styles from './catalog.module.css';
 interface Props {
   filters: Filters;
   suppliers: Supplier[];
   change: (key: FilterKey, value: string) => void;
+  toggle: (key: ToggleKey, value: boolean) => void;
 }
 interface ControlProps {
   label: string;
@@ -39,7 +40,15 @@ function Control({ label, value, choices, disabled, change }: ControlProps) {
     />
   );
 }
-const KEYS = ['registry', 'field', 'category', 'subcategory', 'unit', 'validity'] as const;
+const KEYS = [
+  'registry',
+  'field',
+  'category',
+  'subcategory',
+  'unit',
+  'validity',
+  'identifier',
+] as const;
 const LABELS = {
   registry: 'מאגר',
   field: 'תחום',
@@ -47,6 +56,7 @@ const LABELS = {
   subcategory: 'תת־קטגוריה',
   unit: 'יחידה',
   validity: 'תוקף',
+  identifier: 'ח.פ.',
 };
 const VALIDITY_CHOICES = [
   { value: 'valid', label: 'בתוקף' },
@@ -54,7 +64,20 @@ const VALIDITY_CHOICES = [
   { value: 'undated', label: 'ללא תאריך סיום' },
   { value: 'future', label: 'טרם החל' },
 ];
-export function FilterControls({ filters, suppliers, change }: Props) {
+const IDENTIFIER_CHOICES = [
+  { value: 'verified', label: 'ח.פ. מאושר' },
+  { value: 'pending', label: 'ח.פ. ממתין לאישור' },
+  { value: 'none', label: 'אין ח.פ. מאושר' },
+];
+const TOGGLES: { key: ToggleKey; label: string }[] = [
+  { key: 'showInactive', label: 'להציג גם ספקים לא פעילים' },
+  { key: 'showClosed', label: 'להציג גם מאגרים סגורים וגרסאות קודמות' },
+];
+function fixedChoices(key: (typeof KEYS)[number]): Choice[] | null {
+  if (key === 'validity') return VALIDITY_CHOICES;
+  return key === 'identifier' ? IDENTIFIER_CHOICES : null;
+}
+export function FilterControls({ filters, suppliers, change, toggle }: Props) {
   const options = optionsFor(suppliers, filters);
   return (
     <details className={styles.disclosure}>
@@ -65,7 +88,9 @@ export function FilterControls({ filters, suppliers, change }: Props) {
             key={key}
             label={LABELS[key]}
             value={filters[key]}
-            choices={key === 'validity' ? VALIDITY_CHOICES : options[key]}
+            choices={
+              fixedChoices(key) ?? options[key as Exclude<typeof key, 'validity' | 'identifier'>]
+            }
             disabled={
               key === 'subcategory' && (!filters.category || options.subcategory.length === 0)
             }
@@ -73,6 +98,18 @@ export function FilterControls({ filters, suppliers, change }: Props) {
               change(key, value);
             }}
           />
+        ))}
+        {TOGGLES.map(({ key, label }) => (
+          <label key={key} className={styles.toggle}>
+            <input
+              type="checkbox"
+              checked={filters[key]}
+              onChange={(e) => {
+                toggle(key, e.currentTarget.checked);
+              }}
+            />
+            {label}
+          </label>
         ))}
       </div>
     </details>

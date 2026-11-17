@@ -114,6 +114,8 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
       'registry_field_categories',
       'org_units',
       'source_documents',
+      'supplier_identifiers',
+      'identifier_candidates',
     ];
     for (const table of tables) {
       const before = await as(db, USERS.admin, () => snapshot(db));

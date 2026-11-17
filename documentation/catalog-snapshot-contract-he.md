@@ -8,7 +8,7 @@
 
 | מפתח | סדר העמודות |
 |---|---|
-| `suppliers` | `id, display_name, entity_kind, status, website, review_status, note, names, memberships, contactKinds` |
+| `suppliers` | `id, display_name, entity_kind, status, website, review_status, note, names, memberships, contactKinds, identifierState, inactive` |
 | `names` בתוך ספק | `name, kind, documentAt` |
 | `memberships` בתוך ספק | `versionAt, fieldAt, name_as_published, source_page, registered_from, registered_until, engagement_started_on, dates_source, review_status` |
 | `contactKinds` בתוך ספק | סוגי פרטי הקשר הנוכחיים, ממוינים וללא כפילות, למשל `["email", "phone"]` |
@@ -21,6 +21,8 @@
 | `documents` | `id, url` |
 
 עמודה שמסתיימת ב־`At` היא מיקום (מ־0) במערך המקביל בתשובה: `versionAt` ב־`versions`, `fieldAt` ב־`fields`, `registryAt` ב־`registries` ו־`documentAt` ב־`documents`. שני הצדדים נקראים באותה הרשאה וממוינים לפי מזהה, ולכן המיקומים תואמים. `null` פירושו שאין קישור או שהשורה המקושרת אינה גלויה למשתמש. שיוך לגרסה שאינה גלויה אינו נשלח. מיקום שחורג מהמערך הוא שגיאה בצד הדפדפן.
+
+`identifierState` הוא `verified` כשיש מזהה מאושר, `pending` כשיש מזהה או מועמד שממתינים לאישור, ו־`null` כשאין. הוא נגזר רק ממה שהמשתמש רשאי לראות, ולכן צופה לא רואה מועמדים. `inactive` הוא `[reason, source, changedOn]` לספק לא פעיל ו־`null` לאחרים (מיגרציה `20261117050000`). שינוי במזהים או במועמדים מגדיל את מונה הגרסה.
 
 ערכי פרטי הקשר אינם בקטלוג (מיגרציה `20261117040000`). הם מגיעים מ־`supplier_detail` כשפותחים ספק. כך הקטלוג קטן יותר, ופרטי קשר נקראים רק בעת הצורך. במדידה במסד החי ב־17.11, עם 1,299 ספקים, התשובה ירדה מכ־1.14MB לכ־482KB לפני דחיסה.
 

@@ -85,6 +85,8 @@ const TABLES = {
   fieldCategories: ['registry_field_categories', 'true'],
   units: ['org_units', 'true'],
   documents: ['source_documents', 'true'],
+  identifiers: ['supplier_identifiers', "review_status <> 'rejected'"],
+  candidates: ['identifier_candidates', "status = 'pending'"],
 } as const;
 
 type Records = Record<string, unknown>;
@@ -112,6 +114,13 @@ function encode(column: string, value: unknown, positions: Positions): unknown {
   const target = POSITIONS[column];
   if (!target || value === null) return value;
   return positions[target]?.get(value) ?? null;
+}
+
+function identifierState(tables: Record<string, Records[]>, supplier: unknown): string | null {
+  const own = (tables.identifiers ?? []).filter((row) => row.supplier_id === supplier);
+  if (own.some((row) => row.review_status === 'verified')) return 'verified';
+  const candidate = (tables.candidates ?? []).some((row) => row.supplier_id === supplier);
+  return own.length || candidate ? 'pending' : null;
 }
 
 export async function directCatalog(db: PGlite): Promise<Records> {
@@ -159,6 +168,10 @@ export async function directCatalog(db: PGlite): Promise<Records> {
         (tables.contacts ?? []).filter((c) => c.supplier_id === row.id).map((c) => c.kind),
       ),
     ].sort(),
+    identifierState(tables, row.id),
+    row.status === 'inactive'
+      ? [row.status_reason, row.status_source, row.status_changed_on]
+      : null,
   ]);
   return result;
 }

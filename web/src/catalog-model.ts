@@ -1,4 +1,4 @@
-import type { CatalogData } from './data/catalog.ts';
+import type { CatalogData, IdentifierState } from './data/catalog.ts';
 import { normalize } from './catalog-search.ts';
 
 export type Validity = 'valid' | 'expired' | 'undated' | 'future';
@@ -15,6 +15,9 @@ export interface Membership {
   validUntil: string | null;
   source: string | null;
   page: number | null;
+  /** `needs_review` until an editor or manager verifies the membership. */
+  reviewStatus: string;
+  registryClosed: boolean;
 }
 export interface CategoryLabel {
   categoryId: string;
@@ -28,6 +31,9 @@ export interface Supplier {
   aliases: string[];
   searchNames: string[];
   verified: boolean;
+  identifier: IdentifierState;
+  /** Set only for an inactive supplier: why, according to whom and since when. */
+  inactive: { reason: string; source: string | null; changedOn: string | null } | null;
   memberships: Membership[];
   /** Kinds of current contact details on record; the values load with the supplier. */
   contactKinds: string[];
@@ -120,6 +126,17 @@ function member(row: MemberRow, refs: Lookup): Membership | null {
     validFrom: row.registered_from,
     validUntil: row.registered_until,
     page: row.source_page,
+    reviewStatus: row.review_status,
+    registryClosed: registry.status === 'closed',
+  };
+}
+
+function inactiveNote(row: CatalogData['suppliers'][number]): Supplier['inactive'] {
+  if (row.status !== 'inactive') return null;
+  return {
+    reason: row.status_reason ?? 'לא צוינה סיבה',
+    source: row.status_source,
+    changedOn: row.status_changed_on,
   };
 }
 
@@ -138,6 +155,8 @@ export function buildCatalog(data: CatalogData): Supplier[] {
         id: row.id,
         name: row.display_name,
         verified: row.review_status === 'verified',
+        identifier: row.identifier_state,
+        inactive: inactiveNote(row),
         aliases: [
           ...(names.get(row.id) ?? []).map((name) => name.name),
           ...(memberships.get(row.id) ?? []).flatMap((item) =>

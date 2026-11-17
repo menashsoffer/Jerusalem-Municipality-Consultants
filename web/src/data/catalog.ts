@@ -1,11 +1,24 @@
 import type { PublicSchema } from '../database.types.ts';
 
 type Row<T extends keyof PublicSchema> = PublicSchema[T]['Row'];
+export type IdentifierState = 'verified' | 'pending' | null;
 export interface CatalogData {
-  suppliers: Pick<
+  suppliers: (Pick<
     Row<'suppliers'>,
-    'id' | 'display_name' | 'entity_kind' | 'status' | 'website' | 'review_status' | 'note'
-  >[];
+    | 'id'
+    | 'display_name'
+    | 'entity_kind'
+    | 'status'
+    | 'website'
+    | 'review_status'
+    | 'note'
+    | 'status_reason'
+    | 'status_source'
+    | 'status_changed_on'
+  > & {
+    /** `verified`, `pending` or null, from the identifiers and candidates the caller sees. */
+    identifier_state: IdentifierState;
+  })[];
   names: Pick<Row<'supplier_names'>, 'supplier_id' | 'name' | 'kind' | 'source_document_id'>[];
   memberships: Pick<
     Row<'memberships'>,

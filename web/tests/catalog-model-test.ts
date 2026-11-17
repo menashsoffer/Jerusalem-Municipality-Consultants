@@ -15,6 +15,9 @@ const FILTERS: Filters = {
   subcategory: '',
   unit: '',
   validity: '',
+  identifier: '',
+  showInactive: false,
+  showClosed: false,
   today: '2026-11-16',
 };
 
@@ -46,6 +49,8 @@ describe('compact catalog and precomputed search', () => {
             [1, 1, null, null, null, null, null, null, null],
           ],
           [],
+          null,
+          null,
         ],
       ],
     });
@@ -185,5 +190,43 @@ describe('catalog filters on a 533-supplier catalog', () => {
     const start = performance.now();
     assert.ok(filterCatalog(rows, { ...FILTERS, query: 'ספק 5' }).length > 0);
     assert.ok(performance.now() - start < 1000);
+  });
+});
+
+describe('status filters', () => {
+  function catalog(status: string | null, registryStatus: string) {
+    const wire = wireCatalog();
+    const [row] = wire.suppliers;
+    assert.ok(row);
+    const supplier: unknown[] = [...row];
+    supplier[3] = status;
+    supplier[11] = status === 'inactive' ? ['מונתה לשופטת', null, '2026-09-01'] : null;
+    const registries = wire.registries.map((r) =>
+      r[0] === 'r1' ? [r[0], r[1], r[2], registryStatus] : r,
+    );
+    return buildCatalog(compactCatalog({ ...wire, registries, suppliers: [supplier] }));
+  }
+
+  it('hides an inactive supplier unless asked for or found by its own name', () => {
+    const suppliers = catalog('inactive', 'active');
+    assert.equal(suppliers[0]?.inactive?.reason, 'מונתה לשופטת');
+    assert.equal(filterCatalog(suppliers, FILTERS).length, 0);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, showInactive: true }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, query: 'שם נוכחי' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, query: 'כבישים' }).length, 0);
+  });
+
+  it('hides memberships in closed registries by default', () => {
+    const suppliers = catalog(null, 'closed');
+    assert.equal(suppliers[0]?.memberships[0]?.registryClosed, true);
+    assert.equal(filterCatalog(suppliers, FILTERS).length, 0);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, showClosed: true }).length, 1);
+  });
+
+  it('filters by identifier state', () => {
+    const suppliers = catalog(null, 'active');
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'verified' }).length, 1);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'pending' }).length, 0);
+    assert.equal(filterCatalog(suppliers, { ...FILTERS, identifier: 'none' }).length, 0);
   });
 });

@@ -13,6 +13,10 @@ interface AdminRpc {
   grant_role: { target_user: string; wanted_role: Role; target_unit: string | null };
   revoke_role: { grant_id: string };
   decide_identifier_candidate: { candidate: string; accept: boolean };
+  set_supplier_status: {
+    target: string;
+    change: { active: boolean; reason?: string; source?: string; changedOn?: string };
+  };
   decide_category_request: {
     request_id: string;
     decision: 'approved' | 'rejected' | 'linked';
@@ -35,6 +39,7 @@ declare module '../database.types.ts' {
       Returns: string | null;
     };
     decide_category_request: { Args: AdminRpc['decide_category_request']; Returns: string | null };
+    set_supplier_status: { Args: AdminRpc['set_supplier_status']; Returns: null };
   }
 }
 const accessSchema = z.object({

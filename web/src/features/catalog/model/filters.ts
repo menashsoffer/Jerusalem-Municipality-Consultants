@@ -1,10 +1,13 @@
 import type { Supplier, Validity } from '../../../catalog-model.ts';
-import type { Filters } from '../../../catalog-filter.ts';
+import type { Filters, IdentifierFilter } from '../../../catalog-filter.ts';
+export { israelToday } from '../../../lib/dates.ts';
 export interface Choice {
   value: string;
   label: string;
 }
-export type FilterKey = 'registry' | 'field' | 'category' | 'subcategory' | 'unit' | 'validity';
+export type FilterKey =
+  'registry' | 'field' | 'category' | 'subcategory' | 'unit' | 'validity' | 'identifier';
+export type ToggleKey = 'showInactive' | 'showClosed';
 function choices(pairs: Iterable<readonly [string, string]>): Choice[] {
   return [...new Map(pairs)]
     .map(([value, label]) => ({ value, label }))
@@ -49,6 +52,9 @@ export function emptyFilters(today: string): Filters {
     subcategory: '',
     unit: '',
     validity: '',
+    identifier: '',
+    showInactive: false,
+    showClosed: false,
   };
 }
 function selected(options: Choice[], value: string): string {
@@ -58,6 +64,9 @@ export function parseValidity(value: string): Validity | '' {
   return value === 'valid' || value === 'expired' || value === 'undated' || value === 'future'
     ? value
     : '';
+}
+export function parseIdentifier(value: string): IdentifierFilter {
+  return value === 'verified' || value === 'pending' || value === 'none' ? value : '';
 }
 /** Resets dependent selections just as the legacy selects do when their option disappears. */
 export function reconcile(filters: Filters, suppliers: Supplier[]): Filters {
@@ -74,6 +83,7 @@ export function reconcile(filters: Filters, suppliers: Supplier[]): Filters {
     unit: selected(options.unit, filters.unit),
     subcategory: selected(options.subcategory, filters.subcategory),
     validity: parseValidity(filters.validity),
+    identifier: parseIdentifier(filters.identifier),
   };
 }
 export function changeFilter(
@@ -82,16 +92,8 @@ export function changeFilter(
   suppliers: Supplier[],
 ): Filters {
   const { key, value } = change;
-  const next = { ...filters, [key]: key === 'validity' ? parseValidity(value) : value };
+  const next = { ...filters, [key]: value };
   return reconcile(next, suppliers);
-}
-export function israelToday(): string {
-  return new Intl.DateTimeFormat('en-CA', {
-    timeZone: 'Asia/Jerusalem',
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-  }).format(new Date());
 }
 export function sourceUrl(value: string | null): string | null {
   if (!value) return null;

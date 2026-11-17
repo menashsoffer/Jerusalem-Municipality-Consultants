@@ -1,4 +1,4 @@
-import type { CatalogData } from './catalog.ts';
+import type { CatalogData, IdentifierState } from './catalog.ts';
 import { array, nullable, number, object, rows, text, tuple } from './parse.ts';
 import { DataError } from './client.ts';
 
@@ -44,10 +44,30 @@ function inheritedName(value: unknown, index: number, name: string): unknown[] {
   return values;
 }
 
+function identifierState(value: unknown): IdentifierState {
+  if (value === null || value === 'verified' || value === 'pending') return value;
+  throw new DataError(0);
+}
+
+/** Column 11 is `[reason, source, changedOn]` for an inactive supplier and null otherwise. */
+function inactive(value: unknown) {
+  if (value === null) return { status_reason: null, status_source: null, status_changed_on: null };
+  const [reason, source, changedOn] = array(value);
+  return {
+    status_reason: optionalText(reason),
+    status_source: optionalText(source),
+    status_changed_on: optionalText(changedOn),
+  };
+}
+
 function supplier(value: unknown, result: CatalogData): void {
   const raw = array(value);
-  if (raw.length !== 10) throw new DataError(0);
-  const row = tuple(raw.slice(0, 7), SUPPLIER);
+  if (raw.length !== 12) throw new DataError(0);
+  const row = {
+    ...tuple(raw.slice(0, 7), SUPPLIER),
+    identifier_state: identifierState(raw[10]),
+    ...inactive(raw[11]),
+  };
   result.suppliers.push(row);
   const names = array(raw[7]).map((value) => inheritedName(value, 0, row.display_name));
   for (const { document, ...name } of rows(names, NAME)) {

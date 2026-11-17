@@ -1140,6 +1140,9 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "status_reason": string | null;
+      "status_source": string | null;
+      "status_changed_on": string | null;
     };
     Insert: {
       "id"?: string;
@@ -1156,6 +1159,9 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "status_reason"?: string | null;
+      "status_source"?: string | null;
+      "status_changed_on"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -1172,6 +1178,9 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "status_reason"?: string | null;
+      "status_source"?: string | null;
+      "status_changed_on"?: string | null;
     };
   };
   "threshold_coverage": {
