@@ -49,8 +49,13 @@ export function parseAddForm(form: FormData): ParsedForm {
   return { payload, error: '' };
 }
 
+/** The pool name, plus dates and a missing source only when they tell versions apart. */
 export function versionLabel(version: RegistryOption): string {
-  return `${version.name} · ${version.validFrom ?? 'ללא תחילה'} – ${version.validUntil ?? 'ללא סיום'}`;
+  const parts = [version.name];
+  if (version.validFrom || version.validUntil)
+    parts.push(`${version.validFrom ?? 'ללא תחילה'} – ${version.validUntil ?? 'ללא סיום'}`);
+  if (!version.hasSource) parts.push('ללא מסמך מקור');
+  return parts.join(' · ');
 }
 
 /** The fields of the chosen pool version, by the text that appears in the source document. */

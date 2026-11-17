@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { writableVersions, type WriteContext } from '../../../data/write-context.ts';
 import { access } from '../../../../tests/catalog-fixture.ts';
-import { OFFERED_FIELD, fieldsOf, parseAddForm } from '../model/add-form.ts';
+import { OFFERED_FIELD, fieldsOf, parseAddForm, versionLabel } from '../model/add-form.ts';
 import { duplicates } from '../model/duplicates.ts';
 import { auditLine, changedFields, membershipDates, safeSourceUrl } from '../model/labels.ts';
 
@@ -71,6 +71,59 @@ describe('writable pools', () => {
       ['f2'],
     );
     assert.deepEqual(fieldsOf(context, ''), []);
+  });
+});
+
+describe('pool list in the add form', () => {
+  const pools = {
+    ...catalog,
+    registries: [
+      { id: 'r1', name: 'מאגר ת', status: 'active', owner_unit_id: null },
+      { id: 'r2', name: 'מאגר א', status: 'unknown', owner_unit_id: null },
+      { id: 'r3', name: 'מאגר ב', status: 'closed', owner_unit_id: null },
+    ],
+    versions: [
+      {
+        id: 'v1',
+        registry_id: 'r1',
+        source_document_id: 'd1',
+        valid_from: null,
+        valid_until: null,
+      },
+      {
+        id: 'v2',
+        registry_id: 'r2',
+        source_document_id: null,
+        valid_from: null,
+        valid_until: null,
+      },
+      {
+        id: 'v3',
+        registry_id: 'r3',
+        source_document_id: 'd3',
+        valid_from: null,
+        valid_until: null,
+      },
+    ],
+  } as unknown as WriteContext['catalog'];
+
+  it('offers pools of unknown status, never closed ones, sorted by name', () => {
+    const rows = writableVersions(pools, access({ admin: true }));
+    assert.deepEqual(
+      rows.map((row) => [row.versionId, row.statusKnown]),
+      [
+        ['v2', false],
+        ['v1', true],
+      ],
+    );
+  });
+
+  it('labels a pool by name, adding dates and a missing source only when they say something', () => {
+    const [unknown, known] = writableVersions(pools, access({ admin: true }));
+    assert.equal(known && versionLabel(known), 'מאגר ת');
+    assert.equal(unknown && versionLabel(unknown), 'מאגר א · ללא מסמך מקור');
+    const dated = { ...known, validFrom: '2025-01-01', validUntil: null } as typeof known;
+    assert.equal(dated && versionLabel(dated), 'מאגר ת · 2025-01-01 – ללא סיום');
   });
 });
 

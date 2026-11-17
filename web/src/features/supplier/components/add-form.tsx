@@ -1,5 +1,5 @@
 import { useActionState, useState } from 'react';
-import type { WriteContext } from '../../../data/write-context.ts';
+import type { RegistryOption, WriteContext } from '../../../data/write-context.ts';
 import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { SelectField } from '../../../ui/select-field.tsx';
@@ -21,6 +21,22 @@ const options = (entries: [string, string][]) =>
       {label}
     </option>
   ));
+const POOL_GROUPS: [boolean, string][] = [
+  [true, 'מאגרים פעילים'],
+  [false, 'מאגרים שמעמדם טרם אומת'],
+];
+/** Pools grouped by whether their status is confirmed; an empty group is left out. */
+function poolOptions(versions: RegistryOption[]) {
+  return POOL_GROUPS.map(([known, label]) => {
+    const rows = versions.filter((v) => v.statusKnown === known);
+    if (rows.length === 0) return null;
+    return (
+      <optgroup key={label} label={label}>
+        {options(rows.map((v): [string, string] => [v.versionId, versionLabel(v)]))}
+      </optgroup>
+    );
+  });
+}
 const MANUAL_ID_TYPES = Object.entries(ID_TYPES).filter(([key]) => key !== 'personal_id');
 
 function PoolFields({ context }: { context: WriteContext }) {
@@ -37,10 +53,7 @@ function PoolFields({ context }: { context: WriteContext }) {
           onChange: (event) => {
             setVersion(event.currentTarget.value);
           },
-          children: options([
-            ['', 'בחרו מאגר'],
-            ...context.versions.map((v): [string, string] => [v.versionId, versionLabel(v)]),
-          ]),
+          children: [options([['', 'בחרו מאגר']]), poolOptions(context.versions)],
         }}
       />
       <SelectField
