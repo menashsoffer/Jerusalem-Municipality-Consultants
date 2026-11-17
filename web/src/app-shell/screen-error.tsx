@@ -1,9 +1,11 @@
+import { useErrorReport } from './use-error-report.ts';
 import { Link, isRouteErrorResponse, useRouteError, useRevalidator } from 'react-router';
 import { DataError } from '../data/client.ts';
 import { Button } from '../ui/button.tsx';
 import controls from '../ui/control.module.css';
 export function ScreenError() {
   const error = useRouteError();
+  useErrorReport(error, 'route');
   const revalidator = useRevalidator();
   const status = error instanceof DataError || isRouteErrorResponse(error) ? error.status : 0;
   const title =

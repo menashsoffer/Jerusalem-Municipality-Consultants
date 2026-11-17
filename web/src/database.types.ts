@@ -1328,6 +1328,38 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "web_telemetry": {
+    Row: {
+      "id": number;
+      "name": string;
+      "value": number | null;
+      "bounded": boolean;
+      "error_code": string | null;
+      "boundary": string | null;
+      "within_budget": boolean | null;
+      "created_at": string;
+    };
+    Insert: {
+      "id"?: never;
+      "name": string;
+      "value"?: number | null;
+      "bounded"?: boolean;
+      "error_code"?: string | null;
+      "boundary"?: string | null;
+      "within_budget"?: never;
+      "created_at"?: string;
+    };
+    Update: {
+      "id"?: never;
+      "name"?: string;
+      "value"?: number | null;
+      "bounded"?: boolean;
+      "error_code"?: string | null;
+      "boundary"?: string | null;
+      "within_budget"?: never;
+      "created_at"?: string;
+    };
+  };
 }
 
 export interface PublicFunctions {
