@@ -1,7 +1,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 set local search_path = public, extensions;
-select plan(31);
+select plan(34);
 select has_column('public', 'import_rows', 'decision', 'import_rows.decision exists');
 select has_column('public', 'import_rows', 'target_supplier_id', 'import_rows.target_supplier_id exists');
 select has_column('public', 'import_rows', 'edited', 'import_rows.edited exists');
@@ -99,6 +99,13 @@ select is((select count(*)::integer from public.import_rows), 0,
   'auditor cannot read import rows directly');
 select is((select count(*)::integer from storage.objects where bucket_id = 'source-files'), 0,
   'auditor cannot read source files directly');
+select is((select count(*)::integer from public.source_documents where storage_path is not null), 0,
+  'auditor cannot read source file metadata');
+select throws_ok($$insert into storage.objects (bucket_id, name) values ('source-files', 'blocked.xlsx')$$,
+  '42501', null, 'auditor cannot upload source files');
 reset role;
+select is((select raw ->> 'name' from public.import_rows where id =
+  (select (result -> 'rows' -> 0 ->> 'row_id')::bigint from excel_test)), 'Excel test supplier',
+  'source row remains unchanged after promotion');
 select * from finish();
 rollback;
