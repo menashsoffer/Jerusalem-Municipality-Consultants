@@ -296,6 +296,56 @@
       padding-block: var(--space-xs);
     }
   }
+  /* Verification mark beside the name: the bubble sits above it, on hover, focus or tap. */
+  .mark {
+    position: relative;
+    display: inline-flex;
+    vertical-align: middle;
+  }
+  .markButton {
+    display: grid;
+    place-items: center;
+    min-inline-size: var(--control-min-size);
+    min-block-size: var(--control-min-size);
+    padding: 0;
+    border: 0;
+    border-radius: var(--radius-pill);
+    background: transparent;
+    cursor: help;
+    & svg {
+      inline-size: 1.75rem;
+      block-size: 1.75rem;
+    }
+  }
+  .pending {
+    color: var(--color-badge-warning-border);
+  }
+  /* Filled badge with a white check, like a verified profile. */
+  .verified svg path:first-child {
+    fill: var(--color-badge-info-border);
+    stroke: var(--color-badge-info-border);
+  }
+  .verified svg path:last-child {
+    stroke: var(--color-surface);
+  }
+  .markTip {
+    position: absolute;
+    inset-block-end: 100%;
+    inset-inline-start: 50%;
+    translate: 50% 0;
+    z-index: 1;
+    padding: var(--space-xs) var(--space-sm);
+    border-radius: var(--radius-tag);
+    background: var(--color-text);
+    color: var(--color-surface);
+    font-size: var(--font-xs);
+    font-weight: var(--font-weight-label);
+    line-height: var(--line-height-body);
+    white-space: nowrap;
+    &[hidden] {
+      display: none;
+    }
+  }
   .visuallyHidden {
     position: absolute;
     inline-size: 1px;
