@@ -17,6 +17,17 @@ interface AdminRpc {
     target: string;
     change: { active: boolean; reason?: string; source?: string; changedOn?: string };
   };
+  create_engagement_request: {
+    draft: {
+      unit_id: string;
+      subject: string;
+      estimated_value: number;
+      value_includes_vat: boolean;
+      requested_exemption: string | null;
+    };
+  };
+  record_supplier_approaches: { request: string; suppliers: string[]; channel: 'email' };
+  last_approaches: { suppliers: string[] };
   decide_category_request: {
     request_id: string;
     decision: 'approved' | 'rejected' | 'linked';
@@ -40,6 +51,12 @@ declare module '../database.types.ts' {
     };
     decide_category_request: { Args: AdminRpc['decide_category_request']; Returns: string | null };
     set_supplier_status: { Args: AdminRpc['set_supplier_status']; Returns: null };
+    create_engagement_request: { Args: AdminRpc['create_engagement_request']; Returns: string };
+    record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
+    last_approaches: {
+      Args: AdminRpc['last_approaches'];
+      Returns: { supplier_id: string; last_on: string }[];
+    };
   }
 }
 const accessSchema = z.object({

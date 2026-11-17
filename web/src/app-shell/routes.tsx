@@ -84,6 +84,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'engagement',
+        handle: { title: 'בקשת התקשרות' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/route-check/engagement-page.tsx');
+          return { Component: m.EngagementPage, loader: m.loader };
+        },
+      },
+      {
         path: 'users',
         handle: { title: 'משתמשים ותפקידים' },
         errorElement: <ScreenError />,

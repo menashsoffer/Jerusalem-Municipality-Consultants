@@ -7,6 +7,7 @@ import { Results } from '../components/results.tsx';
 import { filterCatalog, type Filters } from '../../../catalog-filter.ts';
 import { state, suppliers } from './fixture.ts';
 import { emptyFilters } from '../model/filters.ts';
+import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 const TODAY = '2026-11-16';
 function page() {
   const value = state();
@@ -99,5 +100,32 @@ describe('React catalog parity', () => {
     expect(screen.getByRole('link', { name: 'פרטי ספק: ספק 249' }).getAttribute('href')).toBe(
       '/supplier/249',
     );
+  });
+  it('adds a supplier to the request and never an inactive one', async () => {
+    const [first] = suppliers();
+    if (!first) throw Error('missing fixture');
+    const active = { ...first, id: '10000000-0000-4000-8000-0000000000a1', name: 'פעיל' };
+    const inactive = {
+      ...first,
+      id: '10000000-0000-4000-8000-0000000000a2',
+      name: 'לא פעיל',
+      inactive: { reason: 'מונתה לשופטת', source: null, changedOn: '2026-09-01' },
+    };
+    replaceShortlist([]);
+    render(
+      <MemoryRouter>
+        <Results suppliers={[active, inactive]} today={TODAY} />
+      </MemoryRouter>,
+    );
+    const add = screen.getByRole('button', { name: 'בקשת התקשרות: פעיל' });
+    expect(add.getAttribute('aria-pressed')).toBe('false');
+    await userEvent.click(add);
+    expect(add.getAttribute('aria-pressed')).toBe('true');
+    expect(shortlistIds()).toEqual([active.id]);
+    const blocked = screen.getByRole<HTMLButtonElement>('button', {
+      name: 'הוספה לבקשת התקשרות',
+    });
+    expect(blocked.disabled).toBe(true);
+    replaceShortlist([]);
   });
 });

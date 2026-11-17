@@ -45,12 +45,26 @@ export interface Checked {
 
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/iu;
 
-export function parseTarget(body: Record<string, unknown>, today: IsoDate) {
-  const id = body.request_id;
+/** A saved request by id, or an unsaved draft that the database validates. */
+export type Target =
+  | { readonly requestId: string; readonly on: IsoDate }
+  | { readonly draft: Readonly<Record<string, unknown>>; readonly on: IsoDate };
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
+
+export function parseTarget(body: Record<string, unknown>, today: IsoDate): Target | null {
+  const { request_id: id, draft } = body;
   const on = body.on ?? today;
-  if (typeof id !== 'string' || !UUID.test(id) || typeof on !== 'string') return null;
+  if (typeof on !== 'string') return null;
+  const valid = typeof id === 'string' ? UUID.test(id) && draft === undefined : isRecord(draft);
+  if (!valid) return null;
   try {
-    return { requestId: id, on: parseIsoDate(on) };
+    const date = parseIsoDate(on);
+    return typeof id === 'string'
+      ? { requestId: id, on: date }
+      : { draft: draft as never, on: date };
   } catch {
     return null;
   }

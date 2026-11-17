@@ -7,6 +7,8 @@ import {
   supplierBadges,
 } from '../model/card-labels.ts';
 import { sourceUrl } from '../model/filters.ts';
+import { Button } from '../../../ui/button.tsx';
+import { SHORTLIST_MAX, toggleShortlist } from '../../../lib/shortlist.ts';
 import styles from './catalog.module.css';
 const LABELS = { valid: 'בתוקף', expired: 'פג תוקף', undated: 'ללא תאריך סיום', future: 'טרם החל' };
 function MembershipLine({ member, today }: { member: Membership; today: string }) {
@@ -32,8 +34,34 @@ interface Props {
   supplier: Supplier;
   today: string;
   deferred: boolean;
+  /** Whether the card is in the request, or null when the request is full without it. */
+  picked: boolean | null;
 }
-export function SupplierCard({ supplier, today, deferred }: Props) {
+/** The database blocks approaches to an inactive supplier; the disabled button explains it. */
+function PickButton({ supplier, picked }: Pick<Props, 'supplier' | 'picked'>) {
+  if (picked === null) {
+    return <Button disabled>הבקשה מלאה ({String(SHORTLIST_MAX)} ספקים)</Button>;
+  }
+  if (supplier.inactive && !picked) {
+    return (
+      <Button disabled aria-describedby={`inactive-${supplier.id}`}>
+        הוספה לבקשת התקשרות
+      </Button>
+    );
+  }
+  return (
+    <Button
+      aria-pressed={picked}
+      aria-label={`בקשת התקשרות: ${supplier.name}`}
+      onClick={() => {
+        toggleShortlist(supplier.id);
+      }}
+    >
+      {picked ? 'בבקשה, להסרה' : 'הוספה לבקשת התקשרות'}
+    </Button>
+  );
+}
+export function SupplierCard({ supplier, today, deferred, picked }: Props) {
   return (
     <li className={deferred ? styles.deferred : undefined}>
       <article className={styles.card}>
@@ -45,7 +73,11 @@ export function SupplierCard({ supplier, today, deferred }: Props) {
             </li>
           ))}
         </ul>
-        {supplier.inactive && <p role="note">{inactiveLine(supplier.inactive)}</p>}
+        {supplier.inactive && (
+          <p role="note" id={`inactive-${supplier.id}`}>
+            {inactiveLine(supplier.inactive)}
+          </p>
+        )}
         {supplier.memberships.map((member, index) => (
           <MembershipLine key={index} member={member} today={today} />
         ))}
@@ -55,7 +87,8 @@ export function SupplierCard({ supplier, today, deferred }: Props) {
           aria-label={`פרטי ספק: ${supplier.name}`}
         >
           פרטי ספק
-        </Link>
+        </Link>{' '}
+        <PickButton supplier={supplier} picked={picked} />
       </article>
     </li>
   );
