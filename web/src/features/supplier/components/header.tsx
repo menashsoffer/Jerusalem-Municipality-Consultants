@@ -2,8 +2,15 @@ import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { Button } from '../../../ui/button.tsx';
 import { Icon } from '../../../ui/icon.tsx';
 import { SHORTLIST_MAX, toggleShortlist, useShortlist } from '../../../lib/shortlist.ts';
-import { alsoKnownAs, headerBadges, summaryParts, verificationNote } from '../model/view.ts';
+import {
+  alsoKnownAs,
+  headerBadges,
+  summaryParts,
+  verificationMark,
+  verificationNote,
+} from '../model/view.ts';
 import { EDIT_DIALOG } from './edit-dialog.tsx';
+import { VerificationMark } from './verification-mark.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -63,7 +70,7 @@ export function SupplierHeader({ data, editor }: Props) {
           ))}
         </ul>
         <h1 id="supplier-name" tabIndex={-1}>
-          {supplier.display_name}
+          {supplier.display_name} <VerificationMark mark={verificationMark(supplier)} />
         </h1>
         <p className={styles.summary}>{summaryParts(data).join(' · ')}</p>
         {others.length > 0 && <p className={styles.aka}>ידוע גם בשם: {others.join(', ')}</p>}

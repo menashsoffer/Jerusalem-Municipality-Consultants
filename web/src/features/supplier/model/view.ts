@@ -42,16 +42,22 @@ export function alsoKnownAs(displayName: string, names: readonly { name: string 
   return result;
 }
 
+/** Activity only; verification is the mark beside the name. */
 export function headerBadges(supplier: SupplierDetail['supplier']): Badge[] {
-  const active: Badge =
-    supplier.status === 'inactive'
-      ? { tone: 'danger', text: 'לא פעיל' }
-      : { tone: 'success', text: 'פעיל' };
-  const verified = supplier.review_status === 'verified';
-  return [
-    active,
-    verified ? { tone: 'success', text: 'מאומת' } : { tone: 'warning', text: 'ממתין לאימות' },
-  ];
+  return supplier.status === 'inactive'
+    ? [{ tone: 'danger', text: 'לא פעיל' }]
+    : [{ tone: 'success', text: 'פעיל' }];
+}
+
+export interface VerificationMark {
+  verified: boolean;
+  label: string;
+}
+
+export function verificationMark(supplier: SupplierDetail['supplier']): VerificationMark {
+  return supplier.review_status === 'verified'
+    ? { verified: true, label: 'ספק מאומת' }
+    : { verified: false, label: 'ממתין לאימות' };
 }
 
 /** The city is the last part of an address, without a postal code. */

@@ -10,6 +10,7 @@ import {
   headerBadges,
   listings,
   summaryParts,
+  verificationMark,
   verificationNote,
 } from '../model/view.ts';
 
@@ -72,8 +73,14 @@ describe('supplier header', () => {
   it('separates activity from verification and explains what is not verified', () => {
     assert.deepEqual(
       headerBadges(detail().supplier).map((badge) => badge.text),
-      ['פעיל', 'ממתין לאימות'],
+      ['פעיל'],
     );
+    assert.deepEqual(verificationMark(detail().supplier), {
+      verified: false,
+      label: 'ממתין לאימות',
+    });
+    const verified = { ...detail().supplier, review_status: 'verified' };
+    assert.deepEqual(verificationMark(verified), { verified: true, label: 'ספק מאומת' });
     assert.match(verificationNote(detail()) ?? '', /עדיין לא אומתו/);
     assert.match(verificationNote(detail({ identifiers: [] })) ?? '', /אין לספק מספר מזהה/);
   });

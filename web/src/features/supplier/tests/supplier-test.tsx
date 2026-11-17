@@ -61,6 +61,22 @@ describe('supplier details', () => {
     );
     expect(links.every((link) => link.getAttribute('rel') === 'noopener noreferrer')).toBe(true);
     expect(screen.queryByRole('heading', { name: 'היסטוריית שינויים' })).toBeNull();
+    expect(screen.getByRole('button', { name: 'ספק מאומת' })).toBeDefined();
+  });
+
+  it('marks a waiting supplier with a labelled clock that shows its label on focus', async () => {
+    const data = await detail();
+    data.supplier = { ...data.supplier, review_status: 'needs_review' };
+    show(<SupplierDetails data={data} today="2026-11-17" />);
+    const mark = await screen.findByRole('button', { name: 'ממתין לאימות' });
+    const tip = screen.getByText('ממתין לאימות');
+    expect(tip.hidden).toBe(true);
+    await userEvent.tab();
+    while (document.activeElement !== mark) await userEvent.tab();
+    expect(tip.hidden).toBe(false);
+    await userEvent.keyboard('{Escape}');
+    expect(tip.hidden).toBe(true);
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('ממתין לאימות');
   });
 
   it('shows the history as sentences with field names only, when the server sends it', async () => {
