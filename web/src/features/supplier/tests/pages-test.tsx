@@ -1,4 +1,4 @@
-// The supplier card and add-supplier screens, and the card's sparse and unknown values.
+// The supplier page and add-supplier screens, and the page's sparse and unknown values.
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -70,22 +70,18 @@ afterEach(() => {
 });
 
 describe('supplier card with sparse data', () => {
-  it('says what is missing and falls back for unknown values', () => {
-    show(<SupplierDetails data={sparse()} />);
-    expect(screen.getByText('ספק לא מאומת')).toBeDefined();
-    expect(screen.getByRole('note').textContent).toBe('הספק אינו פעיל');
-    expect(screen.getByText('סוג ישות: לא ידוע')).toBeDefined();
-    expect(screen.getByText('לא תועדו שמות נוספים.')).toBeDefined();
-    expect(screen.getByText('מזהה: 1 · מצב לא ידוע')).toBeDefined();
-    expect(screen.getAllByText('מקור: לא תועד').length).toBeGreaterThan(0);
-    expect(screen.getByText('פרט קשר: 5')).toBeDefined();
-    expect(screen.getByRole('heading', { name: 'מאגר לא זמין' })).toBeDefined();
-    expect(screen.getByText('מצב הרישום לא ידוע')).toBeDefined();
-    expect(screen.getByText('תחום: לא צוין')).toBeDefined();
-    expect(screen.getByText('לא נמצאו שינויים ביומן.')).toBeDefined();
+  it('falls back for unknown values and says what is missing', () => {
+    show(<SupplierDetails data={sparse()} today="2026-11-17" />);
+    expect(screen.getByRole('note').textContent).toBe('הספק אינו פעיל.');
+    expect(screen.getByRole('heading', { name: 'פרטי זיהוי' })).toBeDefined();
+    expect(screen.getByText('לא ידוע')).toBeDefined();
+    expect(screen.getAllByText(/מצב לא ידוע/).length).toBeGreaterThan(0);
+    expect(screen.getByText('אין טלפון במאגר')).toBeDefined();
+    expect(screen.queryByRole('heading', { name: 'מאיפה המידע' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'עריכה' })).toBeNull();
   });
 
-  it('lists the reason, source and date of an inactive status, and the site and note', () => {
+  it('lists the reason and source of an inactive status, and the site and note', () => {
     const data = sparse({
       status_reason: 'פירוק',
       status_source: 'רשם החברות',
@@ -94,20 +90,18 @@ describe('supplier card with sparse data', () => {
       note: 'הערה חשובה',
       review_status: 'verified',
     });
-    show(<SupplierDetails data={data} />);
+    show(<SupplierDetails data={data} today="2026-11-17" />);
     expect(screen.getByRole('note').textContent).toBe(
-      'הספק אינו פעיל · סיבה: פירוק · מקור: רשם החברות · מתאריך 2026-01-01',
+      'הספק אינו פעיל. סיבה: פירוק. מקור: רשם החברות.',
     );
-    expect(screen.getByText('ספק מאומת')).toBeDefined();
-    expect(screen.getByText('אתר: https://x.test')).toBeDefined();
-    expect(screen.getByText('הערה: הערה חשובה')).toBeDefined();
+    expect(screen.getByText('https://x.test')).toBeDefined();
+    expect(screen.getByText('הערה חשובה')).toBeDefined();
   });
 
-  it('says so when there are no identifiers, contacts or memberships', () => {
+  it('says so when there are no contacts or memberships', () => {
     const data = { ...sparse(), identifiers: [], contacts: [], memberships: [] };
-    show(<SupplierDetails data={data} />);
-    expect(screen.getByText('לא תועדו מזהים שניתן להציג.')).toBeDefined();
-    expect(screen.getByText('לא תועדו פרטי קשר.')).toBeDefined();
+    show(<SupplierDetails data={data} today="2026-11-17" />);
+    expect(screen.getByText('אין טלפון במאגר')).toBeDefined();
     expect(screen.getByText('אין רישומים שניתן להציג.')).toBeDefined();
   });
 });
@@ -135,8 +129,12 @@ describe('supplier page', () => {
     vi.spyOn(reactCatalog, 'useCatalogSnapshot').mockReturnValue({ access: who } as never);
     page(SupplierPage, { resource });
     expect(await screen.findByRole('heading', { level: 1, name: 'ספק דליל' })).toBeDefined();
-    expect(screen.queryAllByRole('button', { name: 'שמירת שם' })).toHaveLength(forms > 0 ? 1 : 0);
-    expect(screen.queryAllByRole('button', { name: 'סימון כלא פעיל' })).toHaveLength(
+    const hidden = { hidden: true };
+    expect(screen.queryAllByRole('button', { name: 'עריכה' })).toHaveLength(forms > 0 ? 1 : 0);
+    expect(screen.queryAllByRole('button', { name: 'שמירת שם', ...hidden })).toHaveLength(
+      forms > 0 ? 1 : 0,
+    );
+    expect(screen.queryAllByRole('button', { name: 'סימון כלא פעיל', ...hidden })).toHaveLength(
       forms > 1 ? 1 : 0,
     );
   });
