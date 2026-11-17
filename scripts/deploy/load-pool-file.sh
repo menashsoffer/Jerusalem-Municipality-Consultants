@@ -30,7 +30,9 @@ for file in "${files[@]}"; do
     json_build_object('sub', $admin, 'role', 'authenticated')::text, true))
   select public.import_pool_registry($tag$(cat "$file")$tag::jsonb) as report
   from signed_in"
-  status=$(jq -n --arg q "$sql" '{query: $q}' | curl -sS -o answer.json -w '%{http_code}' \
+  # A large registry is longer than an argument may be, so the query goes through a file.
+  printf '%s' "$sql" > query.sql
+  status=$(jq -n --rawfile q query.sql '{query: $q}' | curl -sS -o answer.json -w '%{http_code}' \
     --max-time 120 -X POST "https://api.supabase.com/v1/projects/$ref/database/query" \
     -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN" -H 'Content-Type: application/json' \
     --data-binary @-)
