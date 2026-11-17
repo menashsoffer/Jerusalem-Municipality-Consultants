@@ -131,12 +131,14 @@ export function saveMembership(token: string, payload: Record<string, string>): 
   return data(token).supplierWrite('save_supplier_membership', payload);
 }
 
-export function renameSupplier(token: string, payload: Record<string, string>): Promise<string> {
-  return data(token).supplierWrite('rename_supplier', payload);
+export interface SupplierUpdate {
+  supplier_id: string;
+  display_name?: string;
+  contacts: { contact_id: string; kind: string; value: string }[];
 }
-
-export function replaceContact(token: string, payload: Record<string, string>): Promise<string> {
-  return data(token).supplierWrite('replace_supplier_contact', payload);
+/** Name and contacts in one transaction (update_supplier). */
+export function updateSupplier(token: string, payload: SupplierUpdate): Promise<string> {
+  return data(token).supplierWrite('update_supplier', { ...payload });
 }
 
 /** The request that stores a batch of usage events; the tracker decides when it is sent. */

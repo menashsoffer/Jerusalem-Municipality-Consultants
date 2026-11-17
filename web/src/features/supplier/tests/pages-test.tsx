@@ -131,7 +131,7 @@ describe('supplier page', () => {
     expect(await screen.findByRole('heading', { level: 1, name: 'ספק דליל' })).toBeDefined();
     const hidden = { hidden: true };
     expect(screen.queryAllByRole('button', { name: 'עריכה' })).toHaveLength(forms > 0 ? 1 : 0);
-    expect(screen.queryAllByRole('button', { name: 'שמירת שם', ...hidden })).toHaveLength(
+    expect(screen.queryAllByRole('button', { name: 'שמירה', ...hidden })).toHaveLength(
       forms > 0 ? 1 : 0,
     );
     expect(screen.queryAllByRole('button', { name: 'סימון כלא פעיל', ...hidden })).toHaveLength(

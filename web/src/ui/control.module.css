@@ -40,6 +40,18 @@
       border-color: var(--color-brand-line);
     }
   }
+  /* A destructive action, such as marking a supplier inactive: never the primary colour. */
+  .danger {
+    composes: button;
+    color: var(--color-badge-danger-text);
+    background: var(--color-surface);
+    border-color: var(--color-badge-danger-border);
+    &:hover:not(:disabled) {
+      color: var(--color-badge-danger-text);
+      background: var(--color-badge-danger-surface);
+      border-color: var(--color-badge-danger-border);
+    }
+  }
   .field {
     display: grid;
     gap: var(--space-sm);

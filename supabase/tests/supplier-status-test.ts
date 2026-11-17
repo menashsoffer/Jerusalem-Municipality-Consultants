@@ -64,10 +64,11 @@ describe('supplier status', () => {
   });
 
   it('requires a reason and a date to deactivate', async () => {
+    // The content rules (validation_rules migration) refuse first, before the table check.
     const noReason = JSON.stringify({ active: false, changedOn: '2026-09-01' });
-    assert.equal(await errorCode(setStatus(db, USERS.admin, noReason)), '23514');
+    assert.equal(await errorCode(setStatus(db, USERS.admin, noReason)), '22023');
     const noDate = JSON.stringify({ active: false, reason: 'סיבה' });
-    assert.equal(await errorCode(setStatus(db, USERS.admin, noDate)), '23514');
+    assert.equal(await errorCode(setStatus(db, USERS.admin, noDate)), '22023');
     assert.equal(await errorCode(setStatus(db, USERS.admin, '{"active": "no"}')), '22023');
   });
 

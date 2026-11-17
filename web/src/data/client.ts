@@ -1,4 +1,5 @@
 import type { PublicFunctions, PublicSchema } from '../database.types.ts';
+import { databaseRuleMessage } from '../lib/rules/messages.ts';
 
 type Resource = keyof PublicSchema;
 type Row<T extends Resource> = PublicSchema[T]['Row'];
@@ -11,17 +12,30 @@ type Update<T extends WritableResource> = PublicSchema[T] extends { Update: infe
 export class DataError extends Error {
   readonly status: number;
 
-  constructor(status: number) {
+  /** `rule` is the Hebrew message of a content rule the database refused (lib/rules). */
+  constructor(status: number, rule: string | null = null) {
     super(
-      status === 401
-        ? 'פג תוקף ההתחברות. יש להתחבר מחדש.'
-        : status === 403
-          ? 'אין לך הרשאה לבצע פעולה זו.'
-          : status === 409
-            ? 'הרשומה כבר קיימת. בדקו את פרטי הספק לפני ניסיון נוסף.'
-            : 'לא ניתן להשלים את הפעולה. יש לנסות שוב.',
+      rule ??
+        (status === 401
+          ? 'פג תוקף ההתחברות. יש להתחבר מחדש.'
+          : status === 403
+            ? 'אין לך הרשאה לבצע פעולה זו.'
+            : status === 409
+              ? 'הרשומה כבר קיימת. בדקו את פרטי הספק לפני ניסיון נוסף.'
+              : 'לא ניתן להשלים את הפעולה. יש לנסות שוב.'),
     );
     this.status = status;
+  }
+}
+
+/** A refused content rule arrives as PostgREST JSON whose message is `invalid:<key>`. */
+async function ruleMessage(response: Response): Promise<string | null> {
+  if (response.status !== 400) return null;
+  try {
+    const body = (await response.json()) as { message?: unknown };
+    return typeof body.message === 'string' ? databaseRuleMessage(body.message) : null;
+  } catch {
+    return null;
   }
 }
 
@@ -76,7 +90,7 @@ export class DataClient {
       throw new DataError(0);
     }
     if (response.status === 401) await this.onUnauthorized?.();
-    if (!response.ok) throw new DataError(response.status);
+    if (!response.ok) throw new DataError(response.status, await ruleMessage(response));
     if (response.status === 204 || headers.get('Prefer') === 'return=minimal') return null;
     try {
       return (await response.json()) as unknown;
@@ -93,8 +107,8 @@ export class DataClient {
   }
 
   async supplierWrite(
-    name: 'save_supplier_membership' | 'rename_supplier' | 'replace_supplier_contact',
-    payload: Record<string, string>,
+    name: 'save_supplier_membership' | 'update_supplier',
+    payload: Record<string, unknown>,
   ): Promise<string> {
     const result = await this.request(`rpc/${name}`, {
       method: 'POST',

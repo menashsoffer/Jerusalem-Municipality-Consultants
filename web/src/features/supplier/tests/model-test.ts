@@ -132,9 +132,22 @@ describe('add-supplier form', () => {
     const half = parseAddForm(form({ display_name: 'ספק', identifier: '12345' }));
     assert.match(half.error, /גם סוג מזהה וגם מספר/);
     const both = parseAddForm(
-      form({ display_name: ' ספק ', identifier_scheme: 'company', identifier: '12345' }),
+      form({ display_name: ' ספק ', identifier_scheme: 'company', identifier: '512679903' }),
     );
     assert.equal(both.payload?.display_name, 'ספק');
+  });
+
+  it('names every field that breaks a shared rule', () => {
+    const junk = parseAddForm(
+      form({
+        display_name: 'ספק',
+        identifier_scheme: 'company',
+        identifier: '512679904',
+        phone: 'x',
+      }),
+    );
+    assert.match(junk.error, /מספר מזהה: ספרת הביקורת/);
+    assert.match(junk.error, /טלפון: מספר טלפון לא תקין/);
   });
 
   it('refuses an unanswered duplicate choice and links a chosen existing supplier', () => {

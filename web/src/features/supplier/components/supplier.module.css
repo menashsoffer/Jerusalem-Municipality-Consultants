@@ -296,6 +296,44 @@
       padding-block: var(--space-xs);
     }
   }
+  /* Edit dialog: contacts grouped, one row of actions, status confirmation in its own box. */
+  .fieldset {
+    margin: var(--space-lg) 0 0;
+    padding: 0;
+    border: 0;
+    & legend {
+      padding: 0;
+      font-weight: var(--font-weight-strong);
+    }
+  }
+  .newContact {
+    display: grid;
+    grid-template-columns: minmax(8rem, 1fr) 2fr;
+    gap: var(--space-md);
+    align-items: start;
+    & > * {
+      margin-block-end: 0;
+    }
+  }
+  .dialogActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    margin-block-start: var(--space-xl);
+  }
+  .confirm {
+    margin-block-start: var(--space-lg);
+    padding: var(--space-lg);
+    border: var(--border-width) solid var(--color-badge-danger-border);
+    border-radius: var(--radius-control);
+    & h3 {
+      margin-block: 0 var(--space-sm);
+      font-size: var(--font-lg);
+    }
+    & p {
+      margin-block: 0;
+    }
+  }
   /* Verification mark beside the name: the bubble sits above it, on hover, focus or tap. */
   .mark {
     position: relative;

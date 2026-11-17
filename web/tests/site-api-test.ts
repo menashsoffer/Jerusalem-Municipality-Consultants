@@ -5,6 +5,7 @@ import { afterEach, describe, it, mock } from 'node:test';
 import { DataError } from '../src/data/client.ts';
 import * as rpc from '../src/data/rpc.ts';
 import * as site from '../src/data/site.ts';
+import { RULE_MESSAGES } from '../src/lib/rules/messages.ts';
 import { access, requestBody, requestUrl, response, SUPPLIER, TOKEN } from './catalog-fixture.ts';
 
 type Reply = (url: string, init?: RequestInit) => Response;
@@ -66,12 +67,25 @@ describe('supplier writes', () => {
   it('sends each change to its database function', async () => {
     const calls = stubFetch(() => Response.json('id'));
     assert.equal(await site.saveMembership(TOKEN, { a: '1' }), 'id');
-    assert.equal(await site.renameSupplier(TOKEN, { a: '2' }), 'id');
-    assert.equal(await site.replaceContact(TOKEN, { a: '3' }), 'id');
+    const update = { supplier_id: 's', contacts: [] };
+    assert.equal(await site.updateSupplier(TOKEN, update), 'id');
     assert.deepEqual(
       calls.map(({ url }) => url.split('/rpc/')[1]),
-      ['save_supplier_membership', 'rename_supplier', 'replace_supplier_contact'],
+      ['save_supplier_membership', 'update_supplier'],
     );
+  });
+
+  it('turns a refused content rule into its Hebrew message', async () => {
+    stubFetch(() =>
+      Response.json({ code: '22023', message: 'invalid:bad_phone' }, { status: 400 }),
+    );
+    await assert.rejects(site.updateSupplier(TOKEN, { supplier_id: 's', contacts: [] }), {
+      message: RULE_MESSAGES.bad_phone,
+    });
+    stubFetch(() => Response.json({ message: 'something else' }, { status: 400 }));
+    await assert.rejects(site.updateSupplier(TOKEN, { supplier_id: 's', contacts: [] }), {
+      message: 'לא ניתן להשלים את הפעולה. יש לנסות שוב.',
+    });
   });
 });
 
