@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { Link, Outlet, useLocation, useMatches } from 'react-router';
+import { Outlet, useLocation, useMatches } from 'react-router';
 
 import type { RouteHandle } from './routes.tsx';
+import { SiteHeader } from './site-header.tsx';
 
 const SITE_NAME = 'איתור ספקים';
 
@@ -49,16 +50,7 @@ export function Layout() {
       >
         דילוג לתוכן
       </a>
-      <header className="shell-header">
-        <div className="shell-header-inner">
-          <p className="eyebrow">עיריית ירושלים · מאגרי ספקים</p>
-          <nav aria-label="ניווט ראשי" className="shell-nav">
-            <Link to="/catalog">איתור ספקים</Link>
-            <Link to="/admin">ניהול</Link>
-            <Link to="/auth">כניסה והרשאות</Link>
-          </nav>
-        </div>
-      </header>
+      <SiteHeader />
       <main id="main" ref={main} className="shell-main" tabIndex={-1}>
         <Outlet />
       </main>

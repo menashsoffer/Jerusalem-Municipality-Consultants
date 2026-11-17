@@ -1,37 +1,41 @@
 import { Link } from 'react-router';
-/** Landing screen of the admin page. Admin screens add their links here as they arrive. */
+
+import styles from './home-page.module.css';
+
+interface Screen {
+  to: string;
+  title: string;
+  description: string;
+}
+
+/** Admin screens, most used first. A new admin screen adds its card here. */
+const SCREENS: readonly Screen[] = [
+  { to: '/supplier/new', title: 'הוספת ספק למאגר', description: 'רישום ספק חדש באחד המאגרים' },
+  { to: '/categories', title: 'בקשות קטגוריה', description: 'אישור תחומים ששויכו לספקים' },
+  { to: '/identifiers', title: 'מועמדי מזהה ספק', description: 'אישור ח.פ. שנמצא לספק' },
+  { to: '/thresholds', title: 'אישור הסף החודשי', description: 'ספי ההתקשרות לפי מדד החודש' },
+  { to: '/load-control', title: 'בקרת טעינה', description: 'מה נטען מהמאגרים ומה חסר' },
+  { to: '/users', title: 'משתמשים ותפקידים', description: 'מי נכנס לאתר ובאיזו הרשאה' },
+  { to: '/route-check', title: 'בדיקת מסלול ההתקשרות', description: 'חישוב מסלול בלי בקשה' },
+  { to: '/auth', title: 'כניסה והרשאות', description: 'החשבון שלך והתנתקות' },
+];
+
+/** Landing screen of the admin section: one card per admin screen. */
 export function HomePage() {
   return (
     <>
       <h1 tabIndex={-1}>מסכי הניהול</h1>
-      <p>
-        <Link to="/catalog">איתור ספקים</Link>
-      </p>
-      <p>
-        <Link to="/supplier/new">הוספת ספק למאגר</Link>
-      </p>
-      <p>
-        <Link to="/categories">בקשות קטגוריה</Link>
-      </p>
-      <p>
-        <Link to="/identifiers">מועמדי מזהה ספק</Link>
-      </p>
-      <p>
-        <Link to="/route-check">בדיקת מסלול ההתקשרות</Link>
-      </p>
-      <p>
-        <Link to="/users">משתמשים ותפקידים</Link>
-      </p>
-      <p>
-        <Link to="/thresholds">אישור הסף החודשי</Link>
-      </p>
-      <p>
-        <Link to="/load-control">בקרת טעינה</Link>
-      </p>
-      <p>
-        <Link to="/auth">כניסה והרשאות</Link>
-      </p>
-      <p>בחרו את המסך המתאים לפעולה שברצונכם לבצע.</p>
+      <p className={styles.lead}>בחרו את המסך המתאים לפעולה שברצונכם לבצע.</p>
+      <ul className={styles.grid}>
+        {SCREENS.map((screen) => (
+          <li key={screen.to} className={styles.card}>
+            <Link to={screen.to} className={styles.link}>
+              {screen.title}
+            </Link>
+            <span className={styles.description}>{screen.description}</span>
+          </li>
+        ))}
+      </ul>
     </>
   );
 }
