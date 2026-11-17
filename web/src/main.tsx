@@ -1,5 +1,4 @@
-// Entry of the admin page, the first React page (work plan, stage A). The catalog page keeps
-// its own entry (main.ts) until task R12 merges both into one.
+// Entry of the site: one React page for the catalog, supplier screens and admin screens.
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -31,5 +30,5 @@ try {
     </StrictMode>,
   );
 } catch {
-  mounted.render(<p role="alert">לא ניתן לפתוח את דף הניהול. יש לטעון מחדש ולנסות שוב.</p>);
+  mounted.render(<p role="alert">לא ניתן לפתוח את האתר. יש לטעון מחדש ולנסות שוב.</p>);
 }

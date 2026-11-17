@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Outlet, useLocation, useMatches } from 'react-router';
+import { Link, Outlet, useLocation, useMatches } from 'react-router';
 
 import type { RouteHandle } from './routes.tsx';
 
@@ -52,9 +52,11 @@ export function Layout() {
       <header className="shell-header">
         <div className="shell-header-inner">
           <p className="eyebrow">עיריית ירושלים · מאגרי ספקים</p>
-          <a className="shell-home" href="./">
-            חזרה לאיתור ספקים
-          </a>
+          <nav aria-label="ניווט ראשי" className="shell-nav">
+            <Link to="/catalog">איתור ספקים</Link>
+            <Link to="/admin">ניהול</Link>
+            <Link to="/auth">כניסה והרשאות</Link>
+          </nav>
         </div>
       </header>
       <main id="main" ref={main} className="shell-main" tabIndex={-1}>

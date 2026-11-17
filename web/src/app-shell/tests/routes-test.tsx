@@ -13,8 +13,16 @@ function renderAt(path: string, table = routes) {
 afterEach(cleanup);
 
 describe('admin routes', () => {
+  it('opens the catalog at the site root', async () => {
+    const router = createMemoryRouter(routes, { initialEntries: ['/'] });
+    render(<RouterProvider router={router} />);
+    await waitFor(() => {
+      expect(router.state.location.pathname).toBe('/catalog');
+    });
+  });
+
   it('shows the admin home with its title', async () => {
-    renderAt('/');
+    renderAt('/admin');
     expect(await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' })).toBeDefined();
     await waitFor(() => {
       expect(document.title).toBe('ניהול | איתור ספקים');
@@ -22,7 +30,7 @@ describe('admin routes', () => {
   });
 
   it('focuses the current heading without changing the hash route when skipping navigation', async () => {
-    renderAt('/');
+    renderAt('/admin');
     const heading = await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' });
     fireEvent.click(screen.getByRole('link', { name: 'דילוג לתוכן' }));
     expect(document.activeElement).toBe(heading);

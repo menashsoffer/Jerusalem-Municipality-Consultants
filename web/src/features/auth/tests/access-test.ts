@@ -4,7 +4,7 @@ import { identity, permitted, requireRoles, setAdminSession } from '../../../dat
 import { DataError } from '../../../data/client.ts';
 import type { Access, Role } from '../../../data/access.ts';
 import { prepareAdmin } from '../api/bootstrap.ts';
-import { SESSION_KEY, type BrowserContext } from '../../../app/session.ts';
+import { SESSION_KEY, type BrowserContext } from '../../../data/session.ts';
 
 const USER = '10000000-0000-4000-8000-000000000001';
 const originalFetch = globalThis.fetch;
@@ -106,18 +106,18 @@ describe('admin auth and route permissions', () => {
     );
   });
   it('consumes a token fragment before hash routing starts', async () => {
-    const ctx = context('https://test.invalid/admin.html#access_token=example&expires_in=3600');
+    const ctx = context('https://test.invalid/#access_token=example&expires_in=3600');
     const result = await prepareAdmin(ctx);
     assert.equal(result.session?.token, 'example');
     assert.equal(ctx.location.hash, '');
-    assert.equal(ctx.location.pathname, '/admin.html');
+    assert.equal(ctx.location.pathname, '/');
   });
   it('keeps an ordinary hash route and explains a failed callback without reusing an old session', async () => {
-    const normal = context('https://test.invalid/admin.html#/auth');
+    const normal = context('https://test.invalid/#/auth');
     await prepareAdmin(normal);
     assert.equal(normal.location.hash, '#/auth');
     const expired = context(
-      'https://test.invalid/admin.html#error=access_denied&error_code=otp_expired',
+      'https://test.invalid/#error=access_denied&error_code=otp_expired',
     );
     expired.storage.setItem(
       SESSION_KEY,

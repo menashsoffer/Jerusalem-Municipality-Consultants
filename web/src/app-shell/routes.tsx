@@ -1,4 +1,4 @@
-import type { RouteObject } from 'react-router';
+import { Navigate, type RouteObject } from 'react-router';
 
 import { Layout } from './layout.tsx';
 import { ScreenError } from './screen-error.tsx';
@@ -67,8 +67,10 @@ export const routes: RouteObject[] = [
           return { Component: m.IdentifiersPage, loader: m.loader };
         },
       },
+      // The catalog is the site's main screen; the admin menu has its own address.
+      { index: true, element: <Navigate to="/catalog" replace /> },
       {
-        index: true,
+        path: 'admin',
         handle: { title: 'ניהול' } satisfies RouteHandle,
         lazy: async () => ({ Component: (await import('./home-page.tsx')).HomePage }),
       },

@@ -2,7 +2,7 @@ import { z, type ZodType } from 'zod';
 z.config({ jitless: true });
 export { z };
 import type { PublicSchema } from '../database.types.ts';
-import { SESSION_KEY, type Session } from '../app/session.ts';
+import { SESSION_KEY, type Session } from './session.ts';
 import { data, clearCatalog, loadSnapshot } from './site.ts';
 import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';

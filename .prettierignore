@@ -1,5 +1,3 @@
-# Legacy code (coding standards, section 10). Remove entries as files are replaced.
-tests/*.cjs
 # Generated or third-party
 node_modules/
 dist/
@@ -7,6 +5,5 @@ package-lock.json
 # Prose is reviewed by hand; Prettier reflows Hebrew tables badly
 *.md
 
-# Generated database types and the hand-written page shell
+# Generated database types
 web/src/database.types.ts
-web/index.html

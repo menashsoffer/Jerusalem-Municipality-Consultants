@@ -26,11 +26,16 @@
     justify-content: space-between;
     gap: var(--space-lg);
   }
-  .shell-home {
-    color: var(--color-on-brand);
-    min-block-size: var(--control-min-size);
-    display: inline-flex;
-    align-items: center;
+  .shell-nav {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-lg);
+    & a {
+      color: var(--color-on-brand);
+      min-block-size: var(--control-min-size);
+      display: inline-flex;
+      align-items: center;
+    }
   }
   .shell-main {
     max-inline-size: var(--page-max-size);

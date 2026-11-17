@@ -34,11 +34,8 @@ const featureZones = features.map(({ name }) => ({
   message: 'A feature does not import another feature. Move shared code to ui, data or lib.',
 }));
 
-// Legacy code listed in section 10 of the standards. Remove entries as files are replaced.
-const legacy = ['tests/*.cjs'];
-
 export default defineConfig(
-  globalIgnores(['node_modules/**', 'dist/**', 'web/src/database.types.ts', ...legacy]),
+  globalIgnores(['node_modules/**', 'dist/**', 'web/src/database.types.ts']),
   {
     files: ['**/*.ts', '**/*.tsx'],
     extends: [

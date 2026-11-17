@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Await, useLoaderData } from 'react-router';
+import { Await, Link, useLoaderData } from 'react-router';
 import { identity, type Identity } from '../../data/rpc.ts';
 import { useCatalogSnapshot } from '../../data/react-catalog.ts';
 import { DataError } from '../../data/client.ts';
@@ -22,6 +22,15 @@ export function CatalogPage() {
   return (
     <>
       <h1 tabIndex={-1}>איתור ספקים</h1>
+      <aside aria-label="הערה על הנתונים">
+        הנתונים חולצו מפרסומי העירייה וטרם אומתו במלואם. יש לבדוק את מסמך המקור ואת תנאי ההתקשרות
+        לפני קבלת החלטה. חיפושים ופעולות של משתמשים מחוברים עשויים להירשם לצורכי בקרה.
+      </aside>
+      {state?.access?.state === 'active' && state.access.editor && (
+        <p>
+          <Link to="/supplier/new">הוספת ספק למאגר</Link>
+        </p>
+      )}
       <Suspense fallback={state?.catalog ? null : <Skeleton />}>
         <Await resolve={data.verified}>{(who) => <AccessCheck who={who} />}</Await>
       </Suspense>

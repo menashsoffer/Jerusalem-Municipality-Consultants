@@ -5,7 +5,7 @@ import {
   takeSession,
   FAILED_MESSAGE,
   type BrowserContext,
-} from '../../../app/session.ts';
+} from '../../../data/session.ts';
 import { exchangeCode } from '../../../data/site.ts';
 export async function prepareAdmin(ctx: BrowserContext, exchange = exchangeCode) {
   let message = takeAuthError(ctx);
