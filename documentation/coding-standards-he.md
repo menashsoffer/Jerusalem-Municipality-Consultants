@@ -121,11 +121,9 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 
 ## 10. קוד ישן שעדיין לא עומד בכללים
 
-| קוד | מצב | מה יקרה |
-|---|---|---|
-| `tests/*.cjs` | בדיקות ממשק ב-CommonJS | יעברו ל-TypeScript ליד הקוד שהן בודקות, בשלב 3 |
+אין כרגע קוד ישן. משימה R12 בתוכנית המעבר ל-React (17.11.2026) מחקה את הדף הישן (`web/src/app/`, קובצי `*-view.ts`, `main.ts`, `styles.css` ו-`admin.html`), והעבירה את בדיקות `tests/*.cjs` ל-TypeScript. האתר הוא דף React אחד, `web/index.html`.
 
-ESLint ו-Prettier מתעלמים מהקבצים האלה עד שיוחלפו. הרשימה נמצאת ב-`eslint.config.mjs` וב-`.prettierignore`.
+קוד חדש שלא עומד בכללים לא נכנס לרשימה הזו: מתקנים אותו לפני המיזוג.
 
 ## מקורות
 - [Supabase: RLS Performance and Best Practices](https://supabase.com/docs/guides/troubleshooting/rls-performance-and-best-practices-Z5Jjwv)

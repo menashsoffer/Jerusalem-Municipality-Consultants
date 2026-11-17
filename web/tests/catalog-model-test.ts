@@ -124,3 +124,55 @@ describe('compact catalog and precomputed search', () => {
     assert.throws(() => compactCatalog({ ...invalid, suppliers: [[1, 'bad']] }));
   });
 });
+
+// Ported from tests/catalog-model.test.cjs (task R12): filters match on one membership.
+describe('catalog filters on a 533-supplier catalog', () => {
+  function large() {
+    const data = compactCatalog(wireCatalog());
+    const [first] = data.suppliers;
+    const [member] = data.memberships;
+    assert.ok(first && member);
+    data.suppliers = Array.from({ length: 533 }, (_, i) => ({
+      ...first,
+      id: i === 0 ? SUPPLIER : `s${String(i)}`,
+      display_name: i === 0 ? first.display_name : `ספק ${String(i)}`,
+    }));
+    data.memberships = [
+      member,
+      { ...member, registry_version_id: 'v2', registry_field_id: 'f2', registered_until: null },
+      ...data.suppliers.slice(1).map((s) => ({ ...member, supplier_id: s.id })),
+    ];
+    return data;
+  }
+
+  it('keeps each supplier once and matches combined filters on the same membership', () => {
+    const rows = buildCatalog(large());
+    assert.equal(rows.length, 533);
+    const own = (filters: Partial<Filters>) =>
+      filterCatalog(rows, { ...FILTERS, ...filters }).some((row) => row.id === SUPPLIER);
+    assert.equal(own({ registry: 'r1', field: 'f1', unit: 'u1', validity: 'valid' }), true);
+    assert.equal(own({ registry: 'r1', field: 'f2' }), false);
+    assert.equal(own({ registry: 'r2', validity: 'undated' }), true);
+    assert.equal(own({ category: 'root', registry: 'r2' }), false);
+  });
+
+  it('omits a supplier whose only membership points to an unknown pool version', () => {
+    const data = large();
+    const [member] = data.memberships;
+    const other = data.suppliers[1];
+    assert.ok(member && other);
+    data.suppliers.push({ ...other, id: 'broken' });
+    data.memberships.push({ ...member, supplier_id: 'broken', registry_version_id: 'missing' });
+    assert.equal(
+      buildCatalog(data).some((row) => row.id === 'broken'),
+      false,
+    );
+  });
+
+  it('filters the catalog in under one second', () => {
+    const rows = buildCatalog(large());
+    const start = performance.now();
+    assert.ok(filterCatalog(rows, { ...FILTERS, query: 'ספק 5' }).length > 0);
+    assert.ok(performance.now() - start < 1000);
+  });
+});

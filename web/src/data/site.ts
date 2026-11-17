@@ -3,7 +3,7 @@ import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
 import { DataClient, REQUEST_TIMEOUT_MS } from './client.ts';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './environment.ts';
-import type { EventRequest } from '../app/tracker.ts';
+import type { EventRequest } from '../lib/tracker.ts';
 import { IndexedCatalogCache } from './catalog-cache.ts';
 import { SnapshotLoader, tokenUserId, type CatalogState } from './snapshot.ts';
 

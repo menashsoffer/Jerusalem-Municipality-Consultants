@@ -43,8 +43,7 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    // Two pages until task R12 merges them: the catalog and the React admin page.
-    rolldownOptions: { input: { main: page('index.html'), admin: page('admin.html') } },
+    rolldownOptions: { input: { main: page('index.html') } },
   },
   // React Compiler memoizes components, so code has no manual useMemo (decision 0006).
   plugins: [react(), babel({ presets: [reactCompilerPreset()] }), securityPolicy()],

@@ -1,4 +1,4 @@
-import type { WriteContext } from './data/write-context.ts';
+import type { WriteContext } from '../../../data/write-context.ts';
 
 export interface Candidate {
   id: string;

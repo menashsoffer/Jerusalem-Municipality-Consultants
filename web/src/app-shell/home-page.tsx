@@ -8,6 +8,9 @@ export function HomePage() {
         <Link to="/catalog">איתור ספקים</Link>
       </p>
       <p>
+        <Link to="/supplier/new">הוספת ספק למאגר</Link>
+      </p>
+      <p>
         <Link to="/categories">בקשות קטגוריה</Link>
       </p>
       <p>

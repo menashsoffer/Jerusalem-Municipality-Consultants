@@ -2,7 +2,7 @@ import { z, rows, requireRoles, sessionToken, setAdminSession } from '../../../d
 import { DataError, REQUEST_TIMEOUT_MS } from '../../../data/client.ts';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../../../data/environment.ts';
 import { clearCatalog } from '../../../data/site.ts';
-import { SESSION_KEY } from '../../../app/session.ts';
+import { SESSION_KEY } from '../../../data/session.ts';
 import { checkInputSchema, resultSchema, type CheckInput } from '../model/result.ts';
 const requestSchema = z.object({
   id: z.string(),

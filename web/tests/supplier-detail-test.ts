@@ -3,9 +3,7 @@ import { it } from 'node:test';
 
 import { supplierDetail } from '../src/data/supplier-detail.ts';
 import { compactCatalog } from '../src/data/compact-catalog.ts';
-import { render } from '../src/detail-view.ts';
 import { client, requestBody, requestUrl, SUPPLIER, wireCatalog } from './catalog-fixture.ts';
-import { domFixture } from './dom-fixture.ts';
 
 const AUDIT = {
   id: 1,
@@ -45,35 +43,4 @@ it('rejects an invalid or unknown supplier without requesting data, and validate
   assert.equal(requests, 0);
   await assert.rejects(supplierDetail(api, cached, SUPPLIER));
   assert.equal(requests, 1);
-});
-
-it('displays invalid contacts, source links and date provenance, with no audit for a viewer', async () => {
-  const dom = domFixture();
-  try {
-    const data = await supplierDetail(
-      client(() => Response.json({ identifiers: [], audit: null })),
-      compactCatalog(wireCatalog()),
-      SUPPLIER,
-    );
-    const contact = data.contacts[0];
-    const member = data.memberships[0];
-    assert.ok(contact);
-    assert.ok(member);
-    data.contacts = Array.from({ length: 78 }, (_, index) => ({
-      ...contact,
-      value: `bad ${String(index)}`,
-    }));
-    data.memberships = [
-      { ...member, engagement_started_on: '2024-02-01', dates_source: 'municipal_registry' },
-    ];
-    render(data);
-    const content = dom.el('#supplier-content');
-    assert.equal((content.textContent.match(/לא תקין/g) ?? []).length, 78);
-    assert.match(content.textContent, /מקור התאריכים: מאגר העירייה/);
-    assert.match(content.textContent, /2024-02-01/);
-    assert.ok(content.querySelector('a[href="https://example.test/source"]'));
-    assert.doesNotMatch(content.textContent, /היסטוריית שינויים/);
-  } finally {
-    dom.close();
-  }
 });

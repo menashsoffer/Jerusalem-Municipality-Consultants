@@ -1,6 +1,6 @@
 import { z } from '../../../data/rpc.ts';
 import { sendLink, BASE, clearCatalog } from '../../../data/site.ts';
-import { googleAuthorizeUrl, SESSION_KEY, type BrowserContext } from '../../../app/session.ts';
+import { googleAuthorizeUrl, SESSION_KEY, type BrowserContext } from '../../../data/session.ts';
 import { setAdminSession } from '../../../data/rpc.ts';
 const emailSchema = z.email().max(320);
 export interface LoginResult {

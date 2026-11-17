@@ -1,4 +1,4 @@
-import type { RouteObject } from 'react-router';
+import { Navigate, type RouteObject } from 'react-router';
 
 import { Layout } from './layout.tsx';
 import { ScreenError } from './screen-error.tsx';
@@ -32,6 +32,24 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'supplier/new',
+        handle: { title: 'הוספת ספק' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/supplier/add-page.tsx');
+          return { Component: m.AddSupplierPage, loader: m.loader };
+        },
+      },
+      {
+        path: 'supplier/:id',
+        handle: { title: 'פרטי ספק' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/supplier/supplier-page.tsx');
+          return { Component: m.SupplierPage, loader: m.loader };
+        },
+      },
+      {
         path: 'categories',
         handle: { title: 'בקשות קטגוריה' },
         errorElement: <ScreenError />,
@@ -49,8 +67,10 @@ export const routes: RouteObject[] = [
           return { Component: m.IdentifiersPage, loader: m.loader };
         },
       },
+      // The catalog is the site's main screen; the admin menu has its own address.
+      { index: true, element: <Navigate to="/catalog" replace /> },
       {
-        index: true,
+        path: 'admin',
         handle: { title: 'ניהול' } satisfies RouteHandle,
         lazy: async () => ({ Component: (await import('./home-page.tsx')).HomePage }),
       },

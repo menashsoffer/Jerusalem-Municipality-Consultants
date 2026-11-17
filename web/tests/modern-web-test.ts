@@ -1,11 +1,11 @@
 import assert from 'node:assert/strict';
 import { describe, it, mock } from 'node:test';
 
-import { onBackdrop, runCommand } from '../src/app/dialogs.ts';
-import { base64Url } from '../src/app/session.ts';
-import { BATCH_WINDOW_MS, EventBatcher, MAX_BATCH, type TrackedEvent } from '../src/app/tracker.ts';
+import { onBackdrop, runCommand } from '../src/lib/dialogs.ts';
+import { base64Url } from '../src/data/session.ts';
+import { BATCH_WINDOW_MS, EventBatcher, MAX_BATCH, type TrackedEvent } from '../src/lib/tracker.ts';
 import { contentSecurityPolicy } from '../src/csp.ts';
-import { identifierPairMessage } from '../src/form-validation.ts';
+import { identifierPairMessage } from '../src/features/supplier/model/add-form.ts';
 
 interface Sent {
   url: string;
