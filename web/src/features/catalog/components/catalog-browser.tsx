@@ -7,6 +7,7 @@ import type { CatalogState } from '../../../data/snapshot.ts';
 import { emptyFilters, reconcile, changeFilter } from '../model/filters.ts';
 import { FilterControls } from './filter-controls.tsx';
 import { Results } from './results.tsx';
+import styles from './catalog.module.css';
 interface Props {
   state: CatalogState;
   today: string;
@@ -19,7 +20,7 @@ export function CatalogBrowser({ state, today }: Props) {
   return (
     <>
       <StatusMessage>{state.refreshing ? 'בודק עדכונים והרשאות…' : ''}</StatusMessage>
-      <search aria-label="חיפוש וסינון ספקים">
+      <search aria-label="חיפוש וסינון ספקים" className={styles.searchPanel}>
         <FormField
           field={{ label: 'חיפוש ספקים', hint: 'אפשר לחפש בשם ספק, בשם קודם או בתחום.' }}
           input={{
@@ -30,23 +31,26 @@ export function CatalogBrowser({ state, today }: Props) {
             },
           }}
         />
-        <FilterControls
-          filters={current}
-          suppliers={state.suppliers}
-          change={(key, value) => {
-            setFilters(changeFilter(current, { key, value }, state.suppliers));
-          }}
-          toggle={(key, value) => {
-            setFilters({ ...current, [key]: value });
-          }}
-        />
-        <Button
-          onClick={() => {
-            setFilters(emptyFilters(today));
-          }}
-        >
-          ניקוי החיפוש והמסננים
-        </Button>
+        <div className={styles.searchTools}>
+          <FilterControls
+            filters={current}
+            suppliers={state.suppliers}
+            change={(key, value) => {
+              setFilters(changeFilter(current, { key, value }, state.suppliers));
+            }}
+            toggle={(key, value) => {
+              setFilters({ ...current, [key]: value });
+            }}
+          />
+          <Button
+            variant="secondary"
+            onClick={() => {
+              setFilters(emptyFilters(today));
+            }}
+          >
+            ניקוי החיפוש והמסננים
+          </Button>
+        </div>
       </search>
       <div aria-busy={query !== filters.query}>
         <Results

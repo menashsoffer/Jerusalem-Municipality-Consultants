@@ -28,6 +28,17 @@
       cursor: wait;
     }
   }
+  .secondary {
+    composes: button;
+    color: var(--color-brand);
+    background: var(--color-surface);
+    border-color: var(--color-brand-line);
+    &:hover:not(:disabled) {
+      color: var(--color-brand-hover);
+      background: var(--color-brand-soft);
+      border-color: var(--color-brand-line);
+    }
+  }
   .field {
     display: grid;
     gap: var(--space-sm);
