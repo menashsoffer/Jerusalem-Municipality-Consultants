@@ -37,6 +37,9 @@ def workbook(rows):
     second = book.create_sheet("כל הרשומות המאומתות")
     for line in [ROWS, *rows]:
         second.append(line)
+    halls = book.create_sheet("אולמות ומתקנים לאירועים")
+    halls.append(["שם אולם / מינהל קהילתי", "מאגר מקור", "קיבולת / תכולה", "הגברה"])
+    halls.append(["אולם", "מאגר א", "180 מקומות", None])
     return book
 
 
@@ -81,11 +84,17 @@ class PoolFileRegistryTests(unittest.TestCase):
         self.assertEqual([r["status"] for r in self.registries], ["unknown", "closed"])
         self.assertEqual(self.registries[0]["file_name"], "מאגר.pdf")
 
-    def test_leaves_out_halls(self):
-        self.assertEqual([r["key"] for r in self.registries[0]["rows"]], ["SUP-1", "SUP-2"])
+    def test_hall_row_carries_its_details(self):
+        rows = self.registries[0]["rows"]
+        self.assertEqual([r["key"] for r in rows], ["SUP-1", "SUP-2", "HALL"])
+        self.assertEqual(rows[2]["note"], "קיבולת / תכולה: 180 מקומות")
+
+    def test_only_keeps_the_named_registries(self):
+        book = workbook([line("SUP-1", "ספק", "מאגר א"), line("SUP-1", "ספק", "מאגר ב")])
+        self.assertEqual([r["name"] for r in build(book, only={"מאגר ב"})], ["מאגר ב"])
 
     def test_row_carries_names_contacts_and_valid_number(self):
-        first, second = self.registries[0]["rows"]
+        first, second, _ = self.registries[0]["rows"]
         self.assertEqual(
             first,
             {
