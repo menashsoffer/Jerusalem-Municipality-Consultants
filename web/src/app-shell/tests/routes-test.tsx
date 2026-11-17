@@ -29,6 +29,15 @@ describe('admin routes', () => {
     });
   });
 
+  it('marks the admin tab as the current page on admin screens', async () => {
+    renderAt('/admin');
+    await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' });
+    const nav = screen.getByRole('navigation', { name: 'ניווט ראשי' });
+    const current = nav.querySelectorAll('[aria-current="page"]');
+    expect(current).toHaveLength(1);
+    expect(current[0]?.textContent).toBe('ניהול');
+  });
+
   it('focuses the current heading without changing the hash route when skipping navigation', async () => {
     renderAt('/admin');
     const heading = await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' });

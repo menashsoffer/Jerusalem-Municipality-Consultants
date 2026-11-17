@@ -2,6 +2,7 @@ import { useErrorReport } from './use-error-report.ts';
 import { Link, isRouteErrorResponse, useRouteError, useRevalidator } from 'react-router';
 import { DataError } from '../data/client.ts';
 import { Button } from '../ui/button.tsx';
+import controls from '../ui/control.module.css';
 export function ScreenError() {
   const error = useRouteError();
   useErrorReport(error, 'route');
@@ -22,11 +23,13 @@ export function ScreenError() {
         ? 'המסך זמין רק למשתמשים עם תפקיד מתאים.'
         : 'לא ניתן להציג את המסך. אפשר לנסות שוב.';
   return (
-    <section role="alert">
+    <section role="alert" className="shell-notice">
       <h1 tabIndex={-1}>{title}</h1>
       <p>{message}</p>
       {status === 401 ? (
-        <Link to="/auth">כניסה למערכת</Link>
+        <Link to="/auth" className={controls.button}>
+          כניסה למערכת
+        </Link>
       ) : (
         <Button
           onClick={() => {

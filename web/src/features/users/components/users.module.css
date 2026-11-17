@@ -6,8 +6,8 @@
     white-space: nowrap;
   }
   .card {
-    padding: var(--space-lg);
-    margin-block: var(--space-xl);
+    padding: var(--space-lg) var(--space-xl);
+    margin-block: var(--space-lg);
     border: var(--border-width) solid var(--color-border);
     border-radius: var(--radius-panel);
     background: var(--color-surface);

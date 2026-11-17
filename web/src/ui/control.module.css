@@ -1,6 +1,6 @@
 @layer ui {
   .control {
-    border: var(--border-width) solid var(--color-border);
+    border: var(--border-width) solid var(--color-input-border);
     border-radius: var(--radius-control);
     padding: var(--space-md) var(--space-lg);
     min-block-size: var(--control-min-size);
@@ -16,13 +16,27 @@
     cursor: pointer;
     color: var(--color-on-brand);
     background: var(--color-brand);
+    border-color: var(--color-brand);
+    font-weight: var(--font-weight-strong);
     overflow-wrap: anywhere;
     &:hover:not(:disabled) {
       background: var(--color-brand-hover);
+      border-color: var(--color-brand-hover);
     }
     &:disabled {
       opacity: var(--skeleton-opacity-min);
       cursor: wait;
+    }
+  }
+  .secondary {
+    composes: button;
+    color: var(--color-brand);
+    background: var(--color-surface);
+    border-color: var(--color-brand-line);
+    &:hover:not(:disabled) {
+      color: var(--color-brand-hover);
+      background: var(--color-brand-soft);
+      border-color: var(--color-brand-line);
     }
   }
   .field {

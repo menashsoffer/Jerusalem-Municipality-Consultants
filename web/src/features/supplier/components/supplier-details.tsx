@@ -10,6 +10,7 @@ import {
   membershipDates,
 } from '../model/labels.ts';
 import { Fact, SourceLine } from './source-line.tsx';
+import styles from './supplier.module.css';
 
 interface Props {
   data: SupplierDetail;
@@ -25,7 +26,7 @@ function Info({ data }: Props) {
         <span>מקור: מצב האימות במערכת</span>
       </Fact>
       {supplier.status === 'inactive' && (
-        <p role="note">
+        <p role="note" className={styles.inactive}>
           {[
             'הספק אינו פעיל',
             supplier.status_reason && `סיבה: ${supplier.status_reason}`,
@@ -140,13 +141,13 @@ function History({ data }: Props) {
 
 export function SupplierDetails({ data }: Props) {
   return (
-    <>
+    <div className={styles.sections}>
       <Info data={data} />
       <Names data={data} />
       <Identifiers data={data} />
       <Contacts data={data} />
       <Memberships data={data} />
       <History data={data} />
-    </>
+    </div>
   );
 }

@@ -4,9 +4,18 @@ import styles from './control.module.css';
 
 interface Props extends ComponentProps<'button'> {
   command?: { target: string; action: 'show-modal' | 'close' };
+  /** DESIGN.md 6.2: one primary action per screen, secondary for the rest. */
+  variant?: 'primary' | 'secondary';
 }
 /** Retains native button semantics, including keyboard activation and dialog commands. */
-export function Button({ command, onClick, type = 'button', className = '', ...props }: Props) {
+export function Button({
+  command,
+  onClick,
+  type = 'button',
+  className = '',
+  variant = 'primary',
+  ...props
+}: Props) {
   const attributes = command ? { commandfor: command.target, command: command.action } : {};
   function activate(event: MouseEvent<HTMLButtonElement>): void {
     onClick?.(event);
@@ -20,7 +29,7 @@ export function Button({ command, onClick, type = 'button', className = '', ...p
       {...attributes}
       type={type}
       onClick={activate}
-      className={`${styles.button ?? ''} ${className}`}
+      className={`${styles[variant === 'primary' ? 'button' : 'secondary'] ?? ''} ${className}`}
     />
   );
 }

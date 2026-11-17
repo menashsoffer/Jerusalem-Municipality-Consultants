@@ -24,7 +24,7 @@ function ratio(first: string, second: string): number {
 }
 
 it('keeps badge text at 4.5:1 and badge borders at 3:1 against their surfaces', () => {
-  for (const kind of ['success', 'warning', 'danger']) {
+  for (const kind of ['success', 'warning', 'danger', 'info']) {
     const surface = token(`color-badge-${kind}-surface`);
     const text = ratio(token(`color-badge-${kind}-text`), surface);
     const border = ratio(token(`color-badge-${kind}-border`), surface);
@@ -32,4 +32,29 @@ it('keeps badge text at 4.5:1 and badge borders at 3:1 against their surfaces', 
     assert.ok(border >= 3, `${kind} border ${border.toFixed(2)}:1`);
   }
   assert.ok(ratio(token('color-muted'), token('color-subtle')) >= 4.5, 'neutral badge text');
+});
+
+it('keeps text at 4.5:1 on the page and on cards', () => {
+  for (const surface of ['color-page', 'color-surface', 'color-subtle']) {
+    for (const text of ['color-text', 'color-muted', 'color-brand', 'color-error']) {
+      const value = ratio(token(text), token(surface));
+      assert.ok(value >= 4.5, `${text} on ${surface} ${value.toFixed(2)}:1`);
+    }
+  }
+  assert.ok(ratio(token('color-brand'), token('color-brand-soft')) >= 4.5, 'selected tab text');
+});
+
+it('keeps white text readable on the brand buttons', () => {
+  for (const surface of ['color-brand', 'color-brand-hover']) {
+    assert.ok(ratio('#ffffff', token(surface)) >= 4.5, surface);
+  }
+});
+
+it('keeps input borders and the focus ring at 3:1 against white and the page', () => {
+  for (const line of ['color-input-border', 'color-focus']) {
+    for (const surface of ['color-surface', 'color-page']) {
+      const value = ratio(token(line), token(surface));
+      assert.ok(value >= 3, `${line} on ${surface} ${value.toFixed(2)}:1`);
+    }
+  }
 });

@@ -1,4 +1,6 @@
 // Entry of the site: one React page for the catalog, supplier screens and admin screens.
+// The layer order must be declared before any other stylesheet, so it is the first import.
+import './styles/layers.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -11,7 +13,7 @@ import { EventBatcher } from './lib/tracker.ts';
 import { observeVitals } from './lib/vitals.ts';
 import { setTelemetryReporter, reportBoundaryError } from './lib/telemetry.ts';
 import type { TelemetryEvent } from './lib/vitals-model.ts';
-import './styles/layers.css';
+import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
 import './app-shell/shell.css';

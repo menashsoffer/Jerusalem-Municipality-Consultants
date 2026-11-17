@@ -1,5 +1,6 @@
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { safeSourceUrl } from '../model/labels.ts';
+import styles from './supplier.module.css';
 
 interface Props {
   documents: SupplierDetail['documents'];
@@ -24,9 +25,8 @@ export function SourceLine({ documents, documentId, page }: Props) {
 
 export function Fact({ text, children }: { text: string; children: React.ReactNode }) {
   return (
-    <p>
-      {text}
-      <br />
+    <p className={styles.fact}>
+      <span>{text}</span>
       {children}
     </p>
   );
