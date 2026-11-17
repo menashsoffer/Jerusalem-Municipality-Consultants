@@ -93,6 +93,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'load-control',
+        handle: { title: 'בקרת טעינה' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/load-control/load-control-page.tsx');
+          return { Component: m.LoadControlPage, loader: m.loader };
+        },
+      },
+      {
         path: 'users',
         handle: { title: 'משתמשים ותפקידים' },
         errorElement: <ScreenError />,
