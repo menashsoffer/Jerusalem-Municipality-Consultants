@@ -1,4 +1,4 @@
-import { duplicates } from './duplicates.ts';
+import { duplicates } from './features/supplier/model/duplicates.ts';
 import { identifierPairMessage, syncInvalidState } from './form-validation.ts';
 import { saveMembership, writeContext } from './data/site.ts';
 import type { WriteContext } from './data/write-context.ts';

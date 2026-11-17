@@ -1,0 +1,61 @@
+import type { RegistryOption, WriteContext } from '../../../data/write-context.ts';
+
+/** The form fields that `save_supplier_membership` accepts, in the order the form shows them. */
+const FIELDS = [
+  'display_name',
+  'entity_kind',
+  'identifier_scheme',
+  'identifier',
+  'registry_version_id',
+  'registry_field_id',
+  'registered_from',
+  'registered_until',
+  'engagement_started_on',
+  'phone',
+  'email',
+] as const;
+
+/** The identifier type and number go together: both filled or both empty. */
+export function identifierPairMessage(scheme: string, identifier: string): string {
+  return !!scheme.trim() === !!identifier.trim()
+    ? ''
+    : 'יש למלא גם סוג מזהה וגם מספר, או להשאיר את שניהם ריקים.';
+}
+
+export function formText(form: FormData, key: string): string {
+  const value = form.get(key);
+  return typeof value === 'string' ? value.trim() : '';
+}
+
+/** Present in the form only while similar suppliers are offered. */
+export const OFFERED_FIELD = 'duplicates_offered';
+
+export type AddPayload = Record<string, string>;
+export type ParsedForm = { payload: AddPayload; error: '' } | { payload: null; error: string };
+
+/**
+ * Builds the request from the submitted form. When similar suppliers were offered, the user must
+ * pick one of them or explicitly choose a new supplier; a similar name is never merged silently.
+ */
+export function parseAddForm(form: FormData): ParsedForm {
+  const payload: AddPayload = {};
+  for (const key of FIELDS) payload[key] = formText(form, key);
+  const pair = identifierPairMessage(payload.identifier_scheme ?? '', payload.identifier ?? '');
+  if (pair) return { payload: null, error: pair };
+  const choice = formText(form, 'supplier_choice');
+  if (form.has(OFFERED_FIELD) && !choice)
+    return { payload: null, error: 'יש לבחור ספק קיים או יצירה חדשה.' };
+  if (choice && choice !== 'new') payload.supplier_id = choice;
+  return { payload, error: '' };
+}
+
+export function versionLabel(version: RegistryOption): string {
+  return `${version.name} · ${version.validFrom ?? 'ללא תחילה'} – ${version.validUntil ?? 'ללא סיום'}`;
+}
+
+/** The fields of the chosen pool version, by the text that appears in the source document. */
+export function fieldsOf(context: WriteContext, versionId: string) {
+  const version = context.versions.find((item) => item.versionId === versionId);
+  if (!version) return [];
+  return context.catalog.fields.filter((field) => field.registry_id === version.registryId);
+}

@@ -32,6 +32,24 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'supplier/new',
+        handle: { title: 'הוספת ספק' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/supplier/add-page.tsx');
+          return { Component: m.AddSupplierPage, loader: m.loader };
+        },
+      },
+      {
+        path: 'supplier/:id',
+        handle: { title: 'פרטי ספק' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/supplier/supplier-page.tsx');
+          return { Component: m.SupplierPage, loader: m.loader };
+        },
+      },
+      {
         path: 'categories',
         handle: { title: 'בקשות קטגוריה' },
         errorElement: <ScreenError />,

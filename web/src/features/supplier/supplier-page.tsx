@@ -1,0 +1,52 @@
+import { Suspense } from 'react';
+import { Link, useLoaderData, type LoaderFunctionArgs } from 'react-router';
+import { identity, sessionToken } from '../../data/rpc.ts';
+import {
+  createSupplierDetailResource,
+  useCatalogSnapshot,
+  useSupplierDetail,
+  type SupplierDetailResource,
+} from '../../data/react-catalog.ts';
+import { Skeleton } from '../../ui/skeleton.tsx';
+import { EditForms } from './components/edit-forms.tsx';
+import { SupplierDetails } from './components/supplier-details.tsx';
+
+/** Confirms the session against the server, then starts the detail request before rendering. */
+export async function loader({ params }: LoaderFunctionArgs) {
+  await identity();
+  return { resource: createSupplierDetailResource(sessionToken(), params.id ?? '') };
+}
+
+function Detail({ resource }: { resource: SupplierDetailResource }) {
+  const data = useSupplierDetail(resource);
+  const access = useCatalogSnapshot()?.access;
+  const editor = access?.state === 'active' && access.editor;
+  return (
+    <>
+      <h1 tabIndex={-1}>{data.supplier.display_name}</h1>
+      <SupplierDetails data={data} />
+      {editor && <EditForms data={data} />}
+    </>
+  );
+}
+
+export function SupplierPage() {
+  const { resource } = useLoaderData<typeof loader>();
+  return (
+    <>
+      <p>
+        <Link to="/catalog">חזרה לאיתור ספקים</Link>
+      </p>
+      <Suspense
+        fallback={
+          <>
+            <h1 tabIndex={-1}>פרטי ספק</h1>
+            <Skeleton />
+          </>
+        }
+      >
+        <Detail resource={resource} />
+      </Suspense>
+    </>
+  );
+}
