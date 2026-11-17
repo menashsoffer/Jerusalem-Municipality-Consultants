@@ -1,6 +1,7 @@
 import type { ComponentProps } from 'react';
 import type { FieldLabel } from '../lib/field-description.ts';
 import { useField } from './use-field.ts';
+import { FieldError, RequiredMark } from './field-parts.tsx';
 import styles from './control.module.css';
 interface Props {
   field: FieldLabel;
@@ -12,7 +13,7 @@ export function SelectField({ field, select }: Props) {
     <div className={styles.field}>
       <label htmlFor={state.id}>
         {field.label}
-        {select.required ? ' (חובה)' : ''}
+        {select.required && <RequiredMark />}
       </label>
       {field.hint && (
         <span id={`${state.id}-hint`} className={styles.hint}>
@@ -38,9 +39,7 @@ export function SelectField({ field, select }: Props) {
           select.onInput?.(e);
         }}
       />
-      <span id={`${state.id}-error`} className={styles.error} aria-live="polite">
-        {state.error}
-      </span>
+      <FieldError id={`${state.id}-error`} message={state.error} />
     </div>
   );
 }

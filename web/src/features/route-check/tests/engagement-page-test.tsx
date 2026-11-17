@@ -42,7 +42,7 @@ function page(units: EngagementData['units']) {
   render(<RouterProvider router={router} />);
 }
 async function fill() {
-  await userEvent.type(screen.getByLabelText('אומדן בש״ח (חובה)'), '120000');
+  await userEvent.type(screen.getByLabelText(/^אומדן בש״ח/u), '120000');
 }
 afterEach(() => {
   cleanup();
