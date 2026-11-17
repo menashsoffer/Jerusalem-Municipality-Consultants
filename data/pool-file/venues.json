@@ -99,7 +99,7 @@
   {
    "registry": "מאגר אולמות 2024",
    "name": "אמפי גדול התחמושת - מתחם ששת הימים, גבעת המרכז למורשת",
-   "capacity": 1,
+   "capacity": 1000,
    "capacity_text": "000,1 מקומות",
    "hall_size": null,
    "stage_size": null,
@@ -339,7 +339,7 @@
   {
    "registry": "מאגר אולמות 2024",
    "name": "תצוגות הקונגרסים אולם בנייני האומה מרכז",
-   "capacity": 2001,
+   "capacity": 1200,
    "capacity_text": "200,1 מקומות",
    "hall_size": null,
    "stage_size": null,
@@ -351,7 +351,7 @@
   {
    "registry": "מאגר אולמות 2024",
    "name": "הקונגרסים אולם טדי בנייני האומה מרכז",
-   "capacity": 5001,
+   "capacity": 1500,
    "capacity_text": "500,1 מקומות",
    "hall_size": null,
    "stage_size": null,
@@ -363,7 +363,7 @@
   {
    "registry": "מאגר אולמות 2024",
    "name": "אוסישקין הקונגרסים אולם בנייני האומה מרכז",
-   "capacity": 3411,
+   "capacity": 1341,
    "capacity_text": "341,1 מקומות",
    "hall_size": null,
    "stage_size": null,
@@ -423,7 +423,7 @@
   {
    "registry": "מאגר אולמות 2024",
    "name": "חברת אריאל היכל הפיס ארנה,",
-   "capacity": 1411,
+   "capacity": 11014,
    "capacity_text": "014,11 מקומות",
    "hall_size": null,
    "stage_size": null,
@@ -435,7 +435,7 @@
   {
    "registry": "מאגר אולמות 2024",
    "name": "בריכת הסולטן;",
-   "capacity": 6,
+   "capacity": 6000,
    "capacity_text": "000,6 מקומות",
    "hall_size": null,
    "stage_size": null,

@@ -62,6 +62,13 @@ class VenuesTest(unittest.TestCase):
         self.assertIsNone(capacity("170-330 מקומות"))
         self.assertIsNone(capacity("ללא"))
 
+    def test_capacity_reads_reversed_thousands(self):
+        # Right-to-left cells can store "1,000" as "000,1".
+        self.assertEqual(capacity("000,1 מקומות"), 1000)
+        self.assertEqual(capacity("341,1 מקומות"), 1341)
+        self.assertEqual(capacity("014,11 מקומות"), 11014)
+        self.assertEqual(capacity("1,200 מקומות"), 1200)
+
 
 if __name__ == "__main__":
     unittest.main()
