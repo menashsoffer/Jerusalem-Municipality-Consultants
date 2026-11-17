@@ -5,6 +5,12 @@ import { array, boolean, json, nullable, number, object, record, text } from './
 
 type Row<T extends keyof PublicSchema> = PublicSchema[T]['Row'];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** The map answer for an address (spec 4.6); null until it is checked. */
+export interface MapCheck {
+  result: string;
+  label: string | null;
+}
+export type DetailContact = ContactRow & { map: MapCheck | null };
 export interface SupplierDetail {
   supplier: CatalogData['suppliers'][number];
   names: CatalogData['names'];
@@ -12,7 +18,7 @@ export interface SupplierDetail {
     Row<'supplier_identifiers'>,
     'id' | 'scheme' | 'value' | 'review_status' | 'source'
   >[];
-  contacts: ContactRow[];
+  contacts: DetailContact[];
   memberships: CatalogData['memberships'];
   versions: CatalogData['versions'];
   registries: CatalogData['registries'];
@@ -26,7 +32,13 @@ export interface SupplierDetail {
     | null;
 }
 
-function parseContacts(value: unknown, supplierId: string): ContactRow[] {
+/** Missing before the address-check migration, null until the address is checked. */
+const parseMap = (value: unknown): MapCheck | null =>
+  value === null || value === undefined
+    ? null
+    : record(value, { result: text, label: nullable(text) });
+
+function parseContacts(value: unknown, supplierId: string): DetailContact[] {
   return array(value).map((item) => ({
     ...record(item, {
       id: text,
@@ -35,6 +47,7 @@ function parseContacts(value: unknown, supplierId: string): ContactRow[] {
       is_valid: nullable(boolean),
       source_document_id: nullable(text),
       status: text,
+      map: parseMap,
     }),
     supplier_id: supplierId,
   }));

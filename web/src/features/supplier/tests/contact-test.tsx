@@ -46,7 +46,9 @@ describe('contact card', () => {
     expect(link('02-123-4567').href).toBe('tel:021234567');
     expect(link('a@b.test').href).toBe('mailto:a@b.test');
     expect(link('x.test').target).toBe('_blank');
-    expect(link('פתיחה ב-Google Maps').href).toContain('maps/search');
+    expect(link('יפו 1').href).toContain('maps/search');
+    expect(link('יפו 1').target).toBe('_blank');
+    expect(screen.queryByText('פתיחה ב-Google Maps')).toBeNull();
     expect(screen.getByText('ייתכן שאינו תקין')).toBeDefined();
     expect(screen.getByText('not an email')).toBeDefined();
     expect(screen.getByRole('button', { name: 'העתקת פרט הקשר' })).toBeDefined();

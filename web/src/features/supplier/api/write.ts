@@ -7,6 +7,7 @@ import {
   type SupplierUpdate,
 } from '../../../data/site.ts';
 import type { WriteContext } from '../../../data/write-context.ts';
+import { requestAddressCheck } from './address-check.ts';
 
 export interface SaveResult {
   message: string;
@@ -40,8 +41,11 @@ export async function saveAndRefresh(
 }
 
 /** Name and contacts in one transaction; the database checks the same rules again. */
-export const update = (payload: SupplierUpdate) => (token: string) =>
-  updateSupplier(token, payload);
+export const update = (payload: SupplierUpdate) => async (token: string) => {
+  const saved = await updateSupplier(token, payload);
+  if (payload.contacts.some((contact) => contact.kind === 'address')) requestAddressCheck();
+  return saved;
+};
 
 export interface StatusChange {
   active: boolean;

@@ -192,13 +192,6 @@
     min-inline-size: 0;
     overflow-wrap: anywhere;
   }
-  .stack {
-    display: flex;
-    flex-direction: column;
-    & a {
-      font-size: var(--font-small);
-    }
-  }
   .missing,
   .muted {
     color: var(--color-muted);

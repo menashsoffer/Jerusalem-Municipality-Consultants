@@ -25,6 +25,35 @@ export interface PublicSchema {
       "created_at"?: string;
     };
   };
+  "address_checks": {
+    Row: {
+      "contact_id": string;
+      "checked_value": string;
+      "result": string;
+      "map_label": string | null;
+      "latitude": number | null;
+      "longitude": number | null;
+      "checked_at": string;
+    };
+    Insert: {
+      "contact_id": string;
+      "checked_value": string;
+      "result": string;
+      "map_label"?: string | null;
+      "latitude"?: number | null;
+      "longitude"?: number | null;
+      "checked_at"?: string;
+    };
+    Update: {
+      "contact_id"?: string;
+      "checked_value"?: string;
+      "result"?: string;
+      "map_label"?: string | null;
+      "latitude"?: number | null;
+      "longitude"?: number | null;
+      "checked_at"?: string;
+    };
+  };
   "audit_log": {
     Row: {
       "id": number;

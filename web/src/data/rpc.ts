@@ -29,6 +29,7 @@ interface AdminRpc {
   record_supplier_approaches: { request: string; suppliers: string[]; channel: 'email' };
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
+  addresses_to_check: Record<string, never>;
   decide_category_request: {
     request_id: string;
     decision: 'approved' | 'rejected' | 'linked';
@@ -55,6 +56,7 @@ declare module '../database.types.ts' {
     create_engagement_request: { Args: AdminRpc['create_engagement_request']; Returns: string };
     record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
+    addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     last_approaches: {
       Args: AdminRpc['last_approaches'];
       Returns: { supplier_id: string; last_on: string }[];

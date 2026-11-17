@@ -15,21 +15,17 @@ const ICONS: Record<string, IconName> = {
   contact_person: 'person',
 };
 
+/** Spec 4.6: an address that the map did not find stays visible, with a note. */
+function unmapped(item: Contact): boolean {
+  return item.map?.result === 'not_found' || item.map?.result === 'approximate';
+}
+
 function Value({ item }: { item: Contact }) {
   const link = contactLink(item.kind, item.value);
   const value = <bdi>{item.value}</bdi>;
   if (!link) return value;
-  if (item.kind === 'address') {
-    return (
-      <span className={styles.stack}>
-        {value}
-        <a href={link} target="_blank" rel="noopener noreferrer">
-          פתיחה ב-Google Maps
-        </a>
-      </span>
-    );
-  }
-  const external = item.kind === 'website';
+  // An address opens in Google Maps, like a website opens in a new tab (Menash, 18.11).
+  const external = item.kind === 'website' || item.kind === 'address';
   return (
     <a href={link} {...(external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}>
       {value}
@@ -54,6 +50,7 @@ export function ContactCard({ contacts }: { contacts: SupplierDetail['contacts']
             <span className={styles.value}>
               <Value item={item} />
               {item.is_valid === false && <span className={styles.warn}>ייתכן שאינו תקין</span>}
+              {unmapped(item) && <span className={styles.warn}>הכתובת לא אותרה במפה</span>}
             </span>
             <CopyButton value={item.value} label={CONTACT_KINDS[item.kind] ?? 'פרט הקשר'} />
           </li>

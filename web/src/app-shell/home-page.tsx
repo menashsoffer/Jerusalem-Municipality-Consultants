@@ -14,6 +14,7 @@ const SCREENS: readonly Screen[] = [
   { to: '/categories', title: 'בקשות קטגוריה', description: 'אישור תחומים ששויכו לספקים' },
   { to: '/identifiers', title: 'מועמדי מזהה ספק', description: 'אישור ח.פ. שנמצא לספק' },
   { to: '/thresholds', title: 'אישור הסף החודשי', description: 'ספי ההתקשרות לפי מדד החודש' },
+  { to: '/addresses', title: 'כתובות לבדיקה', description: 'כתובות שלא אותרו במפה' },
   { to: '/load-control', title: 'בקרת טעינה', description: 'מה נטען מהמאגרים ומה חסר' },
   { to: '/users', title: 'משתמשים ותפקידים', description: 'מי נכנס לאתר ובאיזו הרשאה' },
   { to: '/route-check', title: 'בדיקת מסלול ההתקשרות', description: 'חישוב מסלול בלי בקשה' },

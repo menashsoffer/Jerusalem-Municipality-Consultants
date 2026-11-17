@@ -19,12 +19,4 @@ export function sourceLabel(source: string): string {
   return SOURCES[source] ?? source;
 }
 
-/** A timestamp shown in Jerusalem time, or a dash when it is missing. */
-export function when(value: string | null): string {
-  if (!value) return '—';
-  return new Intl.DateTimeFormat('he-IL', {
-    timeZone: 'Asia/Jerusalem',
-    dateStyle: 'short',
-    timeStyle: 'short',
-  }).format(new Date(value));
-}
+export { when } from '../../../lib/dates.ts';
