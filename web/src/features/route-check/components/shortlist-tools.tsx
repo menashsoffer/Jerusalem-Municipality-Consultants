@@ -36,7 +36,7 @@ function useTools({ suppliers, today, requestId }: Props) {
       setMessage((await copy(line.text)) ? bccMessage(line) : 'ההעתקה נכשלה.');
     },
     async share() {
-      const ok = await copy(shareLink(window.location.origin, suppliers));
+      const ok = await copy(shareLink(window.location.href, suppliers));
       setMessage(ok ? 'הקישור הועתק. הוא נפתח רק למשתמשים מחוברים עם הרשאה.' : 'ההעתקה נכשלה.');
     },
     async csv() {

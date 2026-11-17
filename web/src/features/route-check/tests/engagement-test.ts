@@ -50,10 +50,13 @@ describe('engagement request', () => {
     assert.match(csv, /\r\n"'=HYPERLINK\(""x""\)",,02-1; 03-2,,פעיל\r\n$/u);
   });
 
-  it('shares a link that lists only supplier ids', () => {
-    const link = new URL(shareLink('https://site.test', [picked({}), picked({ id: B })]));
-    assert.equal(link.pathname, '/engagement');
-    assert.equal(link.searchParams.get('suppliers'), `${A},${B}`);
+  it('shares a hash-route link that lists only supplier ids', () => {
+    const page = 'https://site.test/app/index.html#/catalog?q=x';
+    const link = new URL(shareLink(page, [picked({}), picked({ id: B })]));
+    assert.equal(link.pathname, '/app/index.html');
+    const route = new URL(link.hash.slice(1), 'https://route.test');
+    assert.equal(route.pathname, '/engagement');
+    assert.equal(route.searchParams.get('suppliers'), `${A},${B}`);
   });
 
   it('keeps valid distinct ids up to the limit', () => {

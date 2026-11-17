@@ -38,10 +38,14 @@ export function bccMessage(bcc: ReturnType<typeof bccLine>): string {
   return bcc.missing.length ? `${copied} אין דוא״ל במאגר עבור: ${bcc.missing.join(', ')}.` : copied;
 }
 
-/** A link that reopens the same list. It works only for signed-in users with access. */
-export function shareLink(origin: string, suppliers: readonly PickedSupplier[]): string {
-  const url = new URL('/engagement', origin);
-  url.searchParams.set('suppliers', suppliers.map((s) => s.id).join(','));
+/**
+ * A link that reopens the same list. The site uses hash routes, so the route goes after `#`.
+ * It works only for signed-in users with access.
+ */
+export function shareLink(page: string, suppliers: readonly PickedSupplier[]): string {
+  const url = new URL(page);
+  const ids = new URLSearchParams({ suppliers: suppliers.map((s) => s.id).join(',') });
+  url.hash = `/engagement?${ids.toString()}`;
   return url.toString();
 }
 
