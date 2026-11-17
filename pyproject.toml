@@ -10,3 +10,14 @@ ignore = ["RUF001", "RUF002", "RUF003"]  # Hebrew text in strings and comments
 [tool.ruff.lint.mccabe]
 max-complexity = 10
 
+
+# Coverage of the extraction scripts (coding standards, section 6). CI fails below 90%.
+[tool.coverage.run]
+source = ["scripts"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 90
+show_missing = true
+skip_covered = true
+exclude_also = ['if __name__ == "__main__":']
