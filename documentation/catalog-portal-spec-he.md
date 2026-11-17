@@ -212,6 +212,21 @@ WCAG 2.1 AA. פוקוס נראה ב-`:focus-visible`. מונה התוצאות ב
 לכל שלב: מיגרציה עם טסטים לכל כלל ולכל מדיניות RLS, `npm run check` ירוק, ומיגרציית production
 שמוחלת **לפני** מיזוג קוד האתר שתלוי בה (deploy-web מפרסם מיד).
 
+### 10.1 מה נבנה (17.11.2026)
+
+Claude בנה את שלבים א עד ה במקום Gemini, בבקשת מנש. מיגרציות לפי הסדר שבו יש להחיל אותן:
+
+| שלב | מיגרציה | הערות |
+| --- | --- | --- |
+| א | `20261117040000_catalog_light` | פרטי קשר רק ב-`supplier_detail`. הקטלוג החי ירד מכ-1.14MB לכ-482KB |
+| ב | `20261117050000_supplier_status` | `set_supplier_status` למנהל, טריגר חסימה, תגיות |
+| ג | `20261117060000_engagement_shortlist` | `route_check_preview_input` (בלי שמירה), `create_engagement_request`, `record_supplier_approaches`, `last_approaches`. המסך `/engagement` |
+| ד | `20261117070000_venue_specs` | `import_venue_specs` למנהל, קובץ `data/pool-file/venues.json` (119 אולמות). 21 אולמות 2018 לא יותאמו עד שהמאגר שלהם ייטען |
+| ה | `20261117080000_load_control` | `load_control` למנהל ולמבקר, המסך `/load-control` |
+
+לא נבנו בשלב ה: אירועי המדידה בסעיף 9, כי בקשת המיזוג #64 של Codex (R14) עובדת על אותו תחום,
+ומצב כהה ו-Heebo, שנדחו בהחלטה 3. ה"לשונית" של המתקנים היא מסנן "מתקנים ואולמות" בקטלוג.
+
 ## 11. החלטות (מנש, 17.11.2026)
 
 1. פרטי הקשר יוצאים מ-`catalog_snapshot` ונטענים ב-`supplier_detail` (סעיף 2.1).

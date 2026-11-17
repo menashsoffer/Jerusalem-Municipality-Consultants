@@ -2,6 +2,7 @@ import { useState, useSyncExternalStore } from 'react';
 import type { Supplier } from '../../../catalog-model.ts';
 import { StatusMessage } from '../../../ui/status-message.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
+import { SHORTLIST_MAX, useShortlist } from '../../../lib/shortlist.ts';
 import { createBatches, BATCH_SIZE } from '../model/batches.ts';
 import { SupplierCard } from './supplier-card.tsx';
 import styles from './catalog.module.css';
@@ -12,6 +13,8 @@ interface Props {
 export function Results({ suppliers, today }: Props) {
   const [batches] = useState(() => createBatches(suppliers.length));
   const count = useSyncExternalStore(batches.subscribe, batches.getSnapshot, batches.getSnapshot);
+  const picked = useShortlist();
+  const full = picked.length >= SHORTLIST_MAX;
   if (!suppliers.length)
     return (
       <EmptyState title="לא נמצאו ספקים">
@@ -43,6 +46,7 @@ export function Results({ suppliers, today }: Props) {
             supplier={supplier}
             today={today}
             deferred={index >= BATCH_SIZE}
+            picked={picked.includes(supplier.id) || (full ? null : false)}
           />
         ))}
       </ul>

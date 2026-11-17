@@ -1,7 +1,7 @@
 import type { PublicSchema } from '../database.types.ts';
-import type { CatalogData } from './catalog.ts';
+import type { CatalogData, ContactRow } from './catalog.ts';
 import { DataError, type DataClient } from './client.ts';
-import { array, json, number, object, record, text } from './parse.ts';
+import { array, boolean, json, nullable, number, object, record, text } from './parse.ts';
 
 type Row<T extends keyof PublicSchema> = PublicSchema[T]['Row'];
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -12,7 +12,7 @@ export interface SupplierDetail {
     Row<'supplier_identifiers'>,
     'id' | 'scheme' | 'value' | 'review_status' | 'source'
   >[];
-  contacts: CatalogData['contacts'];
+  contacts: ContactRow[];
   memberships: CatalogData['memberships'];
   versions: CatalogData['versions'];
   registries: CatalogData['registries'];
@@ -24,6 +24,20 @@ export interface SupplierDetail {
         'id' | 'table_name' | 'row_id' | 'operation' | 'changes' | 'created_at'
       >[]
     | null;
+}
+
+function parseContacts(value: unknown, supplierId: string): ContactRow[] {
+  return array(value).map((item) => ({
+    ...record(item, {
+      id: text,
+      kind: text,
+      value: text,
+      is_valid: nullable(boolean),
+      source_document_id: nullable(text),
+      status: text,
+    }),
+    supplier_id: supplierId,
+  }));
 }
 
 export async function supplierDetail(
@@ -44,6 +58,7 @@ export async function supplierDetail(
       source: text,
     }),
   );
+  const contacts = parseContacts(raw.contacts, supplierId);
   const audit =
     raw.audit === null
       ? null
@@ -62,7 +77,7 @@ export async function supplierDetail(
     identifiers,
     audit,
     names: cached.names.filter((row) => row.supplier_id === supplierId),
-    contacts: cached.contacts.filter((row) => row.supplier_id === supplierId),
+    contacts,
     memberships: cached.memberships.filter((row) => row.supplier_id === supplierId),
     versions: cached.versions,
     registries: cached.registries,

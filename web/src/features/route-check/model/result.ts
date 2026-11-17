@@ -34,10 +34,23 @@ export function routeLabel(route: string): string {
     (route.startsWith('exemption_') ? 'פטור לפי התקנה המצוינת' : 'מסלול הדורש בדיקה')
   );
 }
-export const checkInputSchema = z.object({
-  request_id: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
-  on: z.iso.date(),
+/** A draft is checked without being saved; the database validates every field again. */
+export const draftSchema = z.object({
+  estimated_value: z.number().nonnegative().max(999999999999),
+  value_includes_vat: z.boolean(),
+  requested_exemption: z
+    .string()
+    .regex(/^3\([0-9]+א?\)$/)
+    .nullable(),
 });
+export type Draft = z.infer<typeof draftSchema>;
+export const checkInputSchema = z.union([
+  z.object({
+    request_id: z.string().regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i),
+    on: z.iso.date(),
+  }),
+  z.object({ draft: draftSchema, on: z.iso.date() }),
+]);
 export type CheckInput = z.infer<typeof checkInputSchema>;
 export function money(value: number): string {
   return new Intl.NumberFormat('he-IL', { style: 'currency', currency: 'ILS' }).format(value);

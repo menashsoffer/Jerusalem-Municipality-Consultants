@@ -41,7 +41,7 @@ function database(rpc: Response, calls: Call[] = []): typeof fetch {
     const path = url.pathname.replace('/rest/v1/', '');
     const body = JSON.parse(init?.body as string) as Record<string, unknown>;
     calls.push({ path, auth: new Headers(init?.headers).get('authorization'), body });
-    if (path === 'rpc/route_check_input') return rpc.clone();
+    if (path.startsWith('rpc/route_check_')) return rpc.clone();
     return Promise.resolve(Response.json([{ id: 7 }], { status: 201 }));
   };
 }
@@ -87,6 +87,25 @@ describe('route-check function', () => {
     assert.equal(save.body.threshold_id, 't1');
     assert.equal(save.body.engine_version, ENGINE_VERSION);
     assert.equal(save.body.route, result.route);
+  });
+
+  it('checks an unsaved draft as the caller and stores nothing', async () => {
+    const calls: Call[] = [];
+    const draft = { estimated_value: 50000, value_includes_vat: false };
+    const preview = { ...INPUT, related: null };
+    const response = await handle(post({ draft }), ctx(database(Response.json(preview), calls)));
+    assert.equal(response.status, 200);
+    const result = (await response.json()) as Record<string, unknown>;
+    assert.equal(result.id, null);
+    assert.equal(result.splittingChecked, false);
+    assert.equal(calls.length, 1);
+    const [load] = calls as [Call];
+    assert.equal(load.path, 'rpc/route_check_preview_input');
+    assert.equal(load.auth, 'Bearer user-token');
+    assert.deepEqual(load.body, { draft, check_on: '2026-11-01' });
+    const both = post({ draft, request_id: REQUEST_ID });
+    assert.equal((await handle(both, ctx(database(new Response())))).status, 400);
+    assert.equal((await handle(post({ draft: [] }), ctx(database(new Response())))).status, 400);
   });
 
   it('refuses bad input before calling the database', async () => {

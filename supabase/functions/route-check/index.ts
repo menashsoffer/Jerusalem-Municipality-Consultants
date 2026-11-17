@@ -2,10 +2,11 @@ import { serverEnv, type ServerEnv } from '../_shared/http/env.ts';
 import { bearerToken, failure, json, preflight, readObject } from '../_shared/http/respond.ts';
 import { failedStatus, rest } from '../_shared/http/rest.ts';
 import type { IsoDate } from '../_shared/procurement/index.ts';
-import { parseTarget, runEngine, type CheckInput, type Checked } from './prepare.ts';
+import { parseTarget, runEngine, type CheckInput, type Checked, type Target } from './prepare.ts';
 
 // POST { request_id, on? } with the caller's token. Two database calls: one that
 // authorizes, counts the quota and loads every input, and one insert of the result.
+// POST { draft, on? } checks an unsaved draft: one call, nothing is stored, id is null.
 
 declare const Deno: {
   serve: (handler: (request: Request) => Promise<Response>) => void;
@@ -27,18 +28,13 @@ const MESSAGES: Record<number, string> = {
   429: 'Too many route checks, try again later',
 };
 
-interface Target {
-  readonly requestId: string;
-  readonly on: IsoDate;
-}
-
 interface Accepted {
   readonly env: ServerEnv;
   readonly token: string;
   readonly target: Target;
 }
 
-function record(checked: Checked, input: CheckInput, target: Target) {
+function record(checked: Checked, input: CheckInput, target: { requestId: string; on: IsoDate }) {
   const { result } = checked;
   return {
     request_id: target.requestId,
@@ -66,18 +62,22 @@ async function accept(request: Request, ctx: Context): Promise<Accepted | Respon
   if (!ctx.env) return failure('Server not configured', 503);
   const body = await readObject(request);
   const target = body && parseTarget(body, ctx.today);
-  if (!target) return failure('Expected request_id (uuid) and optional on (YYYY-MM-DD)', 400);
+  if (!target)
+    return failure(
+      'Expected request_id (uuid) or draft (object), and optional on (YYYY-MM-DD)',
+      400,
+    );
   return { env: ctx.env, token, target };
 }
 
 async function check(job: Accepted, fetcher: typeof fetch): Promise<Response> {
   const { env, token, target } = job;
-  const args = { target: target.requestId, check_on: target.on };
-  const loaded = await rest(
-    env,
-    { path: 'rpc/route_check_input', body: args, as: { token } },
-    fetcher,
-  );
+  const load =
+    'draft' in target
+      ? { path: 'rpc/route_check_preview_input', body: { draft: target.draft } }
+      : { path: 'rpc/route_check_input', body: { target: target.requestId } };
+  const body = { ...load.body, check_on: target.on };
+  const loaded = await rest(env, { path: load.path, body, as: { token } }, fetcher);
   if (loaded.status !== 200) {
     const status = failedStatus(loaded);
     return failure(MESSAGES[status] ?? 'Database unavailable', status);
@@ -85,6 +85,7 @@ async function check(job: Accepted, fetcher: typeof fetch): Promise<Response> {
   const input = loaded.body as CheckInput;
   const checked = runEngine(input, target.on);
   if (!checked) return failure(`No thresholds in force on ${target.on}`, 422);
+  if ('draft' in target) return json({ id: null, ...checked.result });
   const row = record(checked, input, target);
   const saved = await rest(env, { path: 'route_checks', body: row, as: 'service' }, fetcher);
   if (saved.status !== 201) return failure('Could not save the route check', 502);

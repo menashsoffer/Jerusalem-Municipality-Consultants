@@ -64,7 +64,6 @@ export const PROJECTIONS = {
     'dates_source',
     'review_status',
   ],
-  contacts: ['id', 'kind', 'value', 'is_valid', 'source_document_id'],
   registries: ['id', 'name', 'owner_unit_id', 'status'],
   versions: ['id', 'registry_id', 'source_document_id', 'valid_from', 'valid_until'],
   fields: ['id', 'registry_id', 'source_text'],
@@ -86,6 +85,9 @@ const TABLES = {
   fieldCategories: ['registry_field_categories', 'true'],
   units: ['org_units', 'true'],
   documents: ['source_documents', 'true'],
+  identifiers: ['supplier_identifiers', "review_status <> 'rejected'"],
+  candidates: ['identifier_candidates', "status = 'pending'"],
+  venues: ['venue_specs', 'true'],
 } as const;
 
 type Records = Record<string, unknown>;
@@ -101,32 +103,88 @@ function compactValue(column: string, value: unknown, displayName: unknown): unk
   return DEFAULTS[column] === value ? null : value;
 }
 
+/** Columns that point at a sibling array, mapped to that array, as the snapshot encodes them. */
+const POSITIONS: Record<string, keyof typeof TABLES> = {
+  registry_version_id: 'versions',
+  registry_field_id: 'fields',
+  source_document_id: 'documents',
+  registry_id: 'registries',
+};
+type Positions = Record<string, Map<unknown, number>>;
+function encode(column: string, value: unknown, positions: Positions): unknown {
+  const target = POSITIONS[column];
+  if (!target || value === null) return value;
+  return positions[target]?.get(value) ?? null;
+}
+
+function identifierState(tables: Record<string, Records[]>, supplier: unknown): string | null {
+  const own = (tables.identifiers ?? []).filter((row) => row.supplier_id === supplier);
+  if (own.some((row) => row.review_status === 'verified')) return 'verified';
+  const candidate = (tables.candidates ?? []).some((row) => row.supplier_id === supplier);
+  return own.length || candidate ? 'pending' : null;
+}
+
+const VENUE = ['capacity', 'capacity_text', 'hall_size', 'stage_size', 'screen', 'sound'];
+function venueRow(tables: Record<string, Records[]>, supplier: unknown): unknown[] | null {
+  const venue = (tables.venues ?? []).find((row) => row.supplier_id === supplier);
+  return venue ? [...VENUE, 'lighting', 'survey_year'].map((col) => venue[col]) : null;
+}
+
 export async function directCatalog(db: PGlite): Promise<Records> {
   const tables: Record<string, Records[]> = {};
   for (const [key, [table, where]] of Object.entries(TABLES)) {
-    const order = key === 'fieldCategories' ? 'registry_field_id, category_id' : 'id';
+    const order =
+      key === 'fieldCategories'
+        ? 'registry_field_id, category_id'
+        : key === 'venues'
+          ? 'supplier_id'
+          : 'id';
     tables[key] = (
       await db.query<Records>(`select * from public.${table} where ${where} order by ${order}`)
     ).rows;
   }
+  const positions: Positions = Object.fromEntries(
+    Object.values(POSITIONS).map((key) => [
+      key,
+      new Map((tables[key] ?? []).map((row, index) => [row.id, index])),
+    ]),
+  );
   const result: Records = {};
-  for (const key of Object.keys(TABLES) as (keyof typeof TABLES)[]) {
+  for (const key of [
+    'registries',
+    'categories',
+    'fieldCategories',
+    'units',
+    'documents',
+  ] as const) {
     result[key] = (tables[key] ?? []).map((row) => PROJECTIONS[key].map((col) => row[col]));
+  }
+  for (const key of ['versions', 'fields'] as const) {
+    result[key] = (tables[key] ?? []).map((row) =>
+      PROJECTIONS[key].map((col) => (col === 'id' ? row[col] : encode(col, row[col], positions))),
+    );
   }
   result.suppliers = (tables.suppliers ?? []).map((row) => [
     ...PROJECTIONS.suppliers.map((col) => compactValue(col, row[col], row.display_name)),
-    ...(['names', 'memberships', 'contacts'] as const).map((key) =>
+    ...(['names', 'memberships'] as const).map((key) =>
       (tables[key] ?? [])
-        .filter((child) => child.supplier_id === row.id)
-        .map((child) =>
+        .filter((item) => item.supplier_id === row.id)
+        .map((item) =>
           PROJECTIONS[key].map((col) =>
-            key === 'contacts' ? child[col] : compactValue(col, child[col], row.display_name),
+            encode(col, compactValue(col, item[col], row.display_name), positions),
           ),
         ),
     ),
+    [
+      ...new Set(
+        (tables.contacts ?? []).filter((c) => c.supplier_id === row.id).map((c) => c.kind),
+      ),
+    ].sort(),
+    identifierState(tables, row.id),
+    row.status === 'inactive'
+      ? [row.status_reason, row.status_source, row.status_changed_on]
+      : null,
+    venueRow(tables, row.id),
   ]);
-  delete result.names;
-  delete result.memberships;
-  delete result.contacts;
   return result;
 }

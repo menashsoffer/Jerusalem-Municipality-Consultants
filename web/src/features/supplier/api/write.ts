@@ -1,4 +1,4 @@
-import { sessionToken } from '../../../data/rpc.ts';
+import { rpc, sessionToken, z } from '../../../data/rpc.ts';
 import {
   loadSnapshot,
   renameSupplier,
@@ -55,6 +55,18 @@ export const contact = (change: ContactChange) => (token: string) =>
     kind: change.kind,
     value: change.value,
   });
+
+export interface StatusChange {
+  active: boolean;
+  reason?: string;
+  source?: string;
+  changedOn?: string;
+}
+/** Admin only; the database refuses anyone else and requires a reason and date to deactivate. */
+export const status = (supplierId: string, change: StatusChange) => async () => {
+  await rpc('set_supplier_status', { target: supplierId, change }, z.null());
+  return '';
+};
 
 export const membership = (payload: Record<string, string>) => (token: string) =>
   saveMembership(token, payload);

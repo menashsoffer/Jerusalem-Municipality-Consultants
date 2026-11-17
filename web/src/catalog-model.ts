@@ -1,4 +1,4 @@
-import type { CatalogData } from './data/catalog.ts';
+import type { CatalogData, IdentifierState, Venue } from './data/catalog.ts';
 import { normalize } from './catalog-search.ts';
 
 export type Validity = 'valid' | 'expired' | 'undated' | 'future';
@@ -15,6 +15,9 @@ export interface Membership {
   validUntil: string | null;
   source: string | null;
   page: number | null;
+  /** `needs_review` until an editor or manager verifies the membership. */
+  reviewStatus: string;
+  registryClosed: boolean;
 }
 export interface CategoryLabel {
   categoryId: string;
@@ -28,8 +31,14 @@ export interface Supplier {
   aliases: string[];
   searchNames: string[];
   verified: boolean;
+  identifier: IdentifierState;
+  /** Set only for an inactive supplier: why, according to whom and since when. */
+  inactive: { reason: string; source: string | null; changedOn: string | null } | null;
   memberships: Membership[];
-  contacts: { kind: string; value: string; valid: boolean | null }[];
+  /** Kinds of current contact details on record; the values load with the supplier. */
+  contactKinds: string[];
+  /** Hall details for a venue, null for every other supplier. */
+  venue: Venue | null;
 }
 
 export function validity(membership: Membership, today: string): Validity {
@@ -119,6 +128,17 @@ function member(row: MemberRow, refs: Lookup): Membership | null {
     validFrom: row.registered_from,
     validUntil: row.registered_until,
     page: row.source_page,
+    reviewStatus: row.review_status,
+    registryClosed: registry.status === 'closed',
+  };
+}
+
+function inactiveNote(row: CatalogData['suppliers'][number]): Supplier['inactive'] {
+  if (row.status !== 'inactive') return null;
+  return {
+    reason: row.status_reason ?? 'לא צוינה סיבה',
+    source: row.status_source,
+    changedOn: row.status_changed_on,
   };
 }
 
@@ -129,7 +149,7 @@ export function buildCatalog(data: CatalogData): Supplier[] {
     data.memberships.filter((row) => !['rejected', 'removed'].includes(row.review_status)),
     (row) => row.supplier_id,
   );
-  const contacts = groupBy(data.contacts, (row) => row.supplier_id);
+  const contactKinds = groupBy(data.contactKinds, (row) => row.supplier_id);
   return (
     data.suppliers
       .filter((row) => row.status !== 'merged')
@@ -137,6 +157,8 @@ export function buildCatalog(data: CatalogData): Supplier[] {
         id: row.id,
         name: row.display_name,
         verified: row.review_status === 'verified',
+        identifier: row.identifier_state,
+        inactive: inactiveNote(row),
         aliases: [
           ...(names.get(row.id) ?? []).map((name) => name.name),
           ...(memberships.get(row.id) ?? []).flatMap((item) =>
@@ -146,11 +168,8 @@ export function buildCatalog(data: CatalogData): Supplier[] {
         memberships: (memberships.get(row.id) ?? [])
           .map((item) => member(item, refs))
           .filter((item): item is Membership => item !== null),
-        contacts: (contacts.get(row.id) ?? []).map((item) => ({
-          kind: item.kind,
-          value: item.value,
-          valid: item.is_valid,
-        })),
+        contactKinds: (contactKinds.get(row.id) ?? []).map((item) => item.kind),
+        venue: row.venue,
       }))
       // A supplier whose memberships are hidden by access rules must not be
       // displayed without the registry and source needed to interpret it.
