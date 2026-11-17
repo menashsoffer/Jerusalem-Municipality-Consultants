@@ -1,7 +1,7 @@
 // One address against OpenStreetMap (Nominatim, no key). Its usage policy asks for at
 // most one request per second and an identifying User-Agent; the caller spaces the
 // calls. Supplier spec 4.6: a street-level hit counts as found, a town-level hit as
-// approximate.
+// approximate. Photon (photon.ts) is the fallback when Nominatim refuses us.
 
 export const NOMINATIM = 'https://nominatim.openstreetmap.org/search';
 export const USER_AGENT = 'supplier-registry-address-check/1.0';
@@ -18,10 +18,27 @@ export interface Checked {
   readonly longitude: number | null;
 }
 
-/** The map service refused us (rate limit or block): stop the batch. */
-export class Refused extends Error {}
+/** The map service refused us (rate limit or block): switch service or stop. */
+export class Refused extends Error {
+  readonly status: number;
+  constructor(status: number) {
+    super(`Map refused with ${String(status)}`);
+    this.status = status;
+  }
+}
 
-const NOTHING: Checked = { result: 'not_found', map_label: null, latitude: null, longitude: null };
+/** One free map service: a name for the run log and a search for one query. */
+export interface Provider {
+  readonly name: string;
+  readonly search: (query: string, fetcher: typeof fetch) => Promise<Checked>;
+}
+
+export const NOTHING: Checked = {
+  result: 'not_found',
+  map_label: null,
+  latitude: null,
+  longitude: null,
+};
 
 /** Removes what confuses the search: notes in brackets, quotes, postal codes, "רח'". */
 export function cleanAddress(value: string): string {
@@ -55,7 +72,7 @@ export function searchUrl(query: string): string {
   return `${NOMINATIM}?${params.toString()}`;
 }
 
-function numberOf(value: unknown): number | null {
+export function numberOf(value: unknown): number | null {
   const parsed = typeof value === 'string' ? Number(value) : Number.NaN;
   return Number.isFinite(parsed) ? parsed : null;
 }
@@ -74,13 +91,19 @@ export function classify(answer: unknown): Checked {
   };
 }
 
-export async function search(query: string, fetcher: typeof fetch): Promise<Checked> {
-  const response = await fetcher(searchUrl(query), {
+/** GETs one map URL; a 403 or 429 is a refusal, any other error fails this address. */
+export async function mapJson(url: string, fetcher: typeof fetch): Promise<unknown> {
+  const response = await fetcher(url, {
     headers: { 'User-Agent': USER_AGENT, Accept: 'application/json' },
     redirect: 'error',
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-  if (response.status === 429 || response.status === 403) throw new Refused('Map refused');
+  if (response.status === 429 || response.status === 403) throw new Refused(response.status);
   if (!response.ok) throw new Error(`Map answered ${String(response.status)}`);
-  return classify(await response.json());
+  return response.json();
 }
+
+export const nominatim: Provider = {
+  name: 'nominatim',
+  search: async (query, fetcher) => classify(await mapJson(searchUrl(query), fetcher)),
+};
