@@ -1,6 +1,4 @@
 // Entry of the site: one React page for the catalog, supplier screens and admin screens.
-// The layer order must be declared before any other stylesheet, so it is the first import.
-import './styles/layers.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 

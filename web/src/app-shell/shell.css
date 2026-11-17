@@ -126,6 +126,7 @@
 
   /* An error or notice that replaces a screen (screen-error.tsx). */
   .shell-notice {
+    margin-inline: auto;
     max-inline-size: 36rem;
     display: grid;
     justify-items: start;
@@ -143,9 +144,8 @@
       color: var(--color-muted);
     }
     & a {
-      display: inline-grid;
-      place-items: center;
-      padding-block: 0;
+      display: inline-flex;
+      align-items: center;
       text-decoration: none;
     }
   }

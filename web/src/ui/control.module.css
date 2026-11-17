@@ -1,5 +1,6 @@
 @layer ui {
   .control {
+    box-sizing: border-box;
     border: var(--border-width) solid var(--color-input-border);
     border-radius: var(--radius-control);
     padding: var(--space-md) var(--space-lg);
