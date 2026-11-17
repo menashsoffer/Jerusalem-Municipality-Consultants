@@ -2,6 +2,7 @@
 data/pool-file/
 node_modules/
 dist/
+coverage/
 package-lock.json
 # Prose is reviewed by hand; Prettier reflows Hebrew tables badly
 *.md

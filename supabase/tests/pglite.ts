@@ -1,6 +1,7 @@
 // Runs the Supabase migrations in an isolated PostgreSQL (PGlite). The stub below
 // emulates only the parts of Supabase Auth that the migrations use.
-import { readdir, readFile } from 'node:fs/promises';
+import { randomUUID } from 'node:crypto';
+import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -61,9 +62,36 @@ export async function emptyDatabase(): Promise<PGlite> {
   return db;
 }
 
+// With SQL_COVERAGE_DIR set (npm run coverage), each database counts the calls to the
+// project's own functions after its migrations ran and writes them to that folder on close.
+const FUNCTION_CALLS = `
+  select p.oid::regprocedure::text as name, coalesce(s.calls, 0)::int as calls
+  from pg_proc p
+  left join pg_stat_user_functions s on s.funcid = p.oid
+  where p.pronamespace in ('public'::regnamespace, 'private'::regnamespace)
+    and p.prokind in ('f', 'p')
+    and not exists (
+      select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')`;
+
+async function trackFunctionCalls(db: PGlite, dir: string): Promise<void> {
+  await db.exec("set track_functions = 'all'");
+  const close = db.close.bind(db);
+  db.close = async () => {
+    await db.exec('reset role');
+    await db.query('select pg_stat_force_next_flush()');
+    await db.query('select 1');
+    const { rows } = await db.query<{ name: string; calls: number }>(FUNCTION_CALLS);
+    await mkdir(dir, { recursive: true });
+    await writeFile(resolve(dir, `${randomUUID()}.json`), JSON.stringify(rows));
+    await close();
+  };
+}
+
 export async function migratedDatabase(range: MigrationRange = {}): Promise<PGlite> {
   const db = await emptyDatabase();
   await applyMigrations(db, range);
+  const dir = process.env.SQL_COVERAGE_DIR;
+  if (dir) await trackFunctionCalls(db, dir);
   return db;
 }
 
