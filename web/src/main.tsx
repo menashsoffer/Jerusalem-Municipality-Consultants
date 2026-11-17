@@ -1,4 +1,6 @@
 // Entry of the site: one React page for the catalog, supplier screens and admin screens.
+// The layer order must be declared before any other stylesheet, so it is the first import.
+import './styles/layers.css';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 
@@ -6,7 +8,6 @@ import { AppRouter, createAdminRouter } from './app-shell/router.tsx';
 import { prepareAdmin } from './features/auth/api/bootstrap.ts';
 import { Skeleton } from './ui/skeleton.tsx';
 import { setAdminSession } from './data/rpc.ts';
-import './styles/layers.css';
 import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
