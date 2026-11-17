@@ -35,7 +35,7 @@ const featureZones = features.map(({ name }) => ({
 }));
 
 export default defineConfig(
-  globalIgnores(['node_modules/**', 'dist/**', 'web/src/database.types.ts']),
+  globalIgnores(['node_modules/**', 'dist/**', 'coverage/**', 'web/src/database.types.ts']),
   {
     files: ['**/*.ts', '**/*.tsx'],
     extends: [

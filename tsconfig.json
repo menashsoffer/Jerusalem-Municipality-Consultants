@@ -25,6 +25,7 @@
     "supabase/tests/**/*.ts",
     "scripts/thresholds/**/*.ts",
     "scripts/schema/**/*.ts",
-    "scripts/bundle/**/*.ts"
+    "scripts/bundle/**/*.ts",
+    "scripts/coverage/**/*.ts"
   ]
 }

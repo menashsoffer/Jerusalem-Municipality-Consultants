@@ -12,15 +12,16 @@
     "format:check": "prettier --check .",
     "test": "npm run test:ts && npm run test:supabase && npm run test:web && npm run test:components",
     "test:ts": "node --test \"supabase/functions/tests/*-test.ts\"",
-    "test:web": "node --test \"web/tests/*-test.ts\" \"web/src/**/tests/*-test.ts\" \"scripts/bundle/tests/*-test.ts\"",
-    "check": "npm run format:check && npm run lint && npm run typecheck && npm run types:db:check && npm test && npm run build:web && npm run size:check",
+    "test:web": "node --test \"web/tests/*-test.ts\" \"web/src/**/tests/*-test.ts\" \"scripts/bundle/tests/*-test.ts\" \"scripts/coverage/tests/*-test.ts\"",
+    "check": "npm run format:check && npm run lint && npm run typecheck && npm run types:db:check && npm run coverage && npm run build:web && npm run size:check",
     "test:supabase": "node --test \"supabase/tests/*-test.ts\"",
     "build:web": "vite build",
     "dev:web": "vite",
     "types:db": "node scripts/schema/generate-types.ts",
     "types:db:check": "node scripts/schema/generate-types.ts --check",
     "test:components": "vitest run",
-    "size:check": "node scripts/bundle/check-bundle-size.ts"
+    "size:check": "node scripts/bundle/check-bundle-size.ts",
+    "coverage": "node scripts/coverage/run.ts"
   },
   "devDependencies": {
     "@babel/core": "7.29.13",
@@ -35,6 +36,7 @@
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "@vitejs/plugin-react": "6.3.0",
+    "@vitest/coverage-v8": "5.1.0",
     "babel-plugin-react-compiler": "1.0.0",
     "eslint": "10.14.0",
     "eslint-plugin-import-x": "4.18.1",

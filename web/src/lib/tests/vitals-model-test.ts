@@ -81,4 +81,36 @@ describe('anonymous Core Web Vitals', () => {
     model.lcp(50);
     assert.deepEqual(Object.keys(model.reports()[0] ?? {}).sort(), ['bounded', 'name', 'value']);
   });
+  it('keeps only the ten slowest interactions and ignores invalid ones', () => {
+    const model = createVitalsModel();
+    model.interaction(0, 500);
+    model.interaction(1.5, 500);
+    model.interaction(1, -1);
+    model.interaction(1, Number.NaN);
+    for (let id = 1; id <= 12; id += 1) model.interaction(id, id * 10);
+    model.interaction(12, 50);
+    assert.deepEqual(
+      model.reports(600).find((v) => v.name === 'INP'),
+      { name: 'INP', value: 30, bounded: true },
+    );
+    assert.deepEqual(
+      model.reports(0).find((v) => v.name === 'INP'),
+      { name: 'INP', value: 120, bounded: false },
+    );
+  });
+  it('labels a rank past few recorded interactions as a bound', () => {
+    const model = createVitalsModel();
+    model.interaction(1, 40);
+    assert.deepEqual(
+      model.reports(100).find((v) => v.name === 'INP'),
+      { name: 'INP', value: 16, bounded: true },
+    );
+  });
+  it('maps server errors to fixed codes', () => {
+    assert.equal(errorCode({ status: 503 }), 'http_5xx');
+    assert.equal(errorCode({ status: 404 }), 'http_404');
+    assert.equal(errorCode({ status: 600 }), 'unexpected');
+    assert.equal(errorCode({ status: '500' }), 'unexpected');
+    assert.equal(errorCode(null), 'unexpected');
+  });
 });

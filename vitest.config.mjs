@@ -1,6 +1,9 @@
 // Component tests (.tsx). Node runs .ts tests directly but not JSX, so these run in Vitest.
+// Coverage (npm run coverage) covers every file in scope.json, tested or not.
 import react from '@vitejs/plugin-react';
 import { defineConfig } from 'vitest/config';
+
+import scope from './scripts/coverage/scope.json' with { type: 'json' };
 
 export default defineConfig({
   plugins: [react()],
@@ -10,5 +13,12 @@ export default defineConfig({
     // Keep jsdom workers within CI resources; parallel startup can starve router hydration.
     maxWorkers: 1,
     restoreMocks: true,
+    coverage: {
+      provider: 'v8',
+      include: scope.include,
+      exclude: scope.exclude,
+      reporter: ['lcov', 'text-summary'],
+      reportsDirectory: 'coverage/vitest',
+    },
   },
 });

@@ -94,7 +94,12 @@ Supabase הוא מרכז המערכת: בסיס הנתונים, ההזדהות, 
 - באג שתוקן מקבל בדיקה שנכשלת בלי התיקון.
 - הבדיקות לא ניגשות לרשת ולא תלויות בשעון: תאריך מוזרק.
 - כלים: `node --test` ל-TypeScript (Node 22.18 ומעלה מריץ TypeScript ישירות), `unittest` ל-Python.
-- לפני push: `npm run check` (עיצוב, lint, טיפוסים ובדיקות), וגם `ruff format --check . && ruff check .` כשנוגעים ב-Python.
+- לפני push: `npm run check` (עיצוב, lint, טיפוסים, בדיקות וכיסוי), וגם `ruff format --check . && ruff check .` כשנוגעים ב-Python.
+- כיסוי בדיקות של 90% לפחות הוא תנאי למיזוג, ונבדק ב-CI:
+  - TypeScript: `npm run coverage` מריץ את כל הבדיקות (Node ו-Vitest), מאחד את הכיסוי לדוח אחד ונכשל מתחת ל-90% בשורות, בענפים ובפונקציות. קובץ שאין לו בדיקה נספר כ-0%. היקף הקבצים והספים ב-`scripts/coverage/scope.json`. קובץ יוצא מההיקף רק אם הוא נקודת כניסה דקה (CLI), עם נימוק.
+  - SQL: אותה פקודה סופרת אילו מפונקציות הסכמות `public` ו-`private` נקראו בבדיקות ה-PGlite, ונכשלת מתחת ל-90%. פונקציה שלא נקראה מופיעה בשמה בדוח.
+  - Python: `python -m coverage run -m unittest discover -s tests -t . && python -m coverage report`, עם סף 90% ב-`pyproject.toml`.
+- הבדיקות לא כותבות לבסיס הנתונים של production ולא לסביבת staging: בדיקות מסד הנתונים רצות רק ב-PGlite מקומי, ופונקציות ה-Edge נבדקות מול `fetch` מדומה.
 
 ## 7. אבטחה ופרטיות
 
