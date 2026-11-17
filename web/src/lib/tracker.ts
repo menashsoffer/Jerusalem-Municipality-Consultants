@@ -9,7 +9,7 @@ export interface EventRequest {
   url: string;
   init: RequestInit;
 }
-export type BuildRequest = (events: TrackedEvent[]) => EventRequest;
+export type BuildRequest<T = TrackedEvent> = (events: T[]) => EventRequest | null;
 
 interface LaterResult {
   readonly activated: boolean;
@@ -20,15 +20,15 @@ export const BATCH_WINDOW_MS = 10_000;
 /** Well under the 64 KB that fetchLater and keepalive allow per page. */
 export const MAX_BATCH = 50;
 
-export class EventBatcher {
+export class EventBatcher<T = TrackedEvent> {
   private readonly win: Window;
-  private readonly build: BuildRequest;
-  private queue: TrackedEvent[] = [];
+  private readonly build: BuildRequest<T>;
+  private queue: T[] = [];
   private later: LaterResult | null = null;
   private controller: AbortController | null = null;
   private timer: ReturnType<typeof setTimeout> | undefined;
 
-  constructor(win: Window, build: BuildRequest) {
+  constructor(win: Window, build: BuildRequest<T>) {
     this.win = win;
     this.build = build;
     win.addEventListener('pagehide', () => {
@@ -37,7 +37,7 @@ export class EventBatcher {
     });
   }
 
-  add(event: TrackedEvent): void {
+  add(event: T): void {
     if (this.later?.activated) this.reset();
     this.queue.push(event);
     if (this.queue.length >= MAX_BATCH) this.sendNow();
@@ -53,8 +53,12 @@ export class EventBatcher {
     if (typeof fetchLater !== 'function') return false;
     this.controller?.abort();
     const controller = new AbortController();
-    const { url, init } = this.build([...this.queue]);
+    this.later = null;
+    this.controller = null;
     try {
+      const request = this.build([...this.queue]);
+      if (!request) return false;
+      const { url, init } = request;
       this.later = fetchLater.call(this.win, url, {
         ...init,
         signal: controller.signal,
@@ -70,14 +74,20 @@ export class EventBatcher {
     }
   }
 
+  flush(): void {
+    if (!this.later || this.later.activated) this.sendNow();
+  }
+
   private sendNow(): void {
     if (this.later?.activated) this.reset();
     this.controller?.abort();
     const events = this.queue;
     this.reset();
     if (!events.length) return;
-    const { url, init } = this.build(events);
     try {
+      const request = this.build(events);
+      if (!request) return;
+      const { url, init } = request;
       this.win.fetch(url, { ...init, keepalive: true }).catch(() => undefined);
     } catch {
       // Usage tracking never interrupts the user.

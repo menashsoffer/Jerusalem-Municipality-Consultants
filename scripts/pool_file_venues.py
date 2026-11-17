@@ -34,8 +34,17 @@ def capacity(value):
     numbers = re.findall(r"\d[\d,]*", value)
     if len(numbers) != 1:
         return None
-    seats = int(numbers[0].replace(",", ""))
+    seats = int(seats_digits(numbers[0]))
     return seats if 0 < seats <= 100000 else None
+
+
+def seats_digits(number):
+    """Digits in reading order. Right-to-left cells can store "1,000" as "000,1": a group
+    after the first one that is shorter than three digits means the groups are reversed."""
+    groups = number.strip(",").split(",")
+    if len(groups) > 1 and any(len(group) != 3 for group in groups[1:]):
+        groups.reverse()
+    return "".join(groups)
 
 
 def survey_year(value):
