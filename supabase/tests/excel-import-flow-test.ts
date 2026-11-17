@@ -4,6 +4,17 @@ import type { PGlite } from '@electric-sql/pglite';
 import { ACCESS_FIXTURE, SUPPLIER, USERS, VERSION, REGISTRY } from './access-fixture.ts';
 import { as, count, migratedDatabase } from './pglite.ts';
 
+async function assertReopened(db: PGlite, batchId: string, rowId: number) {
+  const result = await db.query<{ data: { rows: { row_id: number; candidates: unknown[] }[] } }>(
+    'select public.stage_excel_import($1) as data',
+    [{ batch_id: batchId }],
+  );
+  const first = result.rows[0]?.data.rows[0];
+  assert.ok(first);
+  assert.equal(first.candidates.length, 1);
+  assert.equal(first.row_id, rowId);
+}
+
 describe('Excel import decisions and promotion', () => {
   let db: PGlite;
   before(async () => {
@@ -83,6 +94,7 @@ describe('Excel import decisions and promotion', () => {
       const [first, second, third] = data.rows;
       assert.ok(first && second && third);
       assert.equal(first.candidates.length, 1);
+      await assertReopened(db, data.batch_id, first.row_id);
       assert.equal(await count(db, 'select 1 from public.memberships'), 0);
       const held = await db.query<{ data: { pending: number } }>(
         'select public.apply_import_batch($1) as data',

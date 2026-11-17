@@ -8,7 +8,8 @@
 מערך של עד 5,000 עצמים עם `row_number`, `raw` ו-`edited`. הערכים הממופים ב-`edited` הם
 מחרוזות: `name`, `entity_kind`, `scheme`, `value`, `field`, `phone`, `email`, `address`,
 `contact_person`, `website`. `raw` שומר את הנתונים כפי שנקראו. התוצאה מכילה מזהה אצווה
-ומועמדי התאמה, או סימון קובץ חוזר. מועמדים אינם החלטות.
+ומועמדי התאמה, או סימון קובץ חוזר. מועמדים אינם החלטות. אפשר לשלוח רק `batch_id`
+כדי לטעון מחדש הצעות התאמה לשורות הממתינות בטיוטה קיימת.
 
 `decide_import_rows(decisions)` מקבל מערך של `row_id`, החלטה (`new`, `link`, `hold` או
 `skip`) ו-`edited`. בהחלטת `link` נדרש `target_supplier_id`; בדילוג נדרש `note`.

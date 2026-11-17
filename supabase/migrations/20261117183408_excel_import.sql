@@ -53,6 +53,43 @@ create policy source_files_delete on storage.objects for delete to authenticated
   using (bucket_id = 'source-files' and (select private.is_admin()) and not exists (
     select 1 from public.source_documents d where d.storage_path = name));
 
+-- Recompute suggestions when an administrator returns to a saved draft.
+create function private.excel_candidates(edited jsonb)
+returns jsonb language sql stable set search_path = '' as $$
+  select coalesce(jsonb_agg(jsonb_build_object('id', c.id, 'name', c.display_name,
+      'match_rank', c.match_rank) order by c.match_rank, c.display_name), '[]'::jsonb)
+  from (
+      select s.id, s.display_name, case
+        when exists (select 1 from public.supplier_identifiers i where i.supplier_id = s.id
+          and i.scheme = edited ->> 'scheme' and i.value = edited ->> 'value'
+          and i.review_status = 'verified') then 1
+        when exists (select 1 from public.supplier_identifiers i where i.supplier_id = s.id
+          and i.scheme = edited ->> 'scheme' and i.value = edited ->> 'value'
+          and i.review_status = 'needs_review') or exists (
+          select 1 from public.identifier_candidates i where i.supplier_id = s.id
+            and i.scheme = edited ->> 'scheme'
+            and i.value = edited ->> 'value' and i.status = 'pending') then 2
+        when s.normalized_name = private.normalize_name(edited ->> 'name') or exists (
+          select 1 from public.supplier_names n where n.supplier_id = s.id
+            and n.normalized_name = private.normalize_name(edited ->> 'name')) then 3
+        else 4 end as match_rank
+      from public.suppliers s where s.status = 'active' and (
+        exists (select 1 from public.supplier_identifiers i where i.supplier_id = s.id
+          and i.scheme = edited ->> 'scheme' and i.value = edited ->> 'value'
+          and i.review_status <> 'rejected')
+        or exists (select 1 from public.identifier_candidates i where i.supplier_id = s.id
+          and i.scheme = edited ->> 'scheme' and i.value = edited ->> 'value'
+          and i.status = 'pending')
+        or s.normalized_name = private.normalize_name(edited ->> 'name')
+        or exists (select 1 from public.supplier_names n where n.supplier_id = s.id
+          and n.normalized_name = private.normalize_name(edited ->> 'name'))
+        or extensions.similarity(s.normalized_name,
+          private.normalize_name(edited ->> 'name')) >= 0.6)
+      order by match_rank, s.display_name limit 20
+    ) c;
+$$;
+revoke all on function private.excel_candidates(jsonb) from public, anon, authenticated;
+
 -- Stage immutable source rows; mapped values are a separate editable object.
 create function public.stage_excel_import(batch jsonb)
 returns jsonb language plpgsql security definer set search_path = '' as $$
@@ -71,6 +108,18 @@ declare
 begin
   if not private.is_admin() then
     raise exception 'Not authorized' using errcode = '42501';
+  end if;
+  if batch ? 'batch_id' then
+    batch_id := (batch ->> 'batch_id')::uuid;
+    if not exists (select 1 from public.import_batches b where b.id = batch_id
+      and b.script_name = 'excel_import') then
+      raise exception 'Batch not found' using errcode = 'P0002';
+    end if;
+    select coalesce(jsonb_agg(jsonb_build_object('row_id', r.id,
+      'candidates', private.excel_candidates(r.edited)) order by r.row_number), '[]'::jsonb)
+    into staged from public.import_rows r where r.batch_id = (batch ->> 'batch_id')::uuid
+      and r.status = 'pending';
+    return jsonb_build_object('batch_id', batch_id, 'duplicate', true, 'rows', staged);
   end if;
   if jsonb_typeof(batch) <> 'object' or jsonb_typeof(batch -> 'rows') <> 'array'
     or jsonb_array_length(batch -> 'rows') not between 1 and 5000
@@ -124,37 +173,7 @@ begin
     insert into public.import_rows (batch_id, row_number, raw, edited, decision)
     values (batch_id, (item ->> 'row_number')::integer, item -> 'raw', item -> 'edited', 'hold')
     returning id into row_id;
-    select coalesce(jsonb_agg(jsonb_build_object('id', c.id, 'name', c.display_name,
-      'match_rank', c.match_rank) order by c.match_rank, c.display_name), '[]'::jsonb)
-    into candidates from (
-      select s.id, s.display_name, case
-        when exists (select 1 from public.supplier_identifiers i where i.supplier_id = s.id
-          and i.scheme = item -> 'edited' ->> 'scheme' and i.value = item -> 'edited' ->> 'value'
-          and i.review_status = 'verified') then 1
-        when exists (select 1 from public.supplier_identifiers i where i.supplier_id = s.id
-          and i.scheme = item -> 'edited' ->> 'scheme' and i.value = item -> 'edited' ->> 'value'
-          and i.review_status = 'needs_review') or exists (
-          select 1 from public.identifier_candidates i where i.supplier_id = s.id
-            and i.scheme = item -> 'edited' ->> 'scheme'
-            and i.value = item -> 'edited' ->> 'value' and i.status = 'pending') then 2
-        when s.normalized_name = private.normalize_name(item -> 'edited' ->> 'name') or exists (
-          select 1 from public.supplier_names n where n.supplier_id = s.id
-            and n.normalized_name = private.normalize_name(item -> 'edited' ->> 'name')) then 3
-        else 4 end as match_rank
-      from public.suppliers s where s.status = 'active' and (
-        exists (select 1 from public.supplier_identifiers i where i.supplier_id = s.id
-          and i.scheme = item -> 'edited' ->> 'scheme' and i.value = item -> 'edited' ->> 'value'
-          and i.review_status <> 'rejected')
-        or exists (select 1 from public.identifier_candidates i where i.supplier_id = s.id
-          and i.scheme = item -> 'edited' ->> 'scheme' and i.value = item -> 'edited' ->> 'value'
-          and i.status = 'pending')
-        or s.normalized_name = private.normalize_name(item -> 'edited' ->> 'name')
-        or exists (select 1 from public.supplier_names n where n.supplier_id = s.id
-          and n.normalized_name = private.normalize_name(item -> 'edited' ->> 'name'))
-        or extensions.similarity(s.normalized_name,
-          private.normalize_name(item -> 'edited' ->> 'name')) >= 0.6)
-      order by match_rank, s.display_name limit 20
-    ) c;
+    candidates := private.excel_candidates(item -> 'edited');
     staged := staged || jsonb_build_array(jsonb_build_object('row_id', row_id,
       'candidates', candidates));
   end loop;
