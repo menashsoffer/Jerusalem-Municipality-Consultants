@@ -24,9 +24,8 @@ export function VerificationMark({ mark }: { mark: Mark }) {
         aria-label={mark.label}
         onFocus={show}
         onBlur={hide}
-        onClick={() => {
-          setOpen((value) => !value);
-        }}
+        // A tap also focuses and hovers, so it only shows; tapping elsewhere blurs and hides.
+        onClick={show}
         onKeyDown={(event) => {
           if (event.key === 'Escape') hide();
         }}

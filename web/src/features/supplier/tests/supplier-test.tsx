@@ -7,6 +7,8 @@ import { supplierDetail, type SupplierDetail } from '../../../data/supplier-deta
 import { writableVersions, type WriteContext } from '../../../data/write-context.ts';
 import * as rpc from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
+import { DataError } from '../../../data/client.ts';
+import { RULE_MESSAGES } from '../../../lib/rules/messages.ts';
 import {
   access,
   client,
@@ -15,9 +17,8 @@ import {
   wireDetail,
 } from '../../../../tests/catalog-fixture.ts';
 import { SupplierDetails } from '../components/supplier-details.tsx';
-import { EditForms } from '../components/edit-forms.tsx';
+import { EditDialog } from '../components/edit-dialog.tsx';
 import { AddForm } from '../components/add-form.tsx';
-import { StatusForm } from '../components/status-form.tsx';
 
 afterEach(() => {
   cleanup();
@@ -96,59 +97,156 @@ describe('supplier details', () => {
   });
 });
 
-describe('supplier edits', () => {
-  it('renames the supplier and refreshes the catalog', async () => {
+async function openDialog(data: SupplierDetail, admin = false) {
+  show(<EditDialog data={data} editor admin={admin} today="2026-11-17" />);
+  const dialog = await waitFor(() => {
+    const found = document.querySelector('dialog');
+    if (!found) throw new Error('no dialog yet');
+    return found;
+  });
+  dialog.setAttribute('open', '');
+}
+
+describe('supplier edit dialog', () => {
+  it('saves the name and a changed contact together with one button', async () => {
     mockWrites();
-    const rename = vi.spyOn(site, 'renameSupplier').mockResolvedValue('ok');
-    show(<EditForms data={await detail()} />);
+    const save = vi.spyOn(site, 'updateSupplier').mockResolvedValue('ok');
+    const data = await detail();
+    data.contacts = data.contacts.map((c) => ({ ...c, status: 'current', value: 'a@b.co.il' }));
+    await openDialog(data);
     const name = await screen.findByRole('textbox', { name: /שם הספק/ });
     await userEvent.clear(name);
-    await userEvent.type(name, 'שם חדש');
-    await userEvent.click(screen.getByRole('button', { name: 'שמירת שם' }));
-    expect(await screen.findByText('השם נשמר.')).toBeDefined();
-    expect(rename).toHaveBeenCalledWith('token', { supplier_id: SUPPLIER, display_name: 'שם חדש' });
+    await userEvent.type(name, '  שם   חדש ');
+    const email = screen.getByRole('textbox', { name: 'דוא״ל' });
+    await userEvent.clear(email);
+    await userEvent.type(email, 'office@example.co.il');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText('השינויים נשמרו.')).toBeDefined();
+    expect(save).toHaveBeenCalledWith('token', {
+      supplier_id: SUPPLIER,
+      display_name: 'שם חדש',
+      contacts: [{ contact_id: 'contact1', kind: 'email', value: 'office@example.co.il' }],
+    });
     expect(site.loadSnapshot).toHaveBeenCalledWith('token');
   });
 
-  it('keeps the kind of an existing contact and reports a refused write', async () => {
+  it('marks each broken rule beside its field and sends nothing', async () => {
     mockWrites();
+    const save = vi.spyOn(site, 'updateSupplier').mockResolvedValue('ok');
+    await openDialog(await detail());
+    const name = await screen.findByRole('textbox', { name: /שם הספק/ });
+    await userEvent.clear(name);
+    await userEvent.type(name, '12345');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'פרט קשר חדש' }), 'phone');
+    await userEvent.type(screen.getByRole('textbox', { name: 'ערך' }), 'שטויות');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('יש לתקן את השדות המסומנים.');
+    expect(screen.getByText(/יש לכתוב מילים/)).toBeDefined();
+    expect(screen.getByText(/מספר טלפון לא תקין/)).toBeDefined();
+    expect(save).not.toHaveBeenCalled();
+  });
+
+  it('shows a rule the database refused in plain Hebrew', async () => {
+    mockWrites();
+    vi.spyOn(site, 'updateSupplier').mockRejectedValue(
+      new DataError(400, RULE_MESSAGES.bad_check_digit),
+    );
     const data = await detail();
-    data.contacts = data.contacts.map((c) => ({ ...c, status: 'current' }));
-    const replace = vi.spyOn(site, 'replaceContact').mockRejectedValue(new Error('אין הרשאה.'));
-    show(<EditForms data={data} />);
-    const existing = await screen.findByRole('combobox', { name: 'פרט קשר קיים' });
-    await userEvent.selectOptions(existing, 'contact1');
-    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'סוג' }).disabled).toBe(true);
-    const value = screen.getByRole('textbox', { name: /ערך/ });
-    expect((value as HTMLInputElement).value).toBe('bad');
-    await userEvent.clear(value);
-    await userEvent.type(value, 'a@example.test');
-    await userEvent.click(screen.getByRole('button', { name: 'שמירת פרט קשר' }));
-    expect((await screen.findByRole('alert')).textContent).toBe('אין הרשאה.');
-    expect(replace).toHaveBeenCalledWith('token', {
-      supplier_id: SUPPLIER,
-      contact_id: 'contact1',
-      kind: 'email',
-      value: 'a@example.test',
-    });
+    data.contacts = [];
+    await openDialog(data);
+    const name = await screen.findByRole('textbox', { name: /שם הספק/ });
+    await userEvent.type(name, ' נוסף');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect((await screen.findByRole('alert')).textContent).toBe(RULE_MESSAGES.bad_check_digit);
   });
 });
 
 describe('supplier status', () => {
-  it('requires a reason before asking the database to deactivate', async () => {
+  it('asks an admin for a reason and a past date before deactivating', async () => {
     mockWrites();
     const call = vi.spyOn(rpc, 'rpc').mockResolvedValue(null);
-    show(<StatusForm data={await detail()} today="2026-11-17" />);
-    await userEvent.click(await screen.findByRole('button', { name: 'סימון כלא פעיל' }));
-    expect((await screen.findByRole('alert')).textContent).toBe('יש למלא סיבה ותאריך.');
+    await openDialog(await detail(), true);
+    const mark = await screen.findByRole('button', { name: 'סימון כלא פעיל' });
+    expect(mark.className).toMatch(/danger/);
+    await userEvent.click(mark);
+    await userEvent.click(screen.getByRole('button', { name: 'אישור סימון כלא פעיל' }));
+    expect(await screen.findByText(RULE_MESSAGES.required)).toBeDefined();
     expect(call).not.toHaveBeenCalled();
-    await userEvent.type(screen.getByRole('textbox', { name: 'סיבה' }), 'מונתה לשופטת');
-    await userEvent.click(screen.getByRole('button', { name: 'סימון כלא פעיל' }));
+    await userEvent.type(screen.getByRole('textbox', { name: /סיבה/ }), 'מונתה לשופטת');
+    await userEvent.click(screen.getByRole('button', { name: 'אישור סימון כלא פעיל' }));
     expect(await screen.findByText('הספק סומן כלא פעיל.')).toBeDefined();
     expect(call.mock.calls[0]?.[1]).toEqual({
       target: SUPPLIER,
-      change: { active: false, reason: 'מונתה לשופטת', source: '', changedOn: '2026-11-17' },
+      change: { active: false, reason: 'מונתה לשופטת', changedOn: '2026-11-17' },
     });
+    expect(screen.getByRole('button', { name: 'סגירה' })).toBeDefined();
+  });
+});
+
+describe('status panel and verification mark', () => {
+  it('reactivates an inactive supplier after confirming, or cancels', async () => {
+    mockWrites();
+    const call = vi.spyOn(rpc, 'rpc').mockResolvedValue(null);
+    const data = await detail();
+    data.supplier = { ...data.supplier, status: 'inactive' };
+    await openDialog(data, true);
+    await userEvent.click(await screen.findByRole('button', { name: 'סימון כפעיל' }));
+    await userEvent.click(screen.getByRole('button', { name: 'ביטול' }));
+    expect(screen.queryByRole('button', { name: 'אישור סימון כפעיל' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'סימון כפעיל' }));
+    await userEvent.click(screen.getByRole('button', { name: 'אישור סימון כפעיל' }));
+    expect(await screen.findByText('הספק סומן כפעיל.')).toBeDefined();
+    expect(call.mock.calls[0]?.[1]).toEqual({ target: SUPPLIER, change: { active: true } });
+  });
+
+  it('keeps what was typed when the database refuses a status change', async () => {
+    mockWrites();
+    vi.spyOn(rpc, 'rpc').mockRejectedValue(new Error('נדחה.'));
+    show(<EditDialog data={await detail()} editor={false} admin today="2026-11-17" />);
+    const dialog = await waitFor(() => {
+      const found = document.querySelector('dialog');
+      if (!found) throw new Error('no dialog yet');
+      return found;
+    });
+    dialog.setAttribute('open', '');
+    await userEvent.click(await screen.findByRole('button', { name: 'סימון כלא פעיל' }));
+    await userEvent.type(screen.getByRole('textbox', { name: /סיבה/ }), 'החברה פורקה');
+    await userEvent.type(screen.getByRole('textbox', { name: /מקור/ }), 'רשם החברות');
+    await userEvent.click(screen.getByRole('button', { name: 'אישור סימון כלא פעיל' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('נדחה.');
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: /סיבה/ }).value).toBe(
+      'החברה פורקה',
+    );
+    expect(screen.queryByRole('textbox', { name: /שם הספק/ })).toBeNull();
+  });
+
+  it('says when nothing changed and keeps the typed values after a refused save', async () => {
+    mockWrites();
+    vi.spyOn(site, 'updateSupplier').mockRejectedValue(new Error('נדחה.'));
+    const data = await detail();
+    data.contacts = [];
+    await openDialog(data);
+    await userEvent.click(await screen.findByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText('אין שינויים לשמירה.')).toBeDefined();
+    const name = screen.getByRole<HTMLInputElement>('textbox', { name: /שם הספק/ });
+    await userEvent.type(name, ' נוסף');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect((await screen.findByRole('alert')).textContent).toBe('נדחה.');
+    expect(screen.getByRole<HTMLInputElement>('textbox', { name: /שם הספק/ }).value).toMatch(
+      /נוסף$/,
+    );
+  });
+
+  it('shows the mark label on hover and on tap', async () => {
+    show(<SupplierDetails data={await detail()} today="2026-11-17" />);
+    const mark = await screen.findByRole('button', { name: 'ספק מאומת' });
+    const tip = screen.getByText('ספק מאומת');
+    await userEvent.hover(mark);
+    expect(tip.hidden).toBe(false);
+    await userEvent.unhover(mark);
+    expect(tip.hidden).toBe(true);
+    await userEvent.click(mark);
+    expect(tip.hidden).toBe(false);
   });
 });
 

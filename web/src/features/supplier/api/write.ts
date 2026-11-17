@@ -1,10 +1,10 @@
 import { rpc, sessionToken, z } from '../../../data/rpc.ts';
 import {
   loadSnapshot,
-  renameSupplier,
-  replaceContact,
   saveMembership,
+  updateSupplier,
   writeContext,
+  type SupplierUpdate,
 } from '../../../data/site.ts';
 import type { WriteContext } from '../../../data/write-context.ts';
 
@@ -39,22 +39,9 @@ export async function saveAndRefresh(
   return { message: saved, error: '' };
 }
 
-export const rename = (supplierId: string, name: string) => (token: string) =>
-  renameSupplier(token, { supplier_id: supplierId, display_name: name });
-
-export interface ContactChange {
-  supplierId: string;
-  contactId: string;
-  kind: string;
-  value: string;
-}
-export const contact = (change: ContactChange) => (token: string) =>
-  replaceContact(token, {
-    supplier_id: change.supplierId,
-    contact_id: change.contactId,
-    kind: change.kind,
-    value: change.value,
-  });
+/** Name and contacts in one transaction; the database checks the same rules again. */
+export const update = (payload: SupplierUpdate) => (token: string) =>
+  updateSupplier(token, payload);
 
 export interface StatusChange {
   active: boolean;

@@ -1,4 +1,5 @@
 import type { RegistryOption, WriteContext } from '../../../data/write-context.ts';
+import { check, membershipForm } from '../../../lib/rules/forms.ts';
 
 /** The form fields that `save_supplier_membership` accepts, in the order the form shows them. */
 const FIELDS = [
@@ -15,11 +16,25 @@ const FIELDS = [
   'email',
 ] as const;
 
-/** The identifier type and number go together: both filled or both empty. */
-export function identifierPairMessage(scheme: string, identifier: string): string {
-  return !!scheme.trim() === !!identifier.trim()
-    ? ''
-    : 'יש למלא גם סוג מזהה וגם מספר, או להשאיר את שניהם ריקים.';
+const LABELS: Record<string, string> = {
+  display_name: 'שם ספק',
+  entity_kind: 'סוג ישות',
+  identifier_scheme: 'סוג מזהה',
+  identifier: 'מספר מזהה',
+  registered_from: 'תחילת רישום',
+  registered_until: 'סיום רישום',
+  engagement_started_on: 'תחילת התקשרות',
+  phone: 'טלפון',
+  email: 'דוא״ל',
+};
+
+/** The shared rules (lib/rules) on every field; each mistake is named by its field. */
+function rulesMessage(payload: AddPayload): string {
+  const checked = check(membershipForm, payload);
+  if (checked.ok) return '';
+  return Object.entries(checked.errors)
+    .map(([field, message]) => `${LABELS[field] ?? field}: ${message}`)
+    .join(' ');
 }
 
 export function formText(form: FormData, key: string): string {
@@ -40,8 +55,8 @@ export type ParsedForm = { payload: AddPayload; error: '' } | { payload: null; e
 export function parseAddForm(form: FormData): ParsedForm {
   const payload: AddPayload = {};
   for (const key of FIELDS) payload[key] = formText(form, key);
-  const pair = identifierPairMessage(payload.identifier_scheme ?? '', payload.identifier ?? '');
-  if (pair) return { payload: null, error: pair };
+  const problems = rulesMessage(payload);
+  if (problems) return { payload: null, error: problems };
   const choice = formText(form, 'supplier_choice');
   if (form.has(OFFERED_FIELD) && !choice)
     return { payload: null, error: 'יש לבחור ספק קיים או יצירה חדשה.' };

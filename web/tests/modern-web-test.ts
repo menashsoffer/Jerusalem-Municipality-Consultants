@@ -5,7 +5,6 @@ import { onBackdrop, runCommand } from '../src/lib/dialogs.ts';
 import { base64Url } from '../src/data/session.ts';
 import { BATCH_WINDOW_MS, EventBatcher, MAX_BATCH, type TrackedEvent } from '../src/lib/tracker.ts';
 import { contentSecurityPolicy } from '../src/csp.ts';
-import { identifierPairMessage } from '../src/features/supplier/model/add-form.ts';
 
 interface Sent {
   url: string;
@@ -145,19 +144,6 @@ describe('dialog command fallback', () => {
     assert.equal(onBackdrop(dialog, click(100, 100)), false, 'the edge is inside');
     assert.equal(onBackdrop(dialog, click(200, 200)), false);
     assert.equal(onBackdrop(dialog, click(50, 50, {})), false, 'a click on content');
-  });
-});
-
-describe('identifier pair rule', () => {
-  it('accepts both filled or both empty', () => {
-    assert.equal(identifierPairMessage('company', '512345678'), '');
-    assert.equal(identifierPairMessage('', ''), '');
-    assert.equal(identifierPairMessage(' ', '  '), '');
-  });
-
-  it('rejects only half of the pair', () => {
-    assert.match(identifierPairMessage('company', ''), /גם סוג מזהה וגם מספר/);
-    assert.match(identifierPairMessage('', '512345678'), /גם סוג מזהה וגם מספר/);
   });
 });
 

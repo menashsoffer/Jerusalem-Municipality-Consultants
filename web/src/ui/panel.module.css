@@ -23,6 +23,22 @@
       overscroll-behavior: contain;
     }
   }
+  .dialogHead {
+    display: flex;
+    gap: var(--space-md);
+    align-items: center;
+    justify-content: space-between;
+    margin-block-end: var(--space-md);
+    & h2 {
+      margin: 0;
+    }
+  }
+  .close {
+    flex: none;
+    min-inline-size: var(--control-min-size);
+    padding: 0;
+    border-color: transparent;
+  }
   .skeleton {
     display: grid;
     gap: var(--space-lg);
