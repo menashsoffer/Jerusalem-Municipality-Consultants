@@ -1,5 +1,6 @@
 import { useErrorReport } from './use-error-report.ts';
 import { isRouteErrorResponse, useRouteError } from 'react-router';
+import { Button } from '../ui/button.tsx';
 
 const NOT_FOUND = 404;
 
@@ -17,15 +18,15 @@ export function RouteError() {
             ? 'הכתובת לא קיימת באתר. אולי הקישור ישן.'
             : 'לא הצלחנו להציג את המסך. נסו לטעון אותו מחדש.'}
         </p>
-        <button
-          type="button"
-          className="secondary"
+        <Button
+          variant="secondary"
+          icon="refresh"
           onClick={() => {
             window.location.reload();
           }}
         >
           טעינה מחדש
-        </button>
+        </Button>
       </section>
     </main>
   );

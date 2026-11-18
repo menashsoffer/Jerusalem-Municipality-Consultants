@@ -1,3 +1,4 @@
+import { Button } from '../../../ui/button.tsx';
 import styles from './route-check.module.css';
 
 export const STEPS = { suppliers: 'הספקים', details: 'פרטי הבקשה', result: 'תוצאה' } as const;
@@ -20,8 +21,8 @@ export function Steps({ current, reachable, go }: Props) {
     <ol aria-label="שלבי הבקשה" className={styles.steps}>
       {(Object.keys(STEPS) as Step[]).map((key) => (
         <li key={key}>
-          <button
-            type="button"
+          <Button
+            variant="plain"
             aria-current={current === key ? 'step' : undefined}
             disabled={current !== key && !reachable(key)}
             onClick={() => {
@@ -29,7 +30,7 @@ export function Steps({ current, reachable, go }: Props) {
             }}
           >
             {STEPS[key]}
-          </button>
+          </Button>
         </li>
       ))}
     </ol>

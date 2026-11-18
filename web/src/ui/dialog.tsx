@@ -1,7 +1,7 @@
 import { useId, useState, type MouseEvent, type ReactNode, type SyntheticEvent } from 'react';
 import { onBackdrop } from '../lib/dialogs.ts';
 import { Button } from './button.tsx';
-import { Icon } from './icon.tsx';
+import { IconButton } from './icon-button.tsx';
 import styles from './panel.module.css';
 
 interface Props {
@@ -71,18 +71,15 @@ export function Dialog({ id, title, children, onClose, dirty = false }: Props) {
         <h2 id={titleId}>{title}</h2>
         {/* Native dialogs need an initial focus target when showModal opens them. */}
         {/* eslint-disable jsx-a11y-x/no-autofocus */}
-        <Button
-          variant="quiet"
-          className={styles.close}
+        <IconButton
+          icon="close"
+          label="סגירה"
           onClick={(event) => {
             const dialog = event.currentTarget.closest('dialog');
             if (dialog) guard.leave(dialog);
           }}
-          aria-label="סגירה"
           autoFocus
-        >
-          <Icon name="close" />
-        </Button>
+        />
         {/* eslint-enable jsx-a11y-x/no-autofocus */}
       </div>
       {children}

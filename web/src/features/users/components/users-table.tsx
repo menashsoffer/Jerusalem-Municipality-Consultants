@@ -2,6 +2,7 @@ import { useDeferredValue, useState } from 'react';
 import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { ConfirmDialog } from '../../../ui/confirm-dialog.tsx';
+import { IconButton } from '../../../ui/icon-button.tsx';
 import { DataTable } from '../../../ui/data-table.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
@@ -46,17 +47,17 @@ function RoleTag({ grant, label, person, removable, pick }: TagProps) {
     <li>
       {label}
       {removable && (
-        <Button
-          variant="quiet"
+        <IconButton
+          icon="close"
+          size="small"
           className={styles.tagRemove}
-          aria-label={`הסרת התפקיד ${label} מ${person}`}
+          label={`הסרת התפקיד ${label} מ${person}`}
+          tip="הסרת התפקיד"
           command={{ target: REVOKE, action: 'show-modal' }}
           onClick={() => {
             pick(grant);
           }}
-        >
-          ×
-        </Button>
+        />
       )}
     </li>
   );

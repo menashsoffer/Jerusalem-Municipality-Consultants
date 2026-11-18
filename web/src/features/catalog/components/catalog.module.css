@@ -73,27 +73,11 @@
     font-size: var(--font-small);
     font-weight: var(--font-weight-label);
   }
+  /* An IconButton (size small) inside the tag: only its colours change here. */
   .tagRemove {
-    display: inline-grid;
-    place-items: center;
-    inline-size: 2rem;
-    block-size: 2rem;
-    padding: 0;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
     color: inherit;
-    cursor: pointer;
     &:hover {
       background: var(--color-surface);
-    }
-    & svg {
-      inline-size: 1rem;
-      block-size: 1rem;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
     }
   }
   .dataNote {

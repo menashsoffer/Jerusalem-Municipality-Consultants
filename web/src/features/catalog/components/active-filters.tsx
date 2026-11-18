@@ -1,5 +1,5 @@
 import { Button } from '../../../ui/button.tsx';
-import { Icon } from '../../../ui/icon.tsx';
+import { IconButton } from '../../../ui/icon-button.tsx';
 import type { Filters } from '../../../catalog-filter.ts';
 import type { Supplier } from '../../../catalog-model.ts';
 import { activeTags, type ActiveTag } from '../model/filter-groups.ts';
@@ -22,16 +22,16 @@ export function ActiveFilters({ filters, suppliers, remove, clear }: Props) {
         {tags.map((tag) => (
           <li key={tag.key} className={styles.tag}>
             {tag.text}
-            <button
-              type="button"
+            <IconButton
+              icon="close"
+              size="small"
               className={styles.tagRemove}
-              aria-label={`הסרת המסנן ${tag.text}`}
+              label={`הסרת המסנן ${tag.text}`}
+              tip="הסרת המסנן"
               onClick={() => {
                 remove(tag.key);
               }}
-            >
-              <Icon name="close" />
-            </button>
+            />
           </li>
         ))}
       </ul>
