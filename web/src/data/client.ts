@@ -1,5 +1,6 @@
 import type { PublicFunctions, PublicSchema } from '../database.types.ts';
 import { databaseRuleMessage } from '../lib/rules/messages.ts';
+import { reasonMessage } from '../lib/errors/reasons.ts';
 import {
   FAILURES,
   failureSentence,
@@ -56,15 +57,23 @@ async function errorBody(response: Response): Promise<ErrorBody> {
   }
 }
 
-/** The error for a failed answer. A refused content rule arrives as `invalid:<key>`. */
+/**
+ * The error for a failed answer. A refused content rule arrives as `invalid:<key>`, a
+ * business refusal as `reason:<key>`; both keep the HTTP status the SQL code gave them.
+ */
 export async function failedResponse(response: Response): Promise<DataError> {
   const body = await errorBody(response);
   const rule = response.status === 400 ? databaseRuleMessage(body.message) : null;
-  return new DataError(
-    response.status,
-    rule,
-    rule ? undefined : kindOfStatus(response.status, body.code),
-  );
+  if (rule) return new DataError(response.status, rule);
+  return refusal(response.status, body.message, kindOfStatus(response.status, body.code));
+}
+
+/** A `reason:<key>` message becomes its Hebrew text; anything else keeps the given kind. */
+export function refusal(status: number, message: string, otherwise: FailureKind): DataError {
+  const reason = reasonMessage(message);
+  const error = new DataError(status, null, reason ? 'reason' : otherwise);
+  if (reason) error.message = reason;
+  return error;
 }
 
 /** Node and old test environments have no navigator.onLine; treat them as online. */

@@ -73,7 +73,7 @@ describe('row level security by role', () => {
         values ('ספק חדש') returning id`);
       const verify = `update public.suppliers set review_status = 'verified'
         where id = '${own.rows[0]?.id ?? ''}'`;
-      await assert.rejects(db.exec(verify), /person who entered it/);
+      await assert.rejects(db.exec(verify), /reason:self_verification/);
     });
   });
 

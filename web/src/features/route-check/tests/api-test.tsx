@@ -301,8 +301,7 @@ describe('checkRoute', () => {
     const down = () =>
       Promise.resolve(Response.json({ error: 'Database unavailable' }, { status: 502 }));
     await expect(checkRoute(DRAFT_INPUT, down)).rejects.toMatchObject({ kind: 'unavailable' });
-    const unsaved = () =>
-      Promise.resolve(Response.json({ error: 'Could not save the route check' }, { status: 502 }));
+    const unsaved = () => Promise.resolve(Response.json({ error: 'system' }, { status: 502 }));
     await expect(checkRoute(DRAFT_INPUT, unsaved)).rejects.toMatchObject({
       kind: 'system',
       message: expect.stringMatching(/תקלה במערכת/u) as unknown,

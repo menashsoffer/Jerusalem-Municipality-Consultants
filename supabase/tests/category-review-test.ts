@@ -90,7 +90,7 @@ describe('R8 category request decisions', () => {
     await as(db, USERS.admin, async () => {
       await assert.rejects(
         db.query("select public.decide_category_request($1,'linked','קישור')", [id]),
-        /active category/i,
+        /reason:choose_active_category/,
       );
       await assert.rejects(
         db.query("select public.decide_category_request($1,'rejected',' ')", [own]),

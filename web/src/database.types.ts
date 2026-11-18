@@ -1426,6 +1426,8 @@ export interface PublicSchema {
       "boundary": string | null;
       "within_budget": boolean | null;
       "created_at": string;
+      "kind": string | null;
+      "screen": string | null;
     };
     Insert: {
       "id"?: never;
@@ -1436,6 +1438,8 @@ export interface PublicSchema {
       "boundary"?: string | null;
       "within_budget"?: never;
       "created_at"?: string;
+      "kind"?: string | null;
+      "screen"?: string | null;
     };
     Update: {
       "id"?: never;
@@ -1446,6 +1450,8 @@ export interface PublicSchema {
       "boundary"?: string | null;
       "within_budget"?: never;
       "created_at"?: string;
+      "kind"?: string | null;
+      "screen"?: string | null;
     };
   };
 }

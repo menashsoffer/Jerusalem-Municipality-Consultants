@@ -5,6 +5,8 @@ import { z } from 'zod';
 import { DataError } from '../client.ts';
 import { describeError, errorText } from '../errors.ts';
 import { FAILURES, failureSentence, kindOfStatus } from '../../lib/errors/failure.ts';
+import { setTelemetryReporter } from '../../lib/telemetry.ts';
+import { screenOf } from '../../lib/vitals-model.ts';
 
 it('gives every kind a cause, and a next step unless the cause says it all', () => {
   for (const [kind, text] of Object.entries(FAILURES)) {
@@ -40,4 +42,34 @@ it('reads a fetch that got no answer as an unreachable server, not a bug', () =>
 it('knows a dead database by its PostgREST code', () => {
   assert.equal(kindOfStatus(500, 'PGRST002'), 'unavailable');
   assert.equal(kindOfStatus(500, '42883'), 'system');
+});
+
+it('counts a shown error once, by kind and screen, without its text', () => {
+  const events: unknown[] = [];
+  setTelemetryReporter((event) => {
+    events.push(event);
+  });
+  try {
+    const error = new DataError(503);
+    errorText(error);
+    errorText(error);
+    assert.deepEqual(events, [
+      {
+        name: 'error',
+        error_code: 'http_5xx',
+        boundary: 'action',
+        kind: 'unavailable',
+        screen: 'other',
+      },
+    ]);
+  } finally {
+    setTelemetryReporter(() => undefined);
+  }
+});
+
+it('names the screen from the address without ids', () => {
+  assert.equal(screenOf('#/supplier/50000000-0000-4000-8000-000000000001?tab=x'), 'supplier');
+  assert.equal(screenOf('#/engagement'), 'engagement');
+  assert.equal(screenOf('#/secret@example.test'), 'other');
+  assert.equal(screenOf(''), 'other');
 });

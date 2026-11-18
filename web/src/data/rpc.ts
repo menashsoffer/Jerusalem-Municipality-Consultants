@@ -47,6 +47,7 @@ interface AdminRpc {
   record_supplier_approaches: { request: string; suppliers: string[]; channel: 'email' };
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
+  error_summary: Record<string, never>;
   addresses_to_check: Record<string, never>;
   admin_overview: Record<string, never>;
   request_access_change: {
@@ -88,6 +89,7 @@ declare module '../database.types.ts' {
     cancel_engagement_request: { Args: AdminRpc['cancel_engagement_request']; Returns: null };
     record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
+    error_summary: { Args: AdminRpc['error_summary']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     admin_overview: { Args: AdminRpc['admin_overview']; Returns: unknown };
     request_access_change: { Args: AdminRpc['request_access_change']; Returns: string };

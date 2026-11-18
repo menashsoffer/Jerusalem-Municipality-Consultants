@@ -142,7 +142,21 @@ describe('route-check function', () => {
     const rpc = Response.json({ ...INPUT, thresholds: null });
     const response = await handle(post({ request_id: REQUEST_ID }), ctx(database(rpc, calls)));
     assert.equal(response.status, 422);
+    assert.deepEqual(await response.json(), { error: 'reason:no_thresholds' });
     assert.equal(calls.length, 1);
+  });
+
+  // 18.11.2026: the insert was refused (42501) and the site said "try again".
+  it('calls a refused save a fault in the system, not something to retry', async () => {
+    const rpc = Response.json(INPUT);
+    const refused: typeof fetch = async (input, init) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      if (url.includes('/rpc/')) return database(rpc)(input, init);
+      return Promise.resolve(Response.json({ code: '42501' }, { status: 403 }));
+    };
+    const response = await handle(post({ request_id: REQUEST_ID }), ctx(refused));
+    assert.equal(response.status, 502);
+    assert.deepEqual(await response.json(), { error: 'system' });
   });
 });
 

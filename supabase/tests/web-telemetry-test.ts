@@ -114,4 +114,63 @@ describe('anonymous web monitoring', () => {
       await assert.rejects(send([{ name: 'CLS', value: 0 }]), /too many reports/i);
     });
   });
+  it('counts shown errors by kind and screen, with fixed values only', async () => {
+    await as(db, USERS.editor, async () => {
+      await send([
+        {
+          name: 'error',
+          error_code: 'http_5xx',
+          boundary: 'action',
+          kind: 'system',
+          screen: 'engagement',
+        },
+        {
+          name: 'error',
+          error_code: 'http_5xx',
+          boundary: 'action',
+          kind: 'system',
+          screen: 'engagement',
+        },
+        {
+          name: 'error',
+          error_code: 'unexpected',
+          boundary: 'route',
+          kind: 'offline',
+          screen: 'catalog',
+        },
+      ]);
+      for (const item of [
+        {
+          name: 'error',
+          error_code: 'unexpected',
+          boundary: 'action',
+          kind: 'oops',
+          screen: 'catalog',
+        },
+        {
+          name: 'error',
+          error_code: 'unexpected',
+          boundary: 'action',
+          kind: 'system',
+          screen: '/supplier/1',
+        },
+        { name: 'CLS', value: 0, kind: 'system' },
+      ])
+        await assert.rejects(send([item]));
+    });
+  });
+
+  it('shows the 7-day error summary to administrators only', async () => {
+    for (const user of [USERS.viewer, USERS.editor, USERS.manager, USERS.auditor])
+      await as(db, user, async () => {
+        await assert.rejects(db.query('select * from public.error_summary()'), { code: '42501' });
+      });
+    await as(db, USERS.admin, async () => {
+      const rows = await db.query<{ kind: string; screen: string; failures: number }>(
+        'select kind, screen, failures::int as failures from public.error_summary()',
+      );
+      assert.deepEqual(rows.rows[0], { kind: 'system', screen: 'engagement', failures: 2 });
+      assert.ok(rows.rows.some((r) => r.kind === 'offline' && r.screen === 'catalog'));
+    });
+  });
 });

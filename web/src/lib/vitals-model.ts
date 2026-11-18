@@ -1,3 +1,4 @@
+import type { FailureKind } from './errors/failure.ts';
 // Project budgets: documentation/react-guide-he.md, section 6 (milliseconds, CLS score).
 export const VITAL_BUDGETS = { LCP: 1500, INP: 200, CLS: 0.1 };
 export type VitalName = keyof typeof VITAL_BUDGETS;
@@ -9,7 +10,32 @@ export interface VitalReport {
 export interface ErrorReport {
   name: 'error';
   error_code: string;
-  boundary: 'root' | 'route' | 'bootstrap';
+  /** 'action': shown beside a button or form; the others replaced a screen or the page. */
+  boundary: 'root' | 'route' | 'bootstrap' | 'action';
+  /** error-handling-spec-he.md section 3; fixed values only. */
+  kind?: FailureKind;
+  /** The first part of the screen's address, from a fixed list; never ids or queries. */
+  screen?: Screen;
+}
+export const SCREENS = [
+  'catalog',
+  'supplier',
+  'categories',
+  'identifiers',
+  'admin',
+  'route-check',
+  'engagement',
+  'addresses',
+  'load-control',
+  'users',
+  'thresholds',
+  'auth',
+] as const;
+export type Screen = (typeof SCREENS)[number] | 'other';
+/** '#/supplier/<id>?x' -> 'supplier'; anything not in the list -> 'other'. */
+export function screenOf(hash: string): Screen {
+  const first = hash.replace(/^#?\/?/, '').split(/[/?#]/)[0] ?? '';
+  return (SCREENS as readonly string[]).includes(first) ? (first as Screen) : 'other';
 }
 export type TelemetryEvent = VitalReport | ErrorReport;
 const MAX_INTERACTIONS = 10;
