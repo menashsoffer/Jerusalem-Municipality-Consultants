@@ -6,6 +6,7 @@ import { Dialog } from '../../../ui/dialog.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
+import { Icon, type IconName } from '../../../ui/icon.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { errorText } from '../../../data/errors.ts';
 import { dayOf } from '../../../lib/dates.ts';
@@ -82,12 +83,13 @@ function statusText(request: SavedRequest): string {
 }
 
 type Mode = 'recheck' | 'edit' | 'cancel';
-const DIALOGS: Record<Mode, { id: string; title: string }> = {
-  recheck: { id: RECHECK, title: 'בדיקה מחדש' },
-  edit: { id: EDIT_REQUEST, title: 'עריכת הבקשה' },
-  cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה' },
+const DIALOGS: Record<Mode, { id: string; title: string; icon: IconName }> = {
+  recheck: { id: RECHECK, title: 'בדיקה מחדש', icon: 'refresh' },
+  edit: { id: EDIT_REQUEST, title: 'עריכת הבקשה', icon: 'pencil' },
+  cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה', icon: 'ban' },
 };
 
+/** Icon buttons: the name is in aria-label, and title shows it on hover (DESIGN.md 7). */
 function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mode) => void }) {
   const modes: Mode[] = editable(request) ? ['recheck', 'edit', 'cancel'] : ['recheck', 'cancel'];
   return (
@@ -96,13 +98,15 @@ function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mo
         <Button
           key={mode}
           variant="quiet"
+          className={styles.iconButton}
           aria-label={`${DIALOGS[mode].title}: ${request.subject}`}
+          title={DIALOGS[mode].title}
           command={{ target: DIALOGS[mode].id, action: 'show-modal' }}
           onClick={() => {
             choose(mode);
           }}
         >
-          {mode === 'cancel' ? 'ביטול' : mode === 'edit' ? 'עריכה' : DIALOGS[mode].title}
+          <Icon name={DIALOGS[mode].icon} />
         </Button>
       ))}
     </div>
