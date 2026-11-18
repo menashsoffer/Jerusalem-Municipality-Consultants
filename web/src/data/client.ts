@@ -1,5 +1,12 @@
 import type { PublicFunctions, PublicSchema } from '../database.types.ts';
 import { databaseRuleMessage } from '../lib/rules/messages.ts';
+import {
+  FAILURES,
+  failureSentence,
+  kindOfNetworkError,
+  kindOfStatus,
+  type FailureKind,
+} from '../lib/errors/failure.ts';
 
 type Resource = keyof PublicSchema;
 type Row<T extends Resource> = PublicSchema[T]['Row'];
@@ -11,39 +18,74 @@ type Update<T extends WritableResource> = PublicSchema[T] extends { Update: infe
 
 export class DataError extends Error {
   readonly status: number;
+  /** What went wrong (error-handling-spec-he.md section 3). */
+  readonly kind: FailureKind;
 
-  /** `rule` is the Hebrew message of a content rule the database refused (lib/rules). */
-  constructor(status: number, rule: string | null = null) {
-    super(
-      rule ??
-        (status === 401
-          ? 'פג תוקף ההתחברות. יש להתחבר מחדש.'
-          : status === 403
-            ? 'אין לך הרשאה לבצע פעולה זו.'
-            : status === 409
-              ? 'הרשומה כבר קיימת. בדקו את פרטי הספק לפני ניסיון נוסף.'
-              : 'לא ניתן להשלים את הפעולה. יש לנסות שוב.'),
-    );
+  /**
+   * `rule` is the Hebrew message of a content rule the database refused (lib/rules).
+   * `kind` overrides the kind read from the status, for failures without an HTTP answer.
+   */
+  constructor(status: number, rule: string | null = null, kind?: FailureKind) {
+    const resolved = rule ? 'rule' : (kind ?? (status === 0 ? 'system' : kindOfStatus(status)));
+    super(rule ?? failureSentence(FAILURES[resolved]));
     this.status = status;
+    this.kind = resolved;
+  }
+
+  /** True only when sending the same request again can succeed. */
+  get retryable(): boolean {
+    return FAILURES[this.kind].retry;
   }
 }
 
-/** A refused content rule arrives as PostgREST JSON whose message is `invalid:<key>`. */
-async function ruleMessage(response: Response): Promise<string | null> {
-  if (response.status !== 400) return null;
+interface ErrorBody {
+  code: string;
+  message: string;
+}
+
+/** PostgREST and our Edge Functions answer a failure with JSON; anything else reads as empty. */
+async function errorBody(response: Response): Promise<ErrorBody> {
   try {
-    const body = (await response.json()) as { message?: unknown };
-    return typeof body.message === 'string' ? databaseRuleMessage(body.message) : null;
+    const body = (await response.json()) as { code?: unknown; message?: unknown };
+    return {
+      code: typeof body.code === 'string' ? body.code : '',
+      message: typeof body.message === 'string' ? body.message : '',
+    };
   } catch {
-    return null;
+    return { code: '', message: '' };
   }
 }
 
-class UnconfirmedChange extends Error {
+/** The error for a failed answer. A refused content rule arrives as `invalid:<key>`. */
+export async function failedResponse(response: Response): Promise<DataError> {
+  const body = await errorBody(response);
+  const rule = response.status === 400 ? databaseRuleMessage(body.message) : null;
+  return new DataError(
+    response.status,
+    rule,
+    rule ? undefined : kindOfStatus(response.status, body.code),
+  );
+}
+
+/** Node and old test environments have no navigator.onLine; treat them as online. */
+function isOnline(): boolean {
+  const nav = (globalThis as { navigator?: { onLine?: boolean } }).navigator;
+  return nav?.onLine ?? true;
+}
+
+/** A request that never got an answer: offline, timed out, or the server is unreachable. */
+export function unanswered(error: unknown): DataError {
+  return new DataError(0, null, kindOfNetworkError(error, isOnline()));
+}
+
+class UnconfirmedChange extends DataError {
   constructor() {
-    super('לא ניתן לאמת אם השינוי נשמר. יש לרענן ולבדוק לפני ניסיון נוסף.');
+    super(0, null, 'unconfirmed');
   }
 }
+
+/** Reads are sent once more after this pause when the failure may pass (spec section 7). */
+export const READ_RETRY_MS = 2000;
 
 /** A request that has not answered by then fails, so the page never shows "loading" forever. */
 export const REQUEST_TIMEOUT_MS = 20_000;
@@ -54,6 +96,22 @@ export interface ClientOptions {
   token: string;
   fetcher?: typeof fetch;
   onUnauthorized?: () => Promise<void>;
+  /** Waits before a read is retried; tests pass one that does not wait. */
+  pause?: (ms: number) => Promise<void>;
+}
+
+/** Database functions that only read, so a failed call may be sent again. */
+const READ_RPCS: ReadonlySet<string> = new Set([
+  'last_approaches',
+  'load_control',
+  'addresses_to_check',
+  'admin_overview',
+  'supplier_detail',
+  'catalog_snapshot',
+]);
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export class DataClient {
@@ -61,11 +119,13 @@ export class DataClient {
   private readonly root: string;
   private readonly headers: Record<string, string>;
   private readonly onUnauthorized: (() => Promise<void>) | undefined;
+  private readonly pause: (ms: number) => Promise<void>;
 
   constructor(options: ClientOptions) {
     this.root = `${options.baseUrl.replace(/\/$/, '')}/rest/v1`;
     this.fetcher = options.fetcher ?? fetch;
     this.onUnauthorized = options.onUnauthorized;
+    this.pause = options.pause ?? sleep;
     this.headers = {
       apikey: options.publicKey,
       Authorization: `Bearer ${options.token}`,
@@ -73,7 +133,23 @@ export class DataClient {
     };
   }
 
-  private async request(path: string, init: RequestInit = {}): Promise<unknown> {
+  /** Reads that fail in a way that may pass are sent once more; writes never are. */
+  private async request(
+    path: string,
+    init: RequestInit = {},
+    read = (init.method ?? 'GET') === 'GET',
+  ): Promise<unknown> {
+    try {
+      return await this.send(path, init);
+    } catch (error) {
+      if (!read || !(error instanceof DataError) || !error.retryable) throw error;
+      if (error.kind === 'offline') throw error;
+      await this.pause(READ_RETRY_MS);
+      return this.send(path, init);
+    }
+  }
+
+  private async send(path: string, init: RequestInit): Promise<unknown> {
     let response: Response;
     const headers = new Headers(this.headers);
     new Headers(init.headers).forEach((value, key) => {
@@ -86,11 +162,11 @@ export class DataClient {
         headers,
         signal: init.signal ?? AbortSignal.timeout(REQUEST_TIMEOUT_MS),
       });
-    } catch {
-      throw new DataError(0);
+    } catch (error) {
+      throw unanswered(error);
     }
     if (response.status === 401) await this.onUnauthorized?.();
-    if (!response.ok) throw new DataError(response.status, await ruleMessage(response));
+    if (!response.ok) throw await failedResponse(response);
     if (response.status === 204 || headers.get('Prefer') === 'return=minimal') return null;
     try {
       return (await response.json()) as unknown;
@@ -103,7 +179,8 @@ export class DataClient {
     name: K,
     args: PublicFunctions[K]['Args'],
   ): Promise<unknown> {
-    return this.request(`rpc/${name}`, { method: 'POST', body: JSON.stringify(args) });
+    const init = { method: 'POST', body: JSON.stringify(args) };
+    return this.request(`rpc/${name}`, init, READ_RPCS.has(name));
   }
 
   async supplierWrite(

@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { EngagementPage } from '../engagement-page.tsx';
 import * as check from '../api/check.ts';
+import { DataError } from '../../../data/client.ts';
 import * as engagement from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { loader } from '../engagement-page.tsx';
@@ -99,6 +100,31 @@ describe('engagement request page', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'רישום פנייה לספקים' }));
     expect(record).toHaveBeenCalledWith(REQUEST, [supplier.id]);
     expect(await screen.findByText('נרשמו 1 פניות להיום.')).toBeDefined();
+  });
+
+  // The 18.11.2026 incident: the request was saved, the check failed, and pressing the button
+  // again saved a second copy. Now the form says what was saved and only checks it again.
+  it('says the request was saved when its check fails, and checks it again without saving', async () => {
+    page([{ id: 'u1', name: 'אגף 1' }]);
+    const save = vi.spyOn(engagement, 'saveRequest').mockResolvedValue(REQUEST);
+    const run = vi
+      .spyOn(check, 'checkRoute')
+      .mockRejectedValueOnce(new DataError(500))
+      .mockResolvedValueOnce({ ...result, id: 9 });
+    await fill();
+    await userEvent.type(screen.getByLabelText(/^נושא/u), 'עבודה בפנים');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /^יחידה/u }), 'u1');
+    await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול ושמירה ביחידה' }));
+    expect(await screen.findByText('הבקשה נשמרה, אבל הבדיקה נכשלה.')).toBeDefined();
+    expect(screen.getByText(/תקלה במערכת/u)).toBeDefined();
+    expect(screen.queryByText(/יש לנסות שוב/u)).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'בדיקה חוזרת של הבקשה השמורה' }));
+    await vi.waitFor(() => {
+      expect(run).toHaveBeenCalledTimes(2);
+    });
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenLastCalledWith({ request_id: REQUEST, on: '2026-11-17' });
+    expect(await screen.findByRole('button', { name: 'רישום פנייה לספקים' })).toBeDefined();
   });
 
   it('reports a refused clipboard instead of claiming a copy', async () => {

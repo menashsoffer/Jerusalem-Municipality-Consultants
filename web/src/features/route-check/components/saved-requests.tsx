@@ -7,7 +7,7 @@ import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { Notice } from '../../../ui/notice.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { dayOf } from '../../../lib/dates.ts';
 import { checkRoute } from '../api/check.ts';
 import type { SavedRequest } from '../api/saved.ts';
@@ -38,7 +38,7 @@ function Recheck({ request, unit, today }: { request: SavedRequest; unit: string
       setResult(await checkRoute({ request_id: request.id, on: typeof on === 'string' ? on : '' }));
       return '';
     } catch (cause) {
-      return cause instanceof DataError ? cause.message : 'הבדיקה נכשלה. יש לנסות שוב.';
+      return errorText(cause);
     }
   }, '');
   return (

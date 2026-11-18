@@ -3,6 +3,7 @@ import { Outlet, useLocation, useMatches, useNavigation, useRevalidator } from '
 
 import type { RouteHandle } from './routes.tsx';
 import { SiteHeader } from './site-header.tsx';
+import { OfflineBanner } from './offline-banner.tsx';
 
 const SITE_NAME = 'איתור ספקים';
 
@@ -68,6 +69,7 @@ export function Layout() {
       <p className="shell-busy" role="status">
         {busy ? 'טוען את המסך…' : ''}
       </p>
+      <OfflineBanner />
       <main
         id="main"
         ref={main}

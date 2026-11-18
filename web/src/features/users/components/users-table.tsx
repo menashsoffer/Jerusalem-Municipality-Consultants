@@ -5,7 +5,7 @@ import { ConfirmDialog } from '../../../ui/confirm-dialog.tsx';
 import { DataTable } from '../../../ui/data-table.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { removeGrant, type GrantRow, type Profile } from '../api/users.ts';
 import { matchesPerson } from '../model/people.ts';
 import { ROLE_LABELS } from '../model/permissions.ts';
@@ -71,7 +71,7 @@ function useRevoke(grant: GrantRow | null) {
       await refresh.revalidate();
       return '';
     } catch (error) {
-      return error instanceof DataError ? error.message : 'לא ניתן להסיר תפקיד. יש לרענן ולבדוק.';
+      return errorText(error);
     }
   };
 }
