@@ -1,5 +1,4 @@
 import { useActionState, useState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
@@ -17,7 +16,6 @@ interface Props {
   chosen: string;
 }
 function useGrant(scope: Props['scope']) {
-  const refresh = useRevalidator();
   return useActionState(async (_: string, form: FormData) => {
     const input = parseGrant(Object.fromEntries(form), scope);
     if (!input.data) return input.error;
@@ -28,7 +26,6 @@ function useGrant(scope: Props['scope']) {
     }
     const dialog = document.getElementById(GRANT_DIALOG);
     if (dialog instanceof HTMLDialogElement) dialog.close();
-    await refresh.revalidate();
     return '';
   }, '');
 }

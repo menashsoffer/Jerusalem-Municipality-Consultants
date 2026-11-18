@@ -7,13 +7,15 @@ import { Notice } from '../../ui/notice.tsx';
 import { PageHeader } from '../../ui/page-header.tsx';
 import { SelectField } from '../../ui/select-field.tsx';
 import { Skeleton } from '../../ui/skeleton.tsx';
-import { loadCandidates } from './api/candidates.ts';
+import { CANDIDATES_KEY, loadCandidates } from './api/candidates.ts';
+import { getScreenData } from '../../data/screen-data.ts';
+import { useScreenData } from '../../data/react-screen-data.ts';
 import { SOURCES, type Candidate } from './model/candidate.ts';
 import { listCandidates, matchLevel, type ListFilter, type Listed } from './model/match.ts';
 import { CandidateRow } from './components/candidate-row.tsx';
 import styles from './components/candidate.module.css';
 
-export const loader = loadCandidates;
+export const loader = () => getScreenData(CANDIDATES_KEY, loadCandidates);
 const PAGE = 25;
 
 function Filters({ filter, change }: { filter: ListFilter; change: (next: ListFilter) => void }) {
@@ -53,7 +55,7 @@ function Filters({ filter, change }: { filter: ListFilter; change: (next: ListFi
 }
 
 function useList() {
-  const data = useLoaderData<typeof loader>();
+  const data = useScreenData(CANDIDATES_KEY, useLoaderData<typeof loader>(), loadCandidates).value;
   const names = new Map(data.suppliers.map((s) => [s.id, s.display_name]));
   return data.candidates.map((candidate) => {
     const supplier = names.get(candidate.supplier_id) ?? 'שם הספק אינו זמין';

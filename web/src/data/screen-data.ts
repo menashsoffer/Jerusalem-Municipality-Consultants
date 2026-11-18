@@ -112,6 +112,14 @@ export async function invalidate(prefix: Key): Promise<void> {
   await Promise.allSettled(invalidateHere(prefix));
 }
 
+/** Like `invalidate`, for a write that tells the user when the list on screen is out of date. */
+export async function refreshScreen(prefix: Key): Promise<void> {
+  broadcast()?.postMessage([...prefix]);
+  const results = await Promise.allSettled(invalidateHere(prefix));
+  if (results.some((result) => result.status === 'rejected'))
+    throw new Error('The screen could not load again');
+}
+
 export interface Seed<T> {
   value: T;
   fetcher: () => Promise<T>;

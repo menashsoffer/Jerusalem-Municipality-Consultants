@@ -1,5 +1,4 @@
 import { useActionState, useState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
@@ -29,7 +28,6 @@ function failure(error: unknown): string {
 }
 
 function useApprove({ profile, scope }: Props) {
-  const refresh = useRevalidator();
   return useActionState(async (_: string, form: FormData) => {
     const input = parseGrant({ ...Object.fromEntries(form), target_user: profile.user_id }, scope);
     if (!input.data) return input.error;
@@ -44,7 +42,6 @@ function useApprove({ profile, scope }: Props) {
       return failure(error);
     }
     closeDialog(approveId(profile.user_id));
-    await refresh.revalidate();
     return '';
   }, '');
 }
@@ -76,11 +73,10 @@ export function ApproveDialog(props: Props) {
 
 /** "דחיית הבקשה": a reason is required, and the person sees it. */
 export function RejectDialog({ profile, name }: Omit<Props, 'scope'>) {
-  const refresh = useRevalidator();
   const [result, action, pending] = useActionState(
     async (_: typeof INITIAL_REVIEW, form: FormData) => {
       form.set('decision', 'rejected');
-      const done = await decideReview(profile.user_id, form, () => refresh.revalidate());
+      const done = await decideReview(profile.user_id, form);
       if (done.committed) closeDialog(rejectId(profile.user_id));
       return done;
     },

@@ -1,8 +1,9 @@
 import { errorText } from '../../../data/errors.ts';
-import { reviewProfile } from './users.ts';
+import { reviewProfile, USERS_KEY } from './users.ts';
+import { refreshScreen } from '../../../data/screen-data.ts';
 import { noteError } from '../model/permissions.ts';
 export const INITIAL_REVIEW = { error: '', fieldError: '', committed: false };
-export async function decideReview(id: string, form: FormData, refresh: () => Promise<void>) {
+export async function decideReview(id: string, form: FormData) {
   const decision = form.get('decision'),
     value = form.get('note');
   const note = typeof value === 'string' ? value.trim() : '';
@@ -19,7 +20,7 @@ export async function decideReview(id: string, form: FormData, refresh: () => Pr
     };
   }
   try {
-    await refresh();
+    await refreshScreen(USERS_KEY);
     return { ...INITIAL_REVIEW, committed: true };
   } catch {
     return {

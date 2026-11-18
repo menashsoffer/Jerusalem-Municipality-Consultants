@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { DataError } from '../src/data/client.ts';
 import * as rpc from '../src/data/rpc.ts';
+import * as screenData from '../src/data/screen-data.ts';
 import type * as RpcModule from '../src/data/rpc.ts';
 import { decideRequest, loadRequests } from '../src/features/categories/api/requests.ts';
 import { decideCandidate, loadCandidates } from '../src/features/identifiers/api/candidates.ts';
@@ -31,8 +32,9 @@ function form(values: Record<string, string>): FormData {
   return data;
 }
 
-const ok = () => Promise.resolve();
-const broken = () => Promise.reject(new Error('refresh failed'));
+/** The next reload of the screen fails, so the write says the list may be out of date. */
+const failRefresh = () =>
+  vi.spyOn(screenData, 'refreshScreen').mockRejectedValueOnce(new Error('refresh failed'));
 
 afterEach(() => {
   vi.clearAllMocks();
@@ -162,13 +164,13 @@ describe('writes go to their database function', () => {
 
 describe('profile review', () => {
   it('requires a decision and a note for a rejection', async () => {
-    expect((await decideReview('u', form({}), ok)).error).toBe('יש לבחור החלטה.');
-    expect((await decideReview('u', form({ decision: 'rejected' }), ok)).fieldError).not.toBe('');
+    expect((await decideReview('u', form({}))).error).toBe('יש לבחור החלטה.');
+    expect((await decideReview('u', form({ decision: 'rejected' }))).fieldError).not.toBe('');
     expect(rpc.rpc).not.toHaveBeenCalled();
   });
 
   it('saves an approval with an empty note as null', async () => {
-    expect(await decideReview('u', form({ decision: 'active', note: '  ' }), ok)).toEqual({
+    expect(await decideReview('u', form({ decision: 'active', note: '  ' }))).toEqual({
       error: '',
       fieldError: '',
       committed: true,
@@ -182,12 +184,13 @@ describe('profile review', () => {
 
   it('reports a refused save and a list that did not refresh', async () => {
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(403));
-    const refused = await decideReview('u', form({ decision: 'active' }), ok);
+    const refused = await decideReview('u', form({ decision: 'active' }));
     expect(refused.error).toBe(new DataError(403).message);
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new Error('x'));
-    const failed = await decideReview('u', form({ decision: 'active' }), ok);
+    const failed = await decideReview('u', form({ decision: 'active' }));
     expect(failed.error).toMatch(/תקלה במערכת/u);
-    const stale = await decideReview('u', form({ decision: 'active' }), broken);
+    failRefresh();
+    const stale = await decideReview('u', form({ decision: 'active' }));
     expect(stale.committed).toBe(true);
     expect(stale.error).toMatch(/נשמרה/u);
   });
@@ -195,24 +198,25 @@ describe('profile review', () => {
 
 describe('identifier decision', () => {
   it('requires a decision', async () => {
-    expect((await decide('c', form({}), ok)).error).toBe('יש לבחור החלטה.');
+    expect((await decide('c', form({}))).error).toBe('יש לבחור החלטה.');
   });
 
   it('accepts or dismisses, and says when the list did not refresh', async () => {
-    expect((await decide('c', form({ decision: 'accept' }), ok)).message).toMatch(/לבדיקה נוספת/u);
-    const dismissed = await decide('c', form({ decision: 'dismiss' }), broken);
+    expect((await decide('c', form({ decision: 'accept' }))).message).toMatch(/לבדיקה נוספת/u);
+    failRefresh();
+    const dismissed = await decide('c', form({ decision: 'dismiss' }));
     expect(dismissed.message).toBe('המועמד נדחה. יש לרענן את הרשימה לפני פעולה נוספת.');
   });
 
   it('treats a candidate someone else decided as done, and reports other errors', async () => {
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(404));
-    expect((await decide('c', form({ decision: 'accept' }), ok)).message).toBe('המועמד כבר טופל.');
+    expect((await decide('c', form({ decision: 'accept' }))).message).toBe('המועמד כבר טופל.');
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(403));
-    expect((await decide('c', form({ decision: 'accept' }), ok)).error).toBe(
+    expect((await decide('c', form({ decision: 'accept' }))).error).toBe(
       new DataError(403).message,
     );
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new Error('x'));
-    expect((await decide('c', form({ decision: 'accept' }), ok)).committed).toBe(false);
+    expect((await decide('c', form({ decision: 'accept' }))).committed).toBe(false);
   });
 });
 
@@ -220,29 +224,28 @@ describe('category request decision', () => {
   const approve = { decision: 'approved', note: 'מתאים' };
 
   it('returns the form error without saving', async () => {
-    expect(await decideRequest('r', form({}), ok)).toMatchObject({ committed: false });
+    expect(await decideRequest('r', form({}))).toMatchObject({ committed: false });
     expect(rpc.rpc).not.toHaveBeenCalled();
   });
 
   it('saves, refreshes, and says when the refresh failed', async () => {
-    expect(await decideRequest('r', form(approve), ok)).toEqual({
+    expect(await decideRequest('r', form(approve))).toEqual({
       error: '',
       field: {},
       committed: true,
     });
-    expect((await decideRequest('r', form(approve), broken)).error).toMatch(/נשמרה/u);
+    failRefresh();
+    expect((await decideRequest('r', form(approve))).error).toMatch(/נשמרה/u);
   });
 
   it('refreshes when another admin already decided, and reports other errors', async () => {
-    const refresh = vi.fn(broken);
+    const refresh = failRefresh();
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(404));
-    expect((await decideRequest('r', form(approve), refresh)).error).toBe(
-      'הבקשה כבר טופלה. הרשימה רועננה.',
-    );
+    expect((await decideRequest('r', form(approve))).error).toBe('הבקשה כבר טופלה. הרשימה רועננה.');
     expect(refresh).toHaveBeenCalledOnce();
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(403));
-    expect((await decideRequest('r', form(approve), ok)).error).toBe(new DataError(403).message);
+    expect((await decideRequest('r', form(approve))).error).toBe(new DataError(403).message);
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new Error('x'));
-    expect((await decideRequest('r', form(approve), ok)).error).toMatch(/תקלה במערכת/u);
+    expect((await decideRequest('r', form(approve))).error).toMatch(/תקלה במערכת/u);
   });
 });

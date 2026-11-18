@@ -6,6 +6,7 @@ import { ThresholdsPage } from '../thresholds-page.tsx';
 import * as api from '../api/proposals.ts';
 import * as dates from '../../../lib/dates.ts';
 import { DataError } from '../../../data/client.ts';
+import * as rpc from '../../../data/rpc.ts';
 const proposal: api.Proposal = {
   id: 'proposal-1',
   valid_from: '2026-11-16',
@@ -45,7 +46,27 @@ function page(proposals: api.Proposal[] = [proposal], thresholds = [threshold]) 
     { initialEntries: ['/'] },
   );
   render(<RouterProvider router={router} />);
+  // A decision reloads the list through the screen data, not through the route loader.
+  vi.spyOn(api, 'loadProposals').mockImplementation(() => Promise.resolve(data));
   return data;
+}
+/** The real decideProposal runs against a stubbed database that empties the list. */
+function decideInDatabase(data: { proposals: api.Proposal[] }, outcome: unknown = null) {
+  return vi.spyOn(rpc, 'rpc').mockImplementation(() => {
+    data.proposals = [];
+    return outcome instanceof Error ? Promise.reject(outcome) : Promise.resolve(outcome);
+  });
+}
+function expectSent(
+  decide: ReturnType<typeof decideInDatabase>,
+  approve: boolean,
+  note: string | null,
+) {
+  expect(decide).toHaveBeenCalledWith(
+    'decide_threshold_proposal',
+    { proposal: 'proposal-1', approve, note },
+    expect.anything(),
+  );
 }
 async function approveDialog() {
   await userEvent.click(await screen.findByRole('button', { name: 'אישור הספים' }));
@@ -69,16 +90,12 @@ describe('monthly threshold decisions', () => {
     expect(screen.queryByRole('table')).toBeNull();
   });
   it('approves only from the dialog that repeats the amounts', async () => {
-    const data = page();
-    const decide = vi.spyOn(api, 'decideProposal').mockImplementation(() => {
-      data.proposals = [];
-      return Promise.resolve();
-    });
+    const decide = decideInDatabase(page());
     const form = await approveDialog();
     expect(within(form).getByText(/100,400/)).toBeDefined();
     expect(decide).not.toHaveBeenCalled();
     await userEvent.click(within(form).getByRole('button', { name: 'אישור הספים' }));
-    expect(decide).toHaveBeenCalledWith('proposal-1', true, null);
+    expectSent(decide, true, null);
     expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
   });
   it('keeps an error in the dialog and the proposal on screen', async () => {
@@ -90,21 +107,13 @@ describe('monthly threshold decisions', () => {
     expect(screen.getByRole('table')).toBeDefined();
   });
   it('refreshes when another admin already decided the proposal', async () => {
-    const data = page();
-    vi.spyOn(api, 'decideProposal').mockImplementation(() => {
-      data.proposals = [];
-      return Promise.reject(new DataError(404));
-    });
+    decideInDatabase(page(), new DataError(404));
     const form = await approveDialog();
     await userEvent.click(within(form).getByRole('button', { name: 'אישור הספים' }));
     expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
   });
   it('rejects only with a reason, then refreshes', async () => {
-    const data = page();
-    const decide = vi.spyOn(api, 'decideProposal').mockImplementation(() => {
-      data.proposals = [];
-      return Promise.resolve();
-    });
+    const decide = decideInDatabase(page());
     await userEvent.click(await screen.findByRole('button', { name: 'דחייה' }));
     const form = screen.getByRole('form', { name: 'דחיית ההצעה לספים מ-16.11.2026' });
     await userEvent.click(within(form).getByRole('button', { name: 'דחיית ההצעה' }));
@@ -112,7 +121,7 @@ describe('monthly threshold decisions', () => {
     expect(decide).not.toHaveBeenCalled();
     await userEvent.type(within(form).getByRole('textbox', { name: /נימוק/ }), 'המדד תוקן');
     await userEvent.click(within(form).getByRole('button', { name: 'דחיית ההצעה' }));
-    expect(decide).toHaveBeenCalledWith('proposal-1', false, 'המדד תוקן');
+    expectSent(decide, false, 'המדד תוקן');
     expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
   });
   it('shows a failed rejection in the dialog and keeps the reason', async () => {

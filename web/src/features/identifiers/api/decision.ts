@@ -1,8 +1,9 @@
 import { errorText } from '../../../data/errors.ts';
 import { DataError } from '../../../data/client.ts';
-import { decideCandidate } from './candidates.ts';
+import { CANDIDATES_KEY, decideCandidate } from './candidates.ts';
+import { refreshScreen } from '../../../data/screen-data.ts';
 export const INITIAL_DECISION = { error: '', message: '', committed: false };
-export async function decide(id: string, form: FormData, refresh: () => Promise<void>) {
+export async function decide(id: string, form: FormData) {
   const decision = form.get('decision');
   if (decision !== 'accept' && decision !== 'dismiss')
     return { ...INITIAL_DECISION, error: 'יש לבחור החלטה.' };
@@ -19,7 +20,7 @@ export async function decide(id: string, form: FormData, refresh: () => Promise<
     message = 'המועמד כבר טופל.';
   }
   try {
-    await refresh();
+    await refreshScreen(CANDIDATES_KEY);
   } catch {
     message += ' יש לרענן את הרשימה לפני פעולה נוספת.';
   }

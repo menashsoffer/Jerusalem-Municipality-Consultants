@@ -2,6 +2,10 @@ import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
 import { requestSchema, parseDecision, type DecisionField } from '../model/decision.ts';
 import { errorText } from '../../../data/errors.ts';
 import { DataError } from '../../../data/client.ts';
+import { refreshScreen } from '../../../data/screen-data.ts';
+/** The screen's key in the screen data (state-management-spec-he.md 5.3). */
+export const CATEGORY_REQUESTS_KEY = ['category-requests'] as const;
+const refresh = () => refreshScreen(CATEGORY_REQUESTS_KEY);
 export async function loadRequests() {
   const who = await requireRoles(['admin']);
   const [requests, categories] = await Promise.all([
@@ -31,11 +35,7 @@ function failure(error: unknown): DecisionState {
   };
 }
 
-export async function decideRequest(
-  id: string,
-  form: FormData,
-  refresh: () => Promise<void>,
-): Promise<DecisionState> {
+export async function decideRequest(id: string, form: FormData): Promise<DecisionState> {
   const decision = parseDecision(form);
   if ('error' in decision)
     return { ...INITIAL_DECISION, field: { [decision.field]: decision.error } };

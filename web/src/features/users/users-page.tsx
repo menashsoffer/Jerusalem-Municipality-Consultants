@@ -4,7 +4,9 @@ import { Button } from '../../ui/button.tsx';
 import { EmptyState } from '../../ui/empty-state.tsx';
 import { PageHeader } from '../../ui/page-header.tsx';
 import { Skeleton } from '../../ui/skeleton.tsx';
-import { loadUsers } from './api/users.ts';
+import { loadUsers, USERS_KEY } from './api/users.ts';
+import { getScreenData } from '../../data/screen-data.ts';
+import { useScreenData } from '../../data/react-screen-data.ts';
 import { activeGrants, availableUnits, mayRevoke } from './model/permissions.ts';
 import { ProfileReview } from './components/profile-review.tsx';
 import { GRANT_DIALOG, GrantDialog } from './components/grant-form.tsx';
@@ -12,7 +14,7 @@ import { UsersTable } from './components/users-table.tsx';
 import { ChangeRequests } from './components/change-review.tsx';
 import styles from './components/users.module.css';
 
-export const loader = loadUsers;
+export const loader = () => getScreenData(USERS_KEY, loadUsers);
 type Data = Awaited<ReturnType<typeof loader>>;
 const TITLE = 'משתמשים ותפקידים';
 
@@ -70,7 +72,7 @@ function Requests({
 }
 
 export function UsersPage() {
-  const data = useLoaderData<typeof loader>();
+  const data = useScreenData(USERS_KEY, useLoaderData<typeof loader>(), loadUsers).value;
   const navigation = useNavigation();
   const [params] = useSearchParams();
   const [grantTo, setGrantTo] = useState('');
