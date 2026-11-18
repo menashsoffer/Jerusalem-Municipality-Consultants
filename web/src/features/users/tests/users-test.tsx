@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -52,6 +52,14 @@ function page(value: ReturnType<typeof data>) {
   );
   render(<RouterProvider router={router} />);
 }
+beforeAll(() => {
+  HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+    this.open = true;
+  };
+  HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+    this.open = false;
+  };
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -104,40 +112,87 @@ describe('pending change requests', () => {
   });
   it('leaves the section out where change requests are not available', async () => {
     page(data());
-    expect(await screen.findByRole('heading', { name: 'בקשות גישה ממתינות' })).toBeDefined();
+    expect(await screen.findByRole('heading', { name: 'בקשות גישה' })).toBeDefined();
     expect(screen.queryByRole('heading', { name: 'בקשות שינוי ממתינות' })).toBeNull();
   });
 });
-describe('users and roles', () => {
-  it('shows pending context and requires a reason before rejection', async () => {
+const ADMIN_GRANT: api.GrantRow = {
+  id: 'grant',
+  user_id: 'admin',
+  role: 'viewer',
+  unit_id: 'own',
+  expires_at: null,
+  revoked_at: null,
+};
+describe('access requests', () => {
+  it('opens on the requests and rejects only with a reason', async () => {
     const value = data();
     page(value);
     const review = vi.spyOn(api, 'reviewProfile').mockResolvedValue();
-    await userEvent.click(await screen.findByRole('button', { name: 'דחיית הבקשה' }));
-    const note = screen.getByRole('textbox', { name: 'נימוק להחלטה' });
+    expect(await screen.findByRole('link', { name: 'בקשות ממתינות (1)' })).toBeDefined();
+    const card = screen.getByRole('article', { name: 'בקשת גישה של משתמש לדוגמה' });
+    await userEvent.click(within(card).getByRole('button', { name: 'דחיית הבקשה' }));
+    const dialog = screen.getByRole('form', { name: 'דחיית הבקשה של משתמש לדוגמה' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'דחיית הבקשה' }));
+    const note = within(dialog).getByRole('textbox', { name: /נימוק/ });
     await waitFor(() => {
       expect(note.getAttribute('aria-invalid')).toBe('true');
     });
-    expect(document.activeElement).toBe(note);
     expect(review).not.toHaveBeenCalled();
+    await userEvent.type(note, 'לא עובד ביחידה');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'דחיית הבקשה' }));
+    expect(review).toHaveBeenCalledWith('target', 'rejected', 'לא עובד ביחידה');
   });
   it('does not present self-approval controls', async () => {
     const value = data();
     value.who.userId = 'target';
     page(value);
     expect(await screen.findByText('אין לאשר את הבקשה של עצמך.')).toBeDefined();
-    expect(screen.queryByRole('button', { name: 'אישור הבקשה' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'אישור הגישה' })).toBeNull();
   });
-  it('approves through the RPC and refreshes the pending list', async () => {
+  it('approves with the chosen role and the request unit in one step', async () => {
     const value = data();
     page(value);
-    const review = vi.spyOn(api, 'reviewProfile').mockImplementation(() => {
+    const approve = vi.spyOn(api, 'approveProfile').mockImplementation(() => {
       value.profiles = value.profiles.map((p) => ({ ...p, status: 'active' }));
       return Promise.resolve();
     });
-    await userEvent.click(await screen.findByRole('button', { name: 'אישור הבקשה' }));
-    expect(await screen.findByRole('heading', { name: 'אין בקשות ממתינות' })).toBeDefined();
-    expect(review).toHaveBeenCalledWith('target', 'active', '');
+    await userEvent.click(await screen.findByRole('button', { name: 'אישור הגישה' }));
+    const dialog = screen.getByRole('form', { name: 'אישור הגישה של משתמש לדוגמה' });
+    expect(within(dialog).getByRole<HTMLSelectElement>('combobox', { name: /יחידה/ }).value).toBe(
+      'own',
+    );
+    await userEvent.selectOptions(
+      within(dialog).getByRole('combobox', { name: 'תפקיד' }),
+      'editor',
+    );
+    await userEvent.click(within(dialog).getByRole('button', { name: 'אישור ומתן התפקיד' }));
+    expect(approve).toHaveBeenCalledWith({
+      userId: 'target',
+      role: 'editor',
+      unit: 'own',
+      requestUnit: 'own',
+    });
+    expect(await screen.findByRole('link', { name: 'בקשות ממתינות (0)' })).toBeDefined();
+  });
+});
+describe('users and roles', () => {
+  it('opens on the users when nothing waits, and searches by name or email', async () => {
+    const value = data();
+    value.profiles = [
+      { ...target, status: 'active' },
+      { ...target, user_id: 'admin', first_name: 'מנהל', email: 'boss@x.test', status: 'active' },
+    ];
+    page(value);
+    expect(await screen.findByRole('link', { name: 'משתמשים (2)' })).toBeDefined();
+    expect(screen.getAllByRole('row')).toHaveLength(3);
+    await userEvent.type(screen.getByRole('searchbox'), 'BOSS');
+    await waitFor(() => {
+      expect(screen.getAllByRole('row')).toHaveLength(2);
+    });
+    await userEvent.clear(screen.getByRole('searchbox'));
+    await userEvent.type(screen.getByRole('searchbox'), 'אין כזה');
+    expect(await screen.findByRole('heading', { name: 'לא נמצאו משתמשים' })).toBeDefined();
   });
   it('offers a manager only viewer/editor and managed units', async () => {
     const value = data();
@@ -148,43 +203,43 @@ describe('users and roles', () => {
       grants: [{ role: 'unit_manager', unitId: 'own' }],
     };
     page(value);
-    await screen.findByRole('heading', { name: 'משתמשים ותפקידים' });
-    const role = screen.getByRole('combobox', { name: 'תפקיד' });
+    await userEvent.click(await screen.findByRole('button', { name: 'מתן תפקיד' }));
+    const dialog = screen.getByRole('form', { name: 'מתן תפקיד' });
+    const role = within(dialog).getByRole('combobox', { name: 'תפקיד' });
     expect(within(role).queryByRole('option', { name: 'מנהל מערכת' })).toBeNull();
-    expect(
-      within(screen.getByRole('combobox', { name: 'יחידה' })).queryByRole('option', {
-        name: 'יחידה ב',
-      }),
-    ).toBeNull();
+    const unit = within(dialog).getByRole('combobox', { name: /יחידה/ });
+    expect(within(unit).queryByRole('option', { name: 'יחידה ב' })).toBeNull();
   });
-  it('announces permission errors when a grant is rejected by the server', async () => {
+  it('gives a role to the row it was opened from, and shows a refusal', async () => {
     const value = data();
     page(value);
     vi.spyOn(api, 'addGrant').mockRejectedValue(new DataError(403));
-    await userEvent.selectOptions(await screen.findByRole('combobox', { name: 'משתמש' }), 'admin');
-    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'יחידה' }), 'own');
-    await userEvent.click(screen.getByRole('button', { name: 'הענקת התפקיד' }));
-    expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
+    await userEvent.click(await screen.findByRole('link', { name: /משתמשים/ }));
+    await userEvent.click(await screen.findByRole('button', { name: 'מתן תפקיד למנהל לדוגמה' }));
+    const dialog = screen.getByRole('form', { name: 'מתן תפקיד' });
+    expect(within(dialog).getByRole<HTMLSelectElement>('combobox', { name: 'משתמש' }).value).toBe(
+      'admin',
+    );
+    await userEvent.selectOptions(within(dialog).getByRole('combobox', { name: /יחידה/ }), 'own');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'מתן התפקיד' }));
+    expect((await within(dialog).findByRole('alert')).textContent).toContain('אין לך הרשאה');
   });
-  it('removes a role only after server confirmation', async () => {
+  it('removes a role only after confirming', async () => {
     const value = data();
-    value.grants = [
-      {
-        id: 'grant',
-        user_id: 'admin',
-        role: 'viewer',
-        unit_id: 'own',
-        expires_at: null,
-        revoked_at: null,
-      },
-    ];
+    value.grants = [ADMIN_GRANT];
     page(value);
     const remove = vi.spyOn(api, 'removeGrant').mockImplementation(() => {
       value.grants = [];
       return Promise.resolve();
     });
-    await userEvent.click(await screen.findByRole('button', { name: /הסרת תפקיד/ }));
-    expect(await screen.findByRole('heading', { name: 'אין תפקידים פעילים להצגה' })).toBeDefined();
+    await userEvent.click(await screen.findByRole('link', { name: /משתמשים/ }));
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'הסרת התפקיד צופה · יחידה א ממנהל לדוגמה' }),
+    );
+    expect(remove).not.toHaveBeenCalled();
+    expect(screen.getByText('להסיר את התפקיד צופה · יחידה א ממנהל לדוגמה?')).toBeDefined();
+    await userEvent.click(screen.getByRole('button', { name: 'הסרת התפקיד' }));
     expect(remove).toHaveBeenCalledWith('grant');
+    expect(await screen.findByText('אין תפקיד')).toBeDefined();
   });
 });

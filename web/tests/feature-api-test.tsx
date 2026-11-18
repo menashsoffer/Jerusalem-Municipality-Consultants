@@ -10,7 +10,12 @@ import { decide } from '../src/features/identifiers/api/decision.ts';
 import { loadControl } from '../src/features/load-control/api/control.ts';
 import { decideProposal, loadProposals } from '../src/features/thresholds/api/proposals.ts';
 import { decideReview } from '../src/features/users/api/review.ts';
-import { addGrant, loadUsers, removeGrant } from '../src/features/users/api/users.ts';
+import {
+  addGrant,
+  approveProfile,
+  loadUsers,
+  removeGrant,
+} from '../src/features/users/api/users.ts';
 import { decideChange } from '../src/features/users/api/changes.ts';
 
 vi.mock('../src/data/rpc.ts', async (original) => ({
@@ -56,6 +61,25 @@ describe('loaders check the role and read the right rows', () => {
       table === 'access_change_requests' ? Promise.reject(new Error('404')) : Promise.resolve([]),
     );
     expect((await loadUsers()).changes).toBeNull();
+  });
+
+  it('approves with a role in one step, or the old way while that is not deployed', async () => {
+    const viewer = { userId: 'u', role: 'viewer' as const, unit: 'a', requestUnit: 'a' };
+    await approveProfile({ ...viewer, role: 'editor' });
+    expect(vi.mocked(rpc.rpc).mock.calls.at(-1)?.slice(0, 2)).toEqual([
+      'approve_profile',
+      { target_user: 'u', wanted_role: 'editor', target_unit: 'a', note: null },
+    ]);
+    vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(404));
+    await approveProfile(viewer);
+    expect(vi.mocked(rpc.rpc).mock.calls.at(-1)?.slice(0, 2)).toEqual([
+      'decide_profile',
+      { target_user: 'u', decision: 'active', note: null },
+    ]);
+    vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(404));
+    await expect(approveProfile({ ...viewer, role: 'editor' })).rejects.toThrow();
+    vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(403));
+    await expect(approveProfile(viewer)).rejects.toThrow();
   });
 
   it('decides a change request, sending an empty note as none', async () => {
