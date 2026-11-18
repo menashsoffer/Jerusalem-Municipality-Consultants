@@ -1,6 +1,7 @@
-// Editing a saved request and cancelling one that is no longer relevant (owner's request,
-// 18.11). Nothing is deleted: a cancelled request keeps its checks and approaches, with the
-// reason, and leaves the list. The database decides who may change which unit's request.
+// Cancelling a saved request that is no longer relevant (owner's request, 18.11). Nothing is
+// deleted: a cancelled request keeps its checks and approaches, with the reason, and leaves
+// the list. Editing opens the request in the details form (request-editor.tsx). The database
+// decides who may change which unit's request.
 import { useActionState } from 'react';
 import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
@@ -8,11 +9,9 @@ import { FormField } from '../../../ui/form-field.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { DataError } from '../../../data/client.ts';
 import { check, decisionNote } from '../../../lib/rules/forms.ts';
-import { cancelRequest, updateRequest, type SavedRequest } from '../api/saved.ts';
-import { readDraft } from '../model/draft.ts';
+import { cancelRequest, type SavedRequest } from '../api/saved.ts';
 import styles from './route-check.module.css';
 
-export const EDIT_REQUEST = 'edit-request';
 export const CANCEL_REQUEST = 'cancel-request';
 
 /** Draft and submitted requests can be edited; an approved one only cancelled. */
@@ -39,78 +38,6 @@ function useSave(dialogId: string) {
     closeDialog(dialogId);
     return '';
   };
-}
-
-/** The same fields as a new request, filled with the saved details. */
-function DetailFields({ request }: { request: SavedRequest }) {
-  return (
-    <>
-      <input type="hidden" name="unit_id" value={request.unit_id} />
-      <FormField
-        field={{ label: 'נושא' }}
-        input={{ name: 'subject', maxLength: 500, required: true, defaultValue: request.subject }}
-      />
-      <FormField
-        field={{ label: 'אומדן בש״ח' }}
-        input={{
-          name: 'estimated_value',
-          inputMode: 'decimal',
-          required: true,
-          dir: 'ltr',
-          defaultValue: String(request.estimated_value),
-        }}
-      />
-      <label className={styles.check}>
-        <input
-          type="checkbox"
-          name="value_includes_vat"
-          defaultChecked={request.value_includes_vat}
-        />{' '}
-        האומדן כולל מע״מ
-      </label>
-      <FormField
-        field={{ label: 'פטור מבוקש', hint: 'אם יש, למשל 3(8).' }}
-        input={{
-          name: 'requested_exemption',
-          maxLength: 10,
-          dir: 'ltr',
-          defaultValue: request.requested_exemption ?? '',
-        }}
-      />
-    </>
-  );
-}
-
-export function EditRequest({ request }: { request: SavedRequest }) {
-  const save = useSave(EDIT_REQUEST);
-  const [error, action, pending] = useActionState(async (_: string, form: FormData) => {
-    const fields = readDraft(form);
-    if (typeof fields === 'string') return fields;
-    const { estimated_value, value_includes_vat, requested_exemption } = fields.draft;
-    const draft = {
-      subject: fields.subject,
-      estimated_value,
-      value_includes_vat,
-      requested_exemption,
-    };
-    return save(() => updateRequest(request.id, draft));
-  }, '');
-  return (
-    <form action={action} aria-label="עריכת הבקשה" className={styles.form}>
-      <p className={styles.summary}>בדיקות קודמות נשמרות כפי שהיו. אחרי השינוי כדאי לבדוק שוב.</p>
-      {error && (
-        <Notice tone="error" title="הבקשה לא עודכנה.">
-          {error}
-        </Notice>
-      )}
-      <DetailFields request={request} />
-      <FormActions>
-        <Button type="submit" pending={pending}>
-          שמירת השינויים
-        </Button>
-      </FormActions>
-    </form>
-  );
 }
 
 interface Cancelling {
