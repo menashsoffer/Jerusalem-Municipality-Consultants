@@ -156,7 +156,10 @@ describe('engagement request page', () => {
     expect(pill('הספקים').getAttribute('aria-current')).toBe('step');
     expect(pill('תוצאה').disabled).toBe(true);
     await userEvent.click(pill('פרטי הבקשה'));
-    expect(screen.getByRole('heading', { name: 'פרטי הבקשה' })).toBeDefined();
+    // Focus moves from the pill to the step heading on the next frame; wait before typing.
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'פרטי הבקשה' }));
+    });
     expect(pill('פרטי הבקשה').getAttribute('aria-current')).toBe('step');
     await userEvent.type(screen.getByLabelText(/^אומדן בש״ח/u), '120000');
     await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול בלבד' }));
