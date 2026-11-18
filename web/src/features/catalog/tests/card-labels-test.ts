@@ -1,34 +1,12 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 
-import {
-  contactSummary,
-  venueFacts,
-  inactiveLine,
-  supplierFields,
-  supplierBadges,
-} from '../model/card-labels.ts';
+import { venueFacts, inactiveLine, supplierFields } from '../model/card-labels.ts';
 import type { Membership } from '../../../catalog-model.ts';
 
-it('answers the identifier and activity questions with separate badges', () => {
-  assert.deepEqual(
-    supplierBadges({ identifier: null, inactive: null }).map((b) => b.text),
-    ['אין ח.פ. מאושר'],
-  );
+it('explains why a supplier is inactive', () => {
   const inactive = { reason: 'מונתה לשופטת', source: 'פרסום', changedOn: '2026-09-01' };
-  assert.deepEqual(
-    supplierBadges({ identifier: 'pending', inactive }).map((b) => [b.tone, b.text]),
-    [
-      ['warning', 'ח.פ. ממתין לאישור'],
-      ['danger', 'לא פעיל'],
-    ],
-  );
   assert.equal(inactiveLine(inactive), 'סיבה: מונתה לשופטת · מקור: פרסום · מתאריך 2026-09-01');
-});
-
-it('says which contact kinds exist', () => {
-  assert.equal(contactSummary(['email', 'phone']), 'יש במאגר: טלפון ודוא״ל');
-  assert.equal(contactSummary(['address']), 'אין טלפון או דוא״ל במאגר');
 });
 
 describe('supplier fields on the card', () => {

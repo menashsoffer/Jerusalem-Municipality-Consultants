@@ -1,13 +1,6 @@
 import { Link } from 'react-router';
 import type { Supplier } from '../../../catalog-model.ts';
-import {
-  contactSummary,
-  inactiveLine,
-  supplierBadges,
-  supplierFields,
-} from '../model/card-labels.ts';
-import { Button } from '../../../ui/button.tsx';
-import { SHORTLIST_MAX, toggleShortlist } from '../../../lib/shortlist.ts';
+import { inactiveLine, supplierFields } from '../model/card-labels.ts';
 import { VenueFacts } from './venue-facts.tsx';
 import styles from './catalog.module.css';
 const FIELDS_SHOWN = 3;
@@ -28,40 +21,12 @@ interface Props {
   supplier: Supplier;
   today: string;
   deferred: boolean;
-  /** Whether the card is in the request, or null when the request is full without it. */
-  picked: boolean | null;
 }
-/** The database blocks approaches to an inactive supplier; the disabled button explains it. */
-function PickButton({ supplier, picked }: Pick<Props, 'supplier' | 'picked'>) {
-  if (picked === null) {
-    return (
-      <Button variant="secondary" disabled>
-        הבקשה מלאה ({String(SHORTLIST_MAX)} ספקים)
-      </Button>
-    );
-  }
-  if (supplier.inactive && !picked) {
-    return (
-      <Button variant="secondary" disabled aria-describedby={`inactive-${supplier.id}`}>
-        הוספה לבקשה
-      </Button>
-    );
-  }
-  return (
-    <Button
-      variant="secondary"
-      className={picked ? styles.picked : ''}
-      aria-pressed={picked}
-      aria-label={`בקשת התקשרות: ${supplier.name}`}
-      onClick={() => {
-        toggleShortlist(supplier.id);
-      }}
-    >
-      {picked ? 'בבקשה ✓' : 'הוספה לבקשה'}
-    </Button>
-  );
-}
-export function SupplierCard({ supplier, today, deferred, picked }: Props) {
+/**
+ * The card is a heading: who the supplier is and what they do. The identifier, contacts and the
+ * request button live on the supplier screen, one click away.
+ */
+export function SupplierCard({ supplier, today, deferred }: Props) {
   return (
     <li className={deferred ? styles.deferred : styles.item}>
       <article className={styles.card}>
@@ -75,13 +40,9 @@ export function SupplierCard({ supplier, today, deferred, picked }: Props) {
               {supplier.name}
             </Link>
           </h3>
-          <ul className={styles.badges} aria-label="מצב הספק">
-            {supplierBadges(supplier).map((badge) => (
-              <li key={badge.text} className={[styles.badge, styles[badge.tone]].join(' ')}>
-                {badge.text}
-              </li>
-            ))}
-          </ul>
+          {supplier.inactive && (
+            <span className={[styles.badge, styles.danger].join(' ')}>לא פעיל</span>
+          )}
         </header>
         {supplier.inactive && (
           <p role="note" id={`inactive-${supplier.id}`} className={styles.inactive}>
@@ -90,10 +51,6 @@ export function SupplierCard({ supplier, today, deferred, picked }: Props) {
         )}
         <Fields supplier={supplier} today={today} />
         <VenueFacts venue={supplier.venue} />
-        <footer className={styles.cardFoot}>
-          <span className={styles.contact}>{contactSummary(supplier.contactKinds)}</span>
-          <PickButton supplier={supplier} picked={picked} />
-        </footer>
       </article>
     </li>
   );
