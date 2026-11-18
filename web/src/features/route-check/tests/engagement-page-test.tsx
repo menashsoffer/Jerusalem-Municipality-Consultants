@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { EngagementPage } from '../engagement-page.tsx';
@@ -8,7 +8,9 @@ import { DataError } from '../../../data/client.ts';
 import * as engagement from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { loader } from '../engagement-page.tsx';
+import * as savedApi from '../api/saved.ts';
 import type { SavedRequest } from '../api/saved.ts';
+import * as rpc from '../../../data/rpc.ts';
 import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 type PageData = Awaited<ReturnType<typeof loader>>;
 
@@ -104,6 +106,51 @@ describe('engagement request page', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'רישום פנייה לספקים' }));
     expect(record).toHaveBeenCalledWith(REQUEST, [supplier.id]);
     expect(await screen.findByText('נרשמו 1 פניות להיום.')).toBeDefined();
+  });
+
+  // 18.11.2026: a saved request reached "בקשות שמורות" only after a page refresh.
+  it('shows a saved request in the saved list at once and keeps the result open', async () => {
+    replaceShortlist([supplier.id]);
+    page([{ id: 'u1', name: 'אגף 1' }], { saved: [] });
+    const row: SavedRequest = {
+      id: REQUEST,
+      unit_id: 'u1',
+      subject: 'ייעוץ ארגוני',
+      estimated_value: 120000,
+      value_includes_vat: false,
+      requested_exemption: null,
+      status: 'draft',
+      created_at: '2026-11-18T10:00:00Z',
+      updated_at: '2026-11-18T10:00:00Z',
+      lastStatus: 'needs_review',
+      changedSinceCheck: false,
+    };
+    const who: rpc.Identity = {
+      userId: 'me',
+      access: {
+        state: 'active',
+        member: true,
+        admin: false,
+        editor: true,
+        manager: false,
+        grants: [{ role: 'editor', unitId: 'u1' }],
+      },
+    };
+    vi.spyOn(rpc, 'identity').mockResolvedValue(who);
+    const reload = vi.spyOn(savedApi, 'loadSaved').mockResolvedValue([row]);
+    vi.spyOn(engagement, 'saveRequest').mockResolvedValue(REQUEST);
+    vi.spyOn(check, 'checkRoute').mockResolvedValue({ ...result, id: 9 });
+    expect(screen.getByRole('heading', { name: 'אין בקשות שמורות' })).toBeDefined();
+    await fill();
+    await userEvent.type(screen.getByLabelText(/^נושא/u), 'ייעוץ ארגוני');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /^יחידה/u }), 'u1');
+    await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול ושמירה ביחידה' }));
+    const table = await screen.findByRole('table', { name: 'בקשות שמורות ביחידות שלך' });
+    expect(within(table).getByText('ייעוץ ארגוני')).toBeDefined();
+    expect(reload).toHaveBeenCalledWith(who);
+    // The shortlist is empty now, yet the new request's result stays on screen.
+    expect(screen.getByRole('heading', { name: 'תוצאה' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'רישום פנייה לספקים' })).toBeDefined();
   });
 
   // The 18.11.2026 incident: the request was saved, the check failed, and pressing the button

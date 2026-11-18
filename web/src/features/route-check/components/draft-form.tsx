@@ -9,6 +9,7 @@ import { errorText } from '../../../data/errors.ts';
 import { checkRoute } from '../api/check.ts';
 import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
+import { useReloadSaved } from './saved-list.tsx';
 import { readDraft, type DraftFields } from '../model/draft.ts';
 import type { CheckResult } from '../model/result.ts';
 import styles from './route-check.module.css';
@@ -96,6 +97,7 @@ async function checkDraft({ draft }: DraftFields, run: { today: string; complete
  */
 function useCheck(today: string, complete: Complete) {
   const [saved, setSaved] = useState<string | null>(null);
+  const reload = useReloadSaved();
   const run = { today, complete };
   const state = useActionState(async (_: Outcome | null, form: FormData) => {
     if (saved) return checkSaved(saved, run);
@@ -111,7 +113,10 @@ function useCheck(today: string, complete: Complete) {
     setSaved(id);
     // The picked suppliers now belong to the saved request, so the catalog tray closes.
     replaceShortlist([]);
-    return checkSaved(id, run, true);
+    const outcome = await checkSaved(id, run, true);
+    // After the check, so the new row shows its result too.
+    await reload();
+    return outcome;
   }, NONE);
   return { saved, state };
 }

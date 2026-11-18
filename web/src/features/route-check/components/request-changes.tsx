@@ -2,7 +2,6 @@
 // 18.11). Nothing is deleted: a cancelled request keeps its checks and approaches, with the
 // reason, and leaves the list. The database decides who may change which unit's request.
 import { useActionState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
@@ -11,6 +10,7 @@ import { DataError } from '../../../data/client.ts';
 import { check, decisionNote } from '../../../lib/rules/forms.ts';
 import { cancelRequest, updateRequest, type SavedRequest } from '../api/saved.ts';
 import { readDraft } from '../model/draft.ts';
+import { useReloadSaved } from './saved-list.tsx';
 import styles from './route-check.module.css';
 
 export const EDIT_REQUEST = 'edit-request';
@@ -31,7 +31,7 @@ function failure(cause: unknown): string {
 
 /** Runs `save`; on success closes the dialog and reloads the list. */
 function useSave(dialogId: string) {
-  const refresh = useRevalidator();
+  const reload = useReloadSaved();
   return async (save: () => Promise<void>): Promise<string> => {
     try {
       await save();
@@ -39,7 +39,7 @@ function useSave(dialogId: string) {
       return failure(cause);
     }
     closeDialog(dialogId);
-    await refresh.revalidate();
+    await reload();
     return '';
   };
 }
