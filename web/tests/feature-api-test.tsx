@@ -102,7 +102,7 @@ describe('loaders check the role and read the right rows', () => {
 
   it('identifier candidates', async () => {
     expect(await loadCandidates()).toEqual({ candidates: [], suppliers: [] });
-    expect(rpc.requireRoles).toHaveBeenCalledWith(['editor', 'unit_manager']);
+    expect(rpc.requireRoles).toHaveBeenCalledWith(['admin']);
   });
 
   it('threshold proposals', async () => {
@@ -122,13 +122,23 @@ describe('writes go to their database function', () => {
     await addGrant({ target_user: 'u', wanted_role: 'editor', target_unit: null });
     await removeGrant('g1');
     await decideCandidate('c1', true);
-    await decideProposal('p1', false);
+    await decideProposal('p1', false, 'סיבה');
     expect(vi.mocked(rpc.rpc).mock.calls.map((call) => call.slice(0, 2))).toEqual([
       ['grant_role', { target_user: 'u', wanted_role: 'editor', target_unit: null }],
       ['revoke_role', { grant_id: 'g1' }],
       ['decide_identifier_candidate', { candidate: 'c1', accept: true }],
-      ['decide_threshold_proposal', { proposal: 'p1', approve: false }],
+      ['decide_threshold_proposal', { proposal: 'p1', approve: false, note: 'סיבה' }],
     ]);
+  });
+  it('decides a proposal without the reason where the database is not migrated yet', async () => {
+    vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(404));
+    await decideProposal('p1', false, 'סיבה');
+    expect(vi.mocked(rpc.rpc).mock.calls.map((call) => call[1])).toEqual([
+      { proposal: 'p1', approve: false, note: 'סיבה' },
+      { proposal: 'p1', approve: false },
+    ]);
+    vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(403));
+    await expect(decideProposal('p1', true)).rejects.toThrow(DataError);
   });
 });
 

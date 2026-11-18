@@ -1286,6 +1286,7 @@ export interface PublicSchema {
       "decided_at": string | null;
       "decided_by": string | null;
       "threshold_id": string | null;
+      "decision_note": string | null;
     };
     Insert: {
       "id"?: string;
@@ -1300,6 +1301,7 @@ export interface PublicSchema {
       "decided_at"?: string | null;
       "decided_by"?: string | null;
       "threshold_id"?: string | null;
+      "decision_note"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -1314,6 +1316,7 @@ export interface PublicSchema {
       "decided_at"?: string | null;
       "decided_by"?: string | null;
       "threshold_id"?: string | null;
+      "decision_note"?: string | null;
     };
   };
   "thresholds": {

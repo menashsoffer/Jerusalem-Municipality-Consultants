@@ -78,7 +78,7 @@ describe('monthly threshold decisions', () => {
     expect(within(form).getByText(/100,400/)).toBeDefined();
     expect(decide).not.toHaveBeenCalled();
     await userEvent.click(within(form).getByRole('button', { name: 'אישור הספים' }));
-    expect(decide).toHaveBeenCalledWith('proposal-1', true);
+    expect(decide).toHaveBeenCalledWith('proposal-1', true, null);
     expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
   });
   it('keeps an error in the dialog and the proposal on screen', async () => {
@@ -99,22 +99,32 @@ describe('monthly threshold decisions', () => {
     await userEvent.click(within(form).getByRole('button', { name: 'אישור הספים' }));
     expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
   });
-  it('rejects after confirmation and refreshes', async () => {
+  it('rejects only with a reason, then refreshes', async () => {
     const data = page();
     const decide = vi.spyOn(api, 'decideProposal').mockImplementation(() => {
       data.proposals = [];
       return Promise.resolve();
     });
     await userEvent.click(await screen.findByRole('button', { name: 'דחייה' }));
-    await userEvent.click(screen.getByRole('button', { name: 'דחיית ההצעה' }));
-    expect(decide).toHaveBeenCalledWith('proposal-1', false);
+    const form = screen.getByRole('form', { name: 'דחיית ההצעה לספים מ-16.11.2026' });
+    await userEvent.click(within(form).getByRole('button', { name: 'דחיית ההצעה' }));
+    expect(await within(form).findByText('שדה חובה.')).toBeDefined();
+    expect(decide).not.toHaveBeenCalled();
+    await userEvent.type(within(form).getByRole('textbox', { name: /נימוק/ }), 'המדד תוקן');
+    await userEvent.click(within(form).getByRole('button', { name: 'דחיית ההצעה' }));
+    expect(decide).toHaveBeenCalledWith('proposal-1', false, 'המדד תוקן');
     expect(await screen.findByRole('heading', { name: 'אין הצעות ממתינות' })).toBeDefined();
   });
-  it('shows a failed rejection inside the confirmation', async () => {
+  it('shows a failed rejection in the dialog and keeps the reason', async () => {
     page();
     vi.spyOn(api, 'decideProposal').mockRejectedValue(new Error('network'));
     await userEvent.click(await screen.findByRole('button', { name: 'דחייה' }));
-    await userEvent.click(screen.getByRole('button', { name: 'דחיית ההצעה' }));
-    expect(await screen.findByText('לא ניתן לשמור את ההחלטה.')).toBeDefined();
+    const form = screen.getByRole('form', { name: 'דחיית ההצעה לספים מ-16.11.2026' });
+    await userEvent.type(within(form).getByRole('textbox', { name: /נימוק/ }), 'המדד תוקן');
+    await userEvent.click(within(form).getByRole('button', { name: 'דחיית ההצעה' }));
+    expect(await within(form).findByText('לא ניתן לשמור את ההחלטה.')).toBeDefined();
+    expect(within(form).getByRole<HTMLInputElement>('textbox', { name: /נימוק/ }).value).toBe(
+      'המדד תוקן',
+    );
   });
 });

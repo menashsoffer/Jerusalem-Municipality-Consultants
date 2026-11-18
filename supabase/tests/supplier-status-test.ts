@@ -111,8 +111,9 @@ describe('supplier status', () => {
     await db.exec(`insert into public.identifier_candidates
       (supplier_id, scheme, value, source, searched_name)
       values ('${SUPPLIER}', 'company', '512345679', 'companies_registrar', 'ספק')`);
-    // Candidates are visible to editors only, so a viewer still sees no identifier.
+    // Candidates are visible to administrators only (18.11.2026), so others still see none.
     assert.equal((await catalogRow(db, USERS.viewer))?.[10], null);
-    assert.equal((await catalogRow(db, USERS.editor))?.[10], 'pending');
+    assert.equal((await catalogRow(db, USERS.editor))?.[10], null);
+    assert.equal((await catalogRow(db, USERS.admin))?.[10], 'pending');
   });
 });

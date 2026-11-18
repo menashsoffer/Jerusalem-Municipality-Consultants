@@ -44,14 +44,11 @@ describe('admin overview counters', () => {
   });
 
   it('counts for a unit manager only the sign-ups of their own unit', async () => {
-    assert.deepEqual(await overview(db, USERS.manager), {
-      users_pending: 1,
-      identifiers_pending: 1,
-    });
+    assert.deepEqual(await overview(db, USERS.manager), { users_pending: 1 });
   });
 
-  it('gives an editor only the identifiers counter', async () => {
-    assert.deepEqual(await overview(db, USERS.editor), { identifiers_pending: 1 });
+  it('gives an editor no counter: supplier ID candidates are for administrators', async () => {
+    assert.deepEqual(await overview(db, USERS.editor), {});
   });
 
   it('gives no counter to a viewer, an auditor or someone not yet active', async () => {

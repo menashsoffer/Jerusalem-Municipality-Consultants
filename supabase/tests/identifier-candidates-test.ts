@@ -133,10 +133,12 @@ describe('identifier candidates', () => {
     assert.equal(await errorCode(call), '42501');
   });
 
-  it('shows candidates to editors and managers only', async () => {
+  it('shows candidates to administrators only (decision 18.11.2026)', async () => {
     const read = (user: string) =>
       as(db, user, () => count(db, 'select 1 from public.identifier_candidates'));
-    assert.equal(await read(USERS.editor), 2);
+    assert.equal(await read(USERS.admin), 2);
+    assert.equal(await read(USERS.editor), 0);
+    assert.equal(await read(USERS.manager), 0);
     assert.equal(await read(USERS.viewer), 0);
     assert.equal(await read(USERS.auditor), 0);
   });
@@ -144,19 +146,18 @@ describe('identifier candidates', () => {
   it('turns an accepted candidate into an identifier that still needs review', async () => {
     const [company] = (await save(db, [])).filter((c) => c.value === '515301596');
     assert.ok(company);
-    assert.equal(
-      await errorCode(decide(db, USERS.viewer, { id: company.id, accept: true })),
-      '42501',
-    );
-    await decide(db, USERS.editor, { id: company.id, accept: true });
+    for (const user of [USERS.viewer, USERS.editor, USERS.manager]) {
+      assert.equal(await errorCode(decide(db, user, { id: company.id, accept: true })), '42501');
+    }
+    await decide(db, USERS.admin, { id: company.id, accept: true });
     const added = await db.query<{ review_status: string; source: string; created_by: string }>(
       "select review_status, source, created_by from public.supplier_identifiers where value = '515301596'",
     );
     assert.deepEqual(added.rows, [
-      { review_status: 'needs_review', source: 'companies_registrar', created_by: USERS.editor },
+      { review_status: 'needs_review', source: 'companies_registrar', created_by: USERS.admin },
     ]);
     assert.equal(
-      await errorCode(decide(db, USERS.editor, { id: company.id, accept: true })),
+      await errorCode(decide(db, USERS.admin, { id: company.id, accept: true })),
       'P0002',
     );
     assert.equal((await save(db, [FOUND[0]])).length, 1, 'not offered again');
@@ -165,7 +166,7 @@ describe('identifier candidates', () => {
   it('keeps a dismissed candidate out of later results', async () => {
     const [nonprofit] = await save(db, []);
     assert.ok(nonprofit);
-    await decide(db, USERS.manager, { id: nonprofit.id, accept: false });
+    await decide(db, USERS.admin, { id: nonprofit.id, accept: false });
     assert.deepEqual(await save(db, [FOUND[1]]), []);
   });
 });

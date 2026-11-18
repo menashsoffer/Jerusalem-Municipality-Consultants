@@ -1,4 +1,5 @@
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { DataError } from '../../../data/client.ts';
 const amount = z.number().positive();
 export const thresholdSchema = z.object({
   id: z.string(),
@@ -31,6 +32,15 @@ export async function loadProposals() {
   ]);
   return { proposals, thresholds };
 }
-export async function decideProposal(id: string, approve: boolean): Promise<void> {
-  await rpc('decide_threshold_proposal', { proposal: id, approve }, z.string().nullable());
+const decided = z.string().nullable();
+/** A rejection carries its reason. 404 is either "already decided" or, before migration
+ * 20261118040000 reaches the database, a function without the note: one retry without it
+ * tells the two apart (the retry fails again with 404 when it was already decided). */
+export async function decideProposal(id: string, approve: boolean, note: string | null = null) {
+  try {
+    await rpc('decide_threshold_proposal', { proposal: id, approve, note }, decided);
+  } catch (error) {
+    if (!(error instanceof DataError && error.status === 404)) throw error;
+    await rpc('decide_threshold_proposal', { proposal: id, approve }, decided);
+  }
 }

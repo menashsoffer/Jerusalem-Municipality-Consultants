@@ -10,7 +10,7 @@ import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
 
 interface AdminRpc {
-  decide_threshold_proposal: { proposal: string; approve: boolean };
+  decide_threshold_proposal: { proposal: string; approve: boolean; note?: string | null };
   decide_profile: { target_user: string; decision: 'active' | 'rejected'; note: string | null };
   approve_profile: {
     target_user: string;

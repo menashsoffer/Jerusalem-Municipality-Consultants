@@ -1,9 +1,10 @@
 import { useActionState } from 'react';
 import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
-import { ConfirmDialog } from '../../../ui/confirm-dialog.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
+import { FormField } from '../../../ui/form-field.tsx';
+import { check, decisionNote } from '../../../lib/rules/forms.ts';
 import { Notice } from '../../../ui/notice.tsx';
 import { DataError } from '../../../data/client.ts';
 import { dayOf } from '../../../lib/dates.ts';
@@ -16,9 +17,9 @@ export const rejectId = (id: string) => `reject-thresholds-${id}`;
 /** Runs a decision; '' on success. 404 means another admin already decided it. */
 function useDecide(id: string) {
   const revalidator = useRevalidator();
-  return async (approve: boolean): Promise<string> => {
+  return async (approve: boolean, note: string | null = null): Promise<string> => {
     try {
-      await decideProposal(id, approve);
+      await decideProposal(id, approve, note);
     } catch (error) {
       if (error instanceof DataError && error.status === 404) {
         await revalidator.revalidate().catch(() => undefined);
@@ -65,15 +66,52 @@ export function ApproveDialog({ proposal }: { proposal: Proposal }) {
   );
 }
 
+interface Rejection {
+  error: string;
+  noteError: string;
+  note: string;
+  attempt: number;
+}
+const formNote = (form: FormData) => {
+  const value = form.get('note');
+  return typeof value === 'string' ? value : '';
+};
+
+/** "דחייה" needs a reason; the proposal keeps it. The current thresholds stay in force. */
 export function RejectDialog({ proposal }: { proposal: Proposal }) {
   const decide = useDecide(proposal.id);
+  const [state, action, pending] = useActionState(
+    async (previous: Rejection, form: FormData): Promise<Rejection> => {
+      const note = formNote(form);
+      const next = { error: '', noteError: '', note, attempt: previous.attempt + 1 };
+      const checked = check(decisionNote('rejected'), { note });
+      if (!checked.ok) return { ...next, noteError: checked.errors.note ?? '' };
+      const error = await decide(false, checked.value.note.trim());
+      if (!error) {
+        const dialog = document.getElementById(rejectId(proposal.id));
+        if (dialog instanceof HTMLDialogElement) dialog.close();
+      }
+      return { ...next, error };
+    },
+    { error: '', noteError: '', note: '', attempt: 0 },
+  );
+  const from = dayOf(proposal.valid_from);
   return (
-    <ConfirmDialog
-      id={rejectId(proposal.id)}
-      title={`לדחות את ההצעה לספים מ-${dayOf(proposal.valid_from)}?`}
-      action={{ label: 'דחיית ההצעה', run: () => decide(false) }}
-    >
-      <p>הספים הנוכחיים יישארו בתוקף. הצעה חדשה תיווצר עם פרסום המדד הבא.</p>
-    </ConfirmDialog>
+    <Dialog id={rejectId(proposal.id)} title={`דחיית ההצעה לספים מ-${from}`}>
+      <form action={action} aria-label={`דחיית ההצעה לספים מ-${from}`} noValidate>
+        <p>הספים הנוכחיים יישארו בתוקף. הצעה חדשה תיווצר עם פרסום המדד הבא.</p>
+        {state.error && <Notice tone="error" title={state.error} />}
+        <FormField
+          key={state.attempt}
+          field={{ label: 'נימוק לדחייה', hint: 'הנימוק נשמר עם ההצעה.', error: state.noteError }}
+          input={{ name: 'note', required: true, maxLength: 2000, defaultValue: state.note }}
+        />
+        <FormActions>
+          <Button type="submit" pending={pending}>
+            דחיית ההצעה
+          </Button>
+        </FormActions>
+      </form>
+    </Dialog>
   );
 }
