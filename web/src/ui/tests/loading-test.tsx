@@ -26,9 +26,11 @@ describe('loading indicators (DESIGN.md 6.8)', () => {
     expect(container.querySelectorAll('[aria-hidden="true"] i')).toHaveLength(5);
   });
 
-  it('adds dots to a saving button without changing its name', () => {
-    const { container } = render(<Button pending>שמירה</Button>);
-    expect(screen.getByRole('button', { name: 'שומר…' })).toBeTruthy();
-    expect(container.querySelectorAll('button [aria-hidden="true"] i')).toHaveLength(5);
+  it('marks a saving button for the flowing stripe, with the saving label as its name', () => {
+    render(<Button pending>שמירה</Button>);
+    const button = screen.getByRole('button', { name: 'שומר…' });
+    expect(button.dataset.pending).toBe('');
+    expect(button.getAttribute('aria-disabled')).toBe('true');
+    expect(button.querySelector('i')).toBeNull();
   });
 });
