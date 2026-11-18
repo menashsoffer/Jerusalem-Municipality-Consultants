@@ -40,10 +40,10 @@ function Brand() {
 
 /**
  * Top bar with the brand, the section tabs the user may open and the account menu, then the
- * logo color stripe. Below 48rem the tabs move to a bar fixed at the bottom of the screen
- * (shell.css).
+ * logo color stripe, whose colors flow while a screen loads (DESIGN.md 6.8). Below 48rem the
+ * tabs move to a bar fixed at the bottom of the screen (shell.css).
  */
-export function SiteHeader() {
+export function SiteHeader({ busy = false }: { busy?: boolean }) {
   const current = sectionOf(useLocation().pathname);
   // The admin tab appears only for someone who may open at least one admin screen (spec 8.1).
   const admin = allowedScreens(useCatalogSnapshot()?.access).length > 0;
@@ -66,7 +66,7 @@ export function SiteHeader() {
         </nav>
         <AccountMenu />
       </div>
-      <div className="shell-stripe" aria-hidden="true" />
+      <div className="shell-stripe" aria-hidden="true" data-busy={busy || undefined} />
     </header>
   );
 }

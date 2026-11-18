@@ -115,65 +115,37 @@
       background: var(--color-brand-hover);
     }
   }
-  /* Navigation progress (layout.tsx): an indeterminate <progress> in the logo gradient. */
-  .shell-progress-slot {
-    position: relative;
-    block-size: 0;
-  }
-  .shell-progress {
-    --progress-segment: 35%;
-    --progress-duration: var(--duration-progress);
-    position: absolute;
-    inset-block-start: 0;
-    inset-inline: 0;
-    z-index: var(--layer-raised);
-    inline-size: 100%;
-    block-size: var(--progress-size);
-    appearance: none;
-    border: 0 solid;
-    overflow: clip;
-    background: transparent;
-    container-type: inline-size;
-    opacity: 0;
-    animation: appear 1ms var(--delay-pending) forwards;
+  /* While a screen loads the stripe's colors flow from right to left (layout.tsx). */
+  .shell-stripe[data-busy] {
+    /* At 100% the visible half matches the resting stripe; each loop moves one full tile. */
+    background: var(--gradient-jlm-loop) 100% 0 / 200% 100%;
+    @media (prefers-reduced-motion: no-preference) {
+      animation: stripe-flow var(--duration-stripe) linear var(--delay-pending) infinite;
+    }
     @media (prefers-reduced-motion: reduce) {
-      --progress-duration: var(--duration-progress-slow);
-    }
-    @media (forced-colors: active) {
-      forced-color-adjust: none;
+      animation: stripe-breathe var(--duration-breathe) ease-in-out var(--delay-pending) infinite
+        alternate;
     }
   }
-  .shell-progress::-webkit-progress-bar {
-    background: transparent;
-  }
-  .shell-progress::-webkit-progress-value {
-    background: var(--gradient-jlm);
-    border-radius: var(--radius-pill);
-    animation: progress-slide var(--progress-duration) infinite linear reverse;
-  }
-  .shell-progress::-moz-progress-bar {
-    background: var(--gradient-jlm);
-    border-radius: var(--radius-pill);
-    animation: progress-slide var(--progress-duration) infinite linear reverse;
-  }
-  /* Physical left to right; played in reverse, so it runs right to left like the page. */
-  @keyframes progress-slide {
-    from,
+  @keyframes stripe-flow {
     to {
-      inline-size: var(--progress-segment);
-      margin-right: auto;
-    }
-    from {
-      translate: -100%;
-    }
-    to {
-      translate: 100cqi;
+      background-position: 300% 0;
     }
   }
-  @keyframes appear {
+  @keyframes stripe-breathe {
     to {
-      opacity: 1;
+      opacity: var(--skeleton-opacity-min);
     }
+  }
+  /* Spoken only: screen readers hear that a screen is loading. */
+  .shell-busy {
+    position: absolute;
+    inline-size: 1px;
+    block-size: 1px;
+    margin: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
   }
   .shell-main[data-pending] {
     opacity: var(--pending-opacity);
