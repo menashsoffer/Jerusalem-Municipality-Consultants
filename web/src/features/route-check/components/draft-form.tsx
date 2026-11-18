@@ -1,4 +1,4 @@
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
 import { FormField } from '../../../ui/form-field.tsx';
 import { SelectField } from '../../../ui/select-field.tsx';
 import { Button } from '../../../ui/button.tsx';
@@ -9,16 +9,63 @@ import { errorText } from '../../../data/errors.ts';
 import { checkRoute } from '../api/check.ts';
 import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
+import { updateRequest, type RequestDetails } from '../api/saved.ts';
 import { useReloadSaved } from './saved-list.tsx';
 import { readDraft, type DraftFields } from '../model/draft.ts';
 import type { CheckResult } from '../model/result.ts';
 import styles from './route-check.module.css';
+
+/** What was typed, as typed, so a return to this step shows it again. */
+export interface Values {
+  subject: string;
+  estimated_value: string;
+  vat: boolean;
+  requested_exemption: string;
+  unit_id: string;
+}
+/** The request saved from this form, and its details as last stored. */
+interface SavedEntry {
+  id: string;
+  key: string;
+}
+export interface Entry {
+  values: Values;
+  saved: SavedEntry | null;
+}
+export const EMPTY_ENTRY: Entry = {
+  values: { subject: '', estimated_value: '', vat: false, requested_exemption: '', unit_id: '' },
+  saved: null,
+};
 
 interface Props {
   units: { id: string; name: string }[];
   today: string;
   back: () => void;
   complete: (result: CheckResult, requestId: string | null) => void;
+  /** Kept by the wizard, so the details survive moving between steps. */
+  entry: Entry;
+  keep: (entry: Entry) => void;
+}
+interface FieldsProps {
+  entry: Entry;
+  units: Props['units'];
+  unit: string;
+  change: (id: string) => void;
+}
+
+function raw(form: FormData, key: string): string {
+  const value = form.get(key);
+  return typeof value === 'string' ? value : '';
+}
+
+function valuesOf(form: FormData, entry: Entry): Values {
+  return {
+    subject: raw(form, 'subject'),
+    estimated_value: raw(form, 'estimated_value'),
+    vat: form.get('value_includes_vat') === 'on',
+    requested_exemption: raw(form, 'requested_exemption'),
+    unit_id: entry.saved ? entry.values.unit_id : raw(form, 'unit_id'),
+  };
 }
 
 /** What the form says after a failed attempt (error-handling-spec-he.md sections 3 and 5). */
@@ -38,6 +85,10 @@ function savedButUnchecked(error: unknown): Outcome {
   };
 }
 
+function notUpdated(error: unknown): Outcome {
+  return { tone: 'error', title: 'השינויים לא נשמרו.', text: errorText(error) };
+}
+
 function failed(error: unknown): Outcome {
   return { tone: 'error', title: 'לא ניתן לבדוק את הבקשה.', text: errorText(error) };
 }
@@ -46,12 +97,15 @@ function UnitField({
   units,
   unit,
   change,
-}: Pick<Props, 'units'> & { unit: string; change: (id: string) => void }) {
+  locked,
+}: Pick<Props, 'units'> & { unit: string; change: (id: string) => void; locked: boolean }) {
+  const hint = locked ? 'הבקשה כבר שמורה ביחידה הזאת.' : 'בלי יחידה הבדיקה רק מחושבת ולא נשמרת.';
   return (
     <SelectField
-      field={{ label: 'יחידה', hint: 'בלי יחידה הבדיקה רק מחושבת ולא נשמרת.' }}
+      field={{ label: 'יחידה', hint }}
       select={{
         name: 'unit_id',
+        disabled: locked,
         value: unit,
         onChange: (e) => {
           change(e.currentTarget.value);
@@ -72,8 +126,12 @@ function UnitField({
 }
 
 type Complete = Props['complete'];
+interface Run {
+  today: string;
+  complete: Complete;
+}
 
-async function checkSaved(id: string, run: { today: string; complete: Complete }, fresh = false) {
+async function checkSaved(id: string, run: Run, fresh = false) {
   try {
     run.complete(await checkRoute({ request_id: id, on: run.today }), id);
     return NONE;
@@ -82,7 +140,7 @@ async function checkSaved(id: string, run: { today: string; complete: Complete }
   }
 }
 
-async function checkDraft({ draft }: DraftFields, run: { today: string; complete: Complete }) {
+async function checkDraft({ draft }: DraftFields, run: Run) {
   try {
     run.complete(await checkRoute({ draft, on: run.today }), null);
     return NONE;
@@ -91,75 +149,135 @@ async function checkDraft({ draft }: DraftFields, run: { today: string; complete
   }
 }
 
-/**
- * With a unit the request is saved first and the check is stored; without one nothing is.
- * Once saved, `saved` holds its id and every later attempt only checks that request.
- */
-function useCheck(today: string, complete: Complete) {
-  const [saved, setSaved] = useState<string | null>(null);
-  const reload = useReloadSaved();
-  const run = { today, complete };
-  const state = useActionState(async (_: Outcome | null, form: FormData) => {
-    if (saved) return checkSaved(saved, run);
-    const fields = readDraft(form);
-    if (typeof fields === 'string') return { tone: 'error' as const, title: fields, text: '' };
-    if (!fields.unitId) return checkDraft(fields, run);
-    let id: string;
-    try {
-      id = await saveRequest({ ...fields.draft, unit_id: fields.unitId, subject: fields.subject });
-    } catch (error) {
-      return failed(error);
-    }
-    setSaved(id);
-    // The picked suppliers now belong to the saved request, so the catalog tray closes.
-    replaceShortlist([]);
-    const outcome = await checkSaved(id, run, true);
-    // After the check, so the new row shows its result too.
-    await reload();
-    return outcome;
-  }, NONE);
-  return { saved, state };
+/** The details as stored, and a key that tells whether they changed since the last save. */
+function detailsOf({ draft, subject }: DraftFields): { details: RequestDetails; key: string } {
+  const details = { subject, ...draft };
+  return { details, key: JSON.stringify(details) };
 }
 
-/** Step 2: the request details. The subject is needed only when the request is saved. */
-export function DraftForm({ units, today, back, complete }: Props) {
-  const [unit, setUnit] = useState('');
-  const { saved, state } = useCheck(today, complete);
-  const [outcome, action, pending] = state;
+/** A saved request: changed details are stored first, then it is checked again by id. */
+async function resave(saved: SavedEntry, fields: DraftFields, run: Run) {
+  const { details, key } = detailsOf(fields);
+  if (key === saved.key) return { saved, outcome: await checkSaved(saved.id, run) };
+  try {
+    await updateRequest(saved.id, details);
+  } catch (error) {
+    return { saved, outcome: notUpdated(error) };
+  }
+  const next = { id: saved.id, key };
+  return { saved: next, outcome: await checkSaved(saved.id, run) };
+}
+
+async function saveNew(fields: DraftFields, run: Run) {
+  let id: string;
+  try {
+    id = await saveRequest({ ...fields.draft, unit_id: fields.unitId, subject: fields.subject });
+  } catch (error) {
+    return { saved: null, outcome: failed(error) };
+  }
+  // The picked suppliers now belong to the saved request, so the catalog tray closes.
+  replaceShortlist([]);
+  const saved = { id, key: detailsOf(fields).key };
+  return { saved, outcome: await checkSaved(id, run, true) };
+}
+
+/**
+ * With a unit the request is saved first and the check is stored; without one nothing is.
+ * Once saved, later attempts update that request (when its details changed) and check it
+ * again; a second copy is never saved. What was typed is kept for a return to this step.
+ */
+function useCheck({ entry, keep, ...run }: Run & Pick<Props, 'entry' | 'keep'>) {
+  const reload = useReloadSaved();
+  return useActionState(async (_: Outcome | null, form: FormData) => {
+    const values = valuesOf(form, entry);
+    keep({ ...entry, values });
+    const fields = readDraft(form);
+    if (typeof fields === 'string') return { tone: 'error' as const, title: fields, text: '' };
+    if (!entry.saved && !fields.unitId) return checkDraft(fields, run);
+    const done = entry.saved ? await resave(entry.saved, fields, run) : await saveNew(fields, run);
+    keep({ values, saved: done.saved });
+    // After the check, so the row in the saved list shows its result too.
+    if (done.saved) await reload();
+    return done.outcome;
+  }, NONE);
+}
+
+function Fields({ entry, units, unit, change }: FieldsProps) {
+  const { values } = entry;
   return (
-    <form action={action} aria-label="פרטי הבקשה" className={styles.form}>
+    <>
+      <FormField
+        field={{ label: 'נושא' }}
+        input={{ name: 'subject', maxLength: 500, required: !!unit, defaultValue: values.subject }}
+      />
+      <FormField
+        field={{ label: 'אומדן בש״ח' }}
+        input={{
+          name: 'estimated_value',
+          inputMode: 'decimal',
+          required: true,
+          dir: 'ltr',
+          defaultValue: values.estimated_value,
+        }}
+      />
+      <label className={styles.check}>
+        <input type="checkbox" name="value_includes_vat" defaultChecked={values.vat} /> האומדן כולל
+        מע״מ
+      </label>
+      <FormField
+        field={{ label: 'פטור מבוקש', hint: 'אם יש, למשל 3(8).' }}
+        input={{
+          name: 'requested_exemption',
+          maxLength: 10,
+          dir: 'ltr',
+          defaultValue: values.requested_exemption,
+        }}
+      />
+      {/* A saved request stays in its unit; the database does not move it. */}
+      {entry.saved && <input type="hidden" name="unit_id" value={unit} />}
+      {units.length > 0 && (
+        <UnitField units={units} unit={unit} change={change} locked={!!entry.saved} />
+      )}
+    </>
+  );
+}
+
+function label(saved: boolean, unit: string): string {
+  if (saved) return 'שמירת השינויים ובדיקה חוזרת';
+  return unit ? 'בדיקת מסלול ושמירה ביחידה' : 'בדיקת מסלול בלבד';
+}
+
+/**
+ * Step 2: the request details, filled with what was typed before. The subject is needed only
+ * when the request is saved. After a save the same form edits that request.
+ */
+export function DraftForm({ units, today, back, complete, entry, keep }: Props) {
+  const [unit, setUnit] = useState(entry.values.unit_id);
+  const form = useRef<HTMLFormElement>(null);
+  const [outcome, action, pending] = useCheck({ today, complete, entry, keep });
+  return (
+    <form ref={form} action={action} aria-label="פרטי הבקשה" className={styles.form}>
       {outcome && (
         <Notice tone={outcome.tone} title={outcome.title}>
           {outcome.text}
         </Notice>
       )}
-      <fieldset disabled={saved !== null} className={styles.fields}>
-        <FormField
-          field={{ label: 'נושא' }}
-          input={{ name: 'subject', maxLength: 500, required: !!unit }}
-        />
-        <FormField
-          field={{ label: 'אומדן בש״ח' }}
-          input={{ name: 'estimated_value', inputMode: 'decimal', required: true, dir: 'ltr' }}
-        />
-        <label className={styles.check}>
-          <input type="checkbox" name="value_includes_vat" /> האומדן כולל מע״מ
-        </label>
-        <FormField
-          field={{ label: 'פטור מבוקש', hint: 'אם יש, למשל 3(8).' }}
-          input={{ name: 'requested_exemption', maxLength: 10, dir: 'ltr' }}
-        />
-        {units.length > 0 && <UnitField units={units} unit={unit} change={setUnit} />}
+      <fieldset className={styles.fields}>
+        <Fields entry={entry} units={units} unit={unit} change={setUnit} />
       </fieldset>
       <FormActions>
         <Button type="submit" pending={pending} pendingLabel="בודק…">
-          {saved
-            ? 'בדיקה חוזרת של הבקשה השמורה'
-            : unit
-              ? 'בדיקת מסלול ושמירה ביחידה'
-              : 'בדיקת מסלול בלבד'}
+          {label(!!entry.saved, unit)}
         </Button>
-        <Button variant="secondary" onClick={back} disabled={pending}>
+        <Button
+          variant="secondary"
+          onClick={() => {
+            if (form.current)
+              keep({ ...entry, values: valuesOf(new FormData(form.current), entry) });
+            back();
+          }}
+          disabled={pending}
+        >
           לשלב הקודם
         </Button>
       </FormActions>
