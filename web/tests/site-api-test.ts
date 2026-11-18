@@ -115,7 +115,7 @@ describe('supplier writes', () => {
     });
     stubFetch(() => Response.json({ message: 'something else' }, { status: 400 }));
     await assert.rejects(site.updateSupplier(TOKEN, { supplier_id: 's', contacts: [] }), {
-      message: 'לא ניתן להשלים את הפעולה. יש לנסות שוב.',
+      kind: 'system',
     });
   });
 });

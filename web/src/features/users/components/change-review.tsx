@@ -3,7 +3,7 @@ import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { dayOf } from '../../../lib/dates.ts';
 import { changeSummary, detailsText } from '../../../data/access-change-labels.ts';
 import { decideChange, type PendingChange } from '../api/changes.ts';
@@ -36,7 +36,7 @@ function useDecision(id: string) {
       await refresh.revalidate();
       return IDLE;
     } catch (error) {
-      return { ...IDLE, error: error instanceof DataError ? error.message : 'לא ניתן לשמור.' };
+      return { ...IDLE, error: errorText(error) };
     }
   }, IDLE);
 }

@@ -6,6 +6,7 @@ import { FormActions } from '../../../ui/form-actions.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { check, decisionNote } from '../../../lib/rules/forms.ts';
 import { Notice } from '../../../ui/notice.tsx';
+import { errorText } from '../../../data/errors.ts';
 import { DataError } from '../../../data/client.ts';
 import { dayOf } from '../../../lib/dates.ts';
 import { decideProposal, type Proposal } from '../api/proposals.ts';
@@ -25,7 +26,7 @@ function useDecide(id: string) {
         await revalidator.revalidate().catch(() => undefined);
         return '';
       }
-      return error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.';
+      return errorText(error);
     }
     await revalidator.revalidate().catch(() => undefined);
     return '';

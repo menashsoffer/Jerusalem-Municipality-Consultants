@@ -168,7 +168,7 @@ describe('profile review', () => {
     expect(refused.error).toBe(new DataError(403).message);
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new Error('x'));
     const failed = await decideReview('u', form({ decision: 'active' }), ok);
-    expect(failed.error).toBe('לא ניתן לשמור את ההחלטה.');
+    expect(failed.error).toMatch(/תקלה במערכת/u);
     const stale = await decideReview('u', form({ decision: 'active' }), broken);
     expect(stale.committed).toBe(true);
     expect(stale.error).toMatch(/נשמרה/u);
@@ -225,6 +225,6 @@ describe('category request decision', () => {
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new DataError(403));
     expect((await decideRequest('r', form(approve), ok)).error).toBe(new DataError(403).message);
     vi.mocked(rpc.rpc).mockRejectedValueOnce(new Error('x'));
-    expect((await decideRequest('r', form(approve), ok)).error).toBe('לא ניתן לשמור את ההחלטה.');
+    expect((await decideRequest('r', form(approve), ok)).error).toMatch(/תקלה במערכת/u);
   });
 });

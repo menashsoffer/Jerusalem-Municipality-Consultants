@@ -3,7 +3,7 @@ import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { recordApproaches } from '../api/engagement.ts';
 import { bccLine, bccMessage, shareLink, type PickedSupplier } from '../model/engagement.ts';
 
@@ -57,7 +57,7 @@ function useTools({ suppliers, today, requestId }: Props) {
         setError('');
         setMessage(`נרשמו ${String(added)} פניות להיום.`);
       } catch (cause) {
-        setError(cause instanceof DataError ? cause.message : 'רישום הפנייה נכשל.');
+        setError(errorText(cause));
       } finally {
         setRecording(false);
       }

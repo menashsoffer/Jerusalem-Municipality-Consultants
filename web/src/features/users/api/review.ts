@@ -1,4 +1,4 @@
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { reviewProfile } from './users.ts';
 import { noteError } from '../model/permissions.ts';
 export const INITIAL_REVIEW = { error: '', fieldError: '', committed: false };
@@ -15,7 +15,7 @@ export async function decideReview(id: string, form: FormData, refresh: () => Pr
   } catch (error) {
     return {
       ...INITIAL_REVIEW,
-      error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',
+      error: errorText(error),
     };
   }
   try {

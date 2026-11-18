@@ -258,12 +258,24 @@ describe('checkRoute', () => {
   });
 
   it.each([
-    [404, 'הבקשה אינה זמינה לבדיקה.'],
-    [422, 'לא נמצאו ספים בתוקף לתאריך שנבחר.'],
-    [429, 'בוצעו יותר מדי בדיקות. יש לנסות שוב מאוחר יותר.'],
+    [404, 'הבקשה כבר לא קיימת'],
+    [422, 'אין סף מכרז מאושר לתאריך הזה'],
+    [429, 'בוצעו יותר מדי פעולות בזמן קצר'],
   ])('explains status %i in Hebrew', async (status, message) => {
     const fetcher = () => Promise.resolve(new Response(null, { status }));
     await expect(checkRoute(DRAFT_INPUT, fetcher)).rejects.toThrow(message);
+  });
+
+  it('tells a database that is down from a fault in the system (18.11 incident)', async () => {
+    const down = () =>
+      Promise.resolve(Response.json({ error: 'Database unavailable' }, { status: 502 }));
+    await expect(checkRoute(DRAFT_INPUT, down)).rejects.toMatchObject({ kind: 'unavailable' });
+    const unsaved = () =>
+      Promise.resolve(Response.json({ error: 'Could not save the route check' }, { status: 502 }));
+    await expect(checkRoute(DRAFT_INPUT, unsaved)).rejects.toMatchObject({
+      kind: 'system',
+      message: expect.stringMatching(/תקלה במערכת/u) as unknown,
+    });
   });
 
   it('keeps the general message for other errors', async () => {

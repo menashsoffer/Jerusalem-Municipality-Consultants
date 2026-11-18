@@ -107,7 +107,7 @@ describe('shortlist tools', () => {
     await userEvent.click(button);
     expect((await screen.findByRole('alert')).textContent).toBe(new DataError(403).message);
     await userEvent.click(button);
-    expect((await screen.findByRole('alert')).textContent).toBe('רישום הפנייה נכשל.');
+    expect((await screen.findByRole('alert')).textContent).toMatch(/תקלה במערכת/u);
   });
 });
 

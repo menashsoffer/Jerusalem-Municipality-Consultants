@@ -1,6 +1,7 @@
 import { useActionState } from 'react';
 import type { z } from 'zod';
 import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { check, type FieldErrors } from '../../../lib/rules/forms.ts';
 import { formValues } from '../model/account-forms.ts';
 
@@ -15,8 +16,9 @@ export interface FormState {
 const START: FormState = { errors: {}, failure: '', sent: false, typed: {} };
 
 function failureOf(error: unknown): string {
-  if (error instanceof DataError || error instanceof Error) return error.message;
-  return 'השליחה נכשלה. יש לנסות שוב.';
+  // Our own checks throw a plain Error with a Hebrew sentence; everything else is described.
+  if (error instanceof Error && !(error instanceof DataError)) return error.message;
+  return errorText(error);
 }
 
 /** Checks the form with its zod schema, then sends it; field errors stay beside their fields. */
