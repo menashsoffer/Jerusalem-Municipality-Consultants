@@ -72,7 +72,9 @@ export function CatalogPage() {
           ) : null
         }
       />
-      <Suspense fallback={state?.catalog ? null : <Skeleton />}>
+      <Suspense
+        fallback={state?.catalog ? null : <Skeleton shape="cards" label="טוען את רשימת הספקים…" />}
+      >
         <Await resolve={data.verified}>{(who) => <AccessCheck who={who} />}</Await>
       </Suspense>
       {state?.catalog && <CatalogBrowser key={state.userId} state={state} today={data.today} />}

@@ -26,9 +26,11 @@ async function copy(text: string): Promise<boolean> {
 function useTools({ suppliers, today, requestId }: Props) {
   const [message, setMessage] = useState('');
   const [error, setError] = useState('');
+  const [recording, setRecording] = useState(false);
   return {
     message,
     error,
+    recording,
     async bcc() {
       const line = bccLine(suppliers);
       if (!line.count) {
@@ -49,12 +51,15 @@ function useTools({ suppliers, today, requestId }: Props) {
     async approach() {
       if (!requestId) return;
       const active = suppliers.filter((s) => !s.inactive).map((s) => s.id);
+      setRecording(true);
       try {
         const added = await recordApproaches(requestId, active);
         setError('');
         setMessage(`נרשמו ${String(added)} פניות להיום.`);
       } catch (cause) {
         setError(cause instanceof DataError ? cause.message : 'רישום הפנייה נכשל.');
+      } finally {
+        setRecording(false);
       }
     },
   };
@@ -68,7 +73,13 @@ export function ShortlistTools(props: Props) {
       {tools.error && <Notice tone="error" title={tools.error} />}
       <FormActions>
         {props.requestId && (
-          <Button onClick={() => void tools.approach()}>רישום פנייה לספקים</Button>
+          <Button
+            pending={tools.recording}
+            pendingLabel="רושם פנייה…"
+            onClick={() => void tools.approach()}
+          >
+            רישום פנייה לספקים
+          </Button>
         )}
         <Button variant="secondary" onClick={() => void tools.bcc()}>
           העתקת כתובות ל-BCC

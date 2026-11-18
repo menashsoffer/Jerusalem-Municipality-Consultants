@@ -115,6 +115,71 @@
       background: var(--color-brand-hover);
     }
   }
+  /* Navigation progress (layout.tsx): an indeterminate <progress> in the logo gradient. */
+  .shell-progress-slot {
+    position: relative;
+    block-size: 0;
+  }
+  .shell-progress {
+    --progress-segment: 35%;
+    --progress-duration: var(--duration-progress);
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    z-index: var(--layer-raised);
+    inline-size: 100%;
+    block-size: var(--progress-size);
+    appearance: none;
+    border: 0 solid;
+    overflow: clip;
+    background: transparent;
+    container-type: inline-size;
+    opacity: 0;
+    animation: appear 1ms var(--delay-pending) forwards;
+    @media (prefers-reduced-motion: reduce) {
+      --progress-duration: var(--duration-progress-slow);
+    }
+    @media (forced-colors: active) {
+      forced-color-adjust: none;
+    }
+  }
+  .shell-progress::-webkit-progress-bar {
+    background: transparent;
+  }
+  .shell-progress::-webkit-progress-value {
+    background: var(--gradient-jlm);
+    border-radius: var(--radius-pill);
+    animation: progress-slide var(--progress-duration) infinite linear reverse;
+  }
+  .shell-progress::-moz-progress-bar {
+    background: var(--gradient-jlm);
+    border-radius: var(--radius-pill);
+    animation: progress-slide var(--progress-duration) infinite linear reverse;
+  }
+  /* Physical left to right; played in reverse, so it runs right to left like the page. */
+  @keyframes progress-slide {
+    from,
+    to {
+      inline-size: var(--progress-segment);
+      margin-right: auto;
+    }
+    from {
+      translate: -100%;
+    }
+    to {
+      translate: 100cqi;
+    }
+  }
+  @keyframes appear {
+    to {
+      opacity: 1;
+    }
+  }
+  .shell-main[data-pending] {
+    opacity: var(--pending-opacity);
+    transition: opacity var(--duration-quick) var(--delay-pending);
+  }
+
   .shell-main {
     max-inline-size: var(--page-max-size);
     margin-inline: auto;

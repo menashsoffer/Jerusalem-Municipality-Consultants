@@ -1,13 +1,14 @@
 import type { ComponentProps, MouseEvent } from 'react';
 import { runCommand } from '../lib/dialogs.ts';
 import styles from './control.module.css';
+import { LogoDots } from './logo-dots.tsx';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger';
 interface Props extends ComponentProps<'button'> {
   command?: { target: string; action: 'show-modal' | 'close' };
   /** ui-building-blocks-spec-he.md 4.1: danger only inside a confirm dialog. */
   variant?: ButtonVariant;
-  /** While saving: the label reads `pendingLabel` and another press does nothing (4.4). */
+  /** While saving: dots and `pendingLabel` replace the label; another press does nothing (4.4). */
   pending?: boolean;
   pendingLabel?: string;
 }
@@ -50,7 +51,14 @@ export function Button({
       aria-disabled={pending || props['aria-disabled']}
       className={`${CLASS[variant] ?? ''} ${className}`}
     >
-      {pending ? pendingLabel : children}
+      {pending ? (
+        <>
+          <LogoDots size="small" />
+          {pendingLabel}
+        </>
+      ) : (
+        children
+      )}
     </button>
   );
 }

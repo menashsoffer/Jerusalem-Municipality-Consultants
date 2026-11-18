@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Outlet, useLocation, useMatches } from 'react-router';
+import { Outlet, useLocation, useMatches, useNavigation, useRevalidator } from 'react-router';
 
 import type { RouteHandle } from './routes.tsx';
 import { SiteHeader } from './site-header.tsx';
@@ -19,9 +19,27 @@ function useRouteTitle(): string {
   return titles.at(-1) ?? SITE_NAME;
 }
 
+/**
+ * While the next screen loads: a bar in the logo colors under the header, and the current screen
+ * fades, so a press never looks ignored (DESIGN.md 6.8). Both wait a moment before showing, so a
+ * quick move does not flash.
+ */
+function NavigationProgress() {
+  const moving = useNavigation().state !== 'idle';
+  // A screen that reloads its data after a change (approve, grant, remove) also shows the bar.
+  const reloading = useRevalidator().state !== 'idle';
+  const busy = moving || reloading;
+  return (
+    <div className="shell-progress-slot">
+      {busy && <progress className="shell-progress" aria-label="טוען את המסך" />}
+    </div>
+  );
+}
+
 /** Shared frame: skip link, header, one main region. Moves focus to the new screen's h1. */
 export function Layout() {
   const title = useRouteTitle();
+  const busy = useNavigation().state === 'loading';
   const { pathname } = useLocation();
   const main = useRef<HTMLElement>(null);
   const firstRender = useRef(true);
@@ -51,7 +69,14 @@ export function Layout() {
         דילוג לתוכן
       </a>
       <SiteHeader />
-      <main id="main" ref={main} className="shell-main" tabIndex={-1}>
+      <NavigationProgress />
+      <main
+        id="main"
+        ref={main}
+        className="shell-main"
+        tabIndex={-1}
+        data-pending={busy || undefined}
+      >
         <Outlet />
       </main>
     </>

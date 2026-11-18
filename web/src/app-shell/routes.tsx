@@ -2,7 +2,7 @@ import { Navigate, type RouteObject } from 'react-router';
 
 import { Layout } from './layout.tsx';
 import { ScreenError } from './screen-error.tsx';
-import { Skeleton } from '../ui/skeleton.tsx';
+import { PageLoader } from '../ui/logo-dots.tsx';
 import { RouteError } from './route-error.tsx';
 import { getAdminSession, identity } from '../data/rpc.ts';
 
@@ -29,7 +29,7 @@ export const routes: RouteObject[] = [
     loader: prefetchAccess,
     shouldRevalidate: () => false,
     // Shown while the first lazily loaded screen arrives.
-    hydrateFallbackElement: <Skeleton />,
+    hydrateFallbackElement: <PageLoader />,
     children: [
       {
         path: 'catalog',

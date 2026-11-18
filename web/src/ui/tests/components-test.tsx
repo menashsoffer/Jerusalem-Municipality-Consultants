@@ -145,8 +145,6 @@ describe('shared accessible controls', () => {
       </>,
     );
     expect(screen.getByRole('heading', { name: 'אין הצעות ממתינות', level: 2 })).toBeTruthy();
-    expect(
-      screen.getByRole('progressbar', { name: 'טוען נתונים…' }).getAttribute('aria-busy'),
-    ).toBe('true');
+    expect(screen.getByRole('status').textContent).toBe('טוען נתונים…');
   });
 });
