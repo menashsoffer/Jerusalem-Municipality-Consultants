@@ -97,7 +97,6 @@
   }
   .steps {
     display: flex;
-    flex-wrap: wrap;
     gap: var(--space-sm);
     margin: 0;
     padding: 0;
@@ -105,16 +104,24 @@
     counter-reset: step;
     & li {
       counter-increment: step;
+    }
+    & button {
       display: inline-flex;
       align-items: center;
       gap: var(--space-sm);
+      min-block-size: 2.75rem;
       padding: var(--space-xs) var(--space-md) var(--space-xs) var(--space-lg);
+      border: 0;
       border-radius: var(--radius-pill);
       background: var(--color-subtle);
       color: var(--color-muted);
+      font: inherit;
       font-weight: var(--font-weight-label);
+      white-space: nowrap;
+      cursor: pointer;
       &::before {
         content: counter(step);
+        flex: none;
         inline-size: 1.5rem;
         block-size: 1.5rem;
         display: grid;
@@ -123,12 +130,33 @@
         background: var(--color-surface);
         font-size: var(--font-xs);
       }
+      &:hover:not(:disabled, [aria-current='step']) {
+        color: var(--color-text);
+      }
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.55;
+      }
       &[aria-current='step'] {
         background: var(--color-brand);
         color: var(--color-on-brand);
+        cursor: default;
         &::before {
           color: var(--color-brand);
         }
+      }
+    }
+    /* On a phone the three steps share one row: the number sits above its label. */
+    @media (width < 40rem) {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      & button {
+        inline-size: 100%;
+        flex-direction: column;
+        gap: var(--space-xs);
+        padding: var(--space-xs);
+        border-radius: var(--radius-panel);
+        font-size: var(--font-small);
       }
     }
   }
