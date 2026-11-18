@@ -43,20 +43,21 @@ function PickButton({ supplier, picked }: Pick<Props, 'supplier' | 'picked'>) {
   if (supplier.inactive && !picked) {
     return (
       <Button variant="secondary" disabled aria-describedby={`inactive-${supplier.id}`}>
-        הוספה לבקשת התקשרות
+        הוספה לבקשה
       </Button>
     );
   }
   return (
     <Button
       variant="secondary"
+      className={picked ? styles.picked : ''}
       aria-pressed={picked}
       aria-label={`בקשת התקשרות: ${supplier.name}`}
       onClick={() => {
         toggleShortlist(supplier.id);
       }}
     >
-      {picked ? 'בבקשה, להסרה' : 'הוספה לבקשת התקשרות'}
+      {picked ? 'בבקשה ✓' : 'הוספה לבקשה'}
     </Button>
   );
 }

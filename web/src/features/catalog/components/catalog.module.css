@@ -1,13 +1,5 @@
 @layer features {
   /* Catalog screen: DESIGN.md sections 6.4 and 6.6. */
-  .note {
-    margin-block: 0 var(--space-xl);
-    padding: var(--space-md) var(--space-lg);
-    border-radius: var(--radius-control);
-    background: var(--color-badge-info-surface);
-    color: var(--color-badge-info-text);
-    font-size: var(--font-small);
-  }
   .searchPanel {
     display: grid;
     gap: var(--space-md);
@@ -18,57 +10,96 @@
     & > div:first-child {
       margin-block: 0;
     }
+    /* One large search field across the panel (spec 1.2). */
+    & input[type='search'] {
+      inline-size: 100%;
+      min-block-size: 3rem;
+      font-size: var(--font-lg);
+    }
   }
-  .searchTools {
+  .filterRow {
     display: flex;
     flex-wrap: wrap;
-    align-items: start;
-    justify-content: space-between;
-    gap: var(--space-md);
-  }
-  .disclosure {
-    flex: 1 1 20rem;
-    & summary {
-      inline-size: fit-content;
-      min-block-size: 2.5rem;
-      display: inline-flex;
-      align-items: center;
-      padding-inline: var(--space-lg);
-      border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-pill);
-      background: var(--color-surface);
-      color: var(--color-text);
-      font-weight: var(--font-weight-label);
-      cursor: pointer;
-      list-style: none;
-      &::-webkit-details-marker {
-        display: none;
-      }
-      &::before {
-        content: '+';
-        margin-inline-end: var(--space-sm);
-        color: var(--color-brand);
-        font-weight: var(--font-weight-strong);
-      }
-      &:hover {
-        border-color: var(--color-brand-line);
-      }
-    }
-    &[open] summary {
-      background: var(--color-brand);
-      border-color: var(--color-brand);
-      color: var(--color-on-brand);
-      &::before {
-        content: '−';
-        color: inherit;
-      }
-    }
+    align-items: end;
+    gap: var(--space-md) var(--space-lg);
   }
   .filters {
+    flex: 1 1 36rem;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 11rem), 1fr));
     gap: 0 var(--space-lg);
-    padding-block: var(--space-md) 0;
+    & > div {
+      margin-block: 0;
+    }
+  }
+  .moreButton {
+    white-space: nowrap;
+  }
+  .sheetFilters {
+    display: grid;
+    gap: 0 var(--space-lg);
+  }
+  /* Stays in view at the bottom of a long sheet. */
+  .sheetActions {
+    position: sticky;
+    inset-block-end: calc(-1 * var(--space-xl));
+    display: flex;
+    justify-content: end;
+    margin: var(--space-md) calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl));
+    padding: var(--space-md) var(--space-xl) var(--space-xl);
+    border-block-start: var(--border-width) solid var(--color-border);
+    background: var(--color-surface);
+  }
+  /* Active filters as tags with their own ×, then "ניקוי הכול" (spec 1.4). */
+  .active {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-sm);
+  }
+  .tags {
+    display: contents;
+    list-style: none;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-xs);
+    padding-inline: var(--space-md) var(--space-xs);
+    min-block-size: 2.25rem;
+    border-radius: var(--radius-pill);
+    background: var(--color-brand-soft);
+    color: var(--color-brand);
+    font-size: var(--font-small);
+    font-weight: var(--font-weight-label);
+  }
+  .tagRemove {
+    display: inline-grid;
+    place-items: center;
+    inline-size: 2rem;
+    block-size: 2rem;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+    &:hover {
+      background: var(--color-surface);
+    }
+    & svg {
+      inline-size: 1rem;
+      block-size: 1rem;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+    }
+  }
+  .dataNote {
+    margin-block: 0 var(--space-md);
+    color: var(--color-muted);
+    font-size: var(--font-small);
   }
   .toggle {
     display: flex;
@@ -226,21 +257,6 @@
     color: var(--color-muted);
     font-size: var(--font-small);
   }
-  .shortlist {
-    position: sticky;
-    inset-block-start: var(--space-sm);
-    z-index: var(--layer-raised);
-    margin-block: var(--space-md);
-    padding: var(--space-md) var(--space-lg);
-    border-radius: var(--radius-control);
-    background: var(--color-brand);
-    color: var(--color-on-brand);
-    box-shadow: var(--shadow-overlay);
-    font-weight: var(--font-weight-label);
-    & a {
-      color: inherit;
-    }
-  }
   .venue {
     display: flex;
     flex-wrap: wrap;
@@ -266,5 +282,41 @@
     stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+  /* In the request: light purple, a second press removes it (spec 1.6). */
+  .picked {
+    background: var(--color-brand-soft);
+  }
+  /* Pinned to the bottom of the screen, above the phone tab bar (spec 1.7). */
+  .shortlist {
+    position: sticky;
+    inset-block-end: var(--space-md);
+    z-index: var(--layer-raised);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm) var(--space-lg);
+    margin-block-start: var(--space-xl);
+    padding: var(--space-md) var(--space-lg);
+    border: var(--border-width) solid var(--color-brand-line);
+    border-radius: var(--radius-panel);
+    background: var(--color-surface);
+    box-shadow: var(--shadow-overlay);
+    & p {
+      margin: 0;
+      font-weight: var(--font-weight-strong);
+    }
+    @media (width < 48rem) {
+      inset-block-end: calc(3.5rem + var(--space-sm) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+  .shortlistActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+    & a {
+      text-decoration: none;
+    }
   }
 }

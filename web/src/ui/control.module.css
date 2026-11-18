@@ -64,6 +64,13 @@
       filter: brightness(0.9);
     }
   }
+  /* A link that looks like a button, such as "הוספת ספק" or "מעבר לבקשה". */
+  a.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+  }
   .button[aria-disabled='true'] {
     cursor: progress;
   }

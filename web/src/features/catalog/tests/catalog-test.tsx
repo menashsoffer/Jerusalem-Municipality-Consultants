@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, waitFor } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
@@ -18,6 +18,22 @@ function page() {
   );
   return value;
 }
+beforeEach(() => {
+  // jsdom has no native dialog methods; real keyboard/focus behavior is checked in Chromium.
+  Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.open = true;
+    },
+  });
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.open = false;
+      this.dispatchEvent(new Event('close'));
+    },
+  });
+});
 afterEach(() => {
   cleanup();
   sessionStorage.clear();
@@ -44,7 +60,7 @@ describe('React catalog parity', () => {
   });
   it('applies registry, field, root, child, unit and validity filters and resets dependencies', async () => {
     page();
-    await userEvent.click(screen.getByText('סינון תוצאות'));
+    await userEvent.click(screen.getByRole('button', { name: 'עוד מסננים' }));
     const selected = {
       ...emptyFilters(TODAY),
       registry: 'r1',
@@ -124,11 +140,54 @@ describe('React catalog parity', () => {
     expect(add.getAttribute('aria-pressed')).toBe('false');
     await userEvent.click(add);
     expect(add.getAttribute('aria-pressed')).toBe('true');
+    expect(add.textContent).toBe('בבקשה ✓');
     expect(shortlistIds()).toEqual([active.id]);
     const blocked = screen.getByRole<HTMLButtonElement>('button', {
-      name: 'הוספה לבקשת התקשרות',
+      name: 'הוספה לבקשה',
     });
     expect(blocked.disabled).toBe(true);
     replaceShortlist([]);
+  });
+});
+
+describe('filter row', () => {
+  it('shows active filters as tags that remove one filter, and clears all but the search', async () => {
+    page();
+    await userEvent.type(screen.getByRole('searchbox', { name: 'חיפוש ספקים' }), 'ספק');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'תוקף' }), 'valid');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'מאגר' }), 'r1');
+    const tags = screen.getByRole('list', { name: 'מסננים פעילים' });
+    expect([...tags.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
+      expect.stringMatching(/^מאגר: /u),
+      'תוקף: בתוקף',
+    ]);
+    await userEvent.click(screen.getByRole('button', { name: 'הסרת המסנן תוקף: בתוקף' }));
+    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'תוקף' }).value).toBe('');
+    await userEvent.click(screen.getByRole('button', { name: 'ניקוי הכול' }));
+    expect(screen.queryByRole('list', { name: 'מסננים פעילים' })).toBeNull();
+    expect(screen.getByRole<HTMLInputElement>('searchbox').value).toBe('ספק');
+  });
+
+  it('counts the filters set behind "עוד מסננים"', async () => {
+    page();
+    await userEvent.click(screen.getByRole('button', { name: 'עוד מסננים' }));
+    await userEvent.click(screen.getByRole('checkbox', { name: 'להציג גם ספקים לא פעילים' }));
+    await userEvent.click(screen.getByRole('button', { name: 'הצגת התוצאות' }));
+    expect(screen.getByRole('button', { name: 'עוד מסננים (1)' })).toBeDefined();
+    expect(screen.getByText('כולל לא פעילים')).toBeDefined();
+  });
+
+  it('turns the row into one "סינון" button on a phone', async () => {
+    const list = { matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+    vi.stubGlobal(
+      'matchMedia',
+      vi.fn(() => list),
+    );
+    page();
+    expect(screen.queryByRole('combobox', { name: 'מאגר' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'סינון' }));
+    expect(screen.getByRole('combobox', { name: 'מאגר' })).toBeDefined();
+    expect(screen.getByRole('combobox', { name: 'מתקנים ואולמות' })).toBeDefined();
+    vi.unstubAllGlobals();
   });
 });
