@@ -6,8 +6,8 @@ import { Layout } from '../layout.tsx';
 
 afterEach(cleanup);
 
-describe('navigation progress', () => {
-  it('shows a progress bar and fades the screen while the next screen loads', async () => {
+describe('loading stripe', () => {
+  it('makes the logo stripe flow and fades the screen while the next screen loads', async () => {
     let finish = (): void => undefined;
     const slow = new Promise<null>((resolve) => {
       finish = () => {
@@ -25,18 +25,21 @@ describe('navigation progress', () => {
       },
     ]);
     render(<RouterProvider router={router} />);
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    const stripe = () => document.querySelector('.shell-stripe');
+    expect(stripe()?.hasAttribute('data-busy')).toBe(false);
     let moving: Promise<void> = Promise.resolve();
     act(() => {
       moving = router.navigate('/next');
     });
-    expect(await screen.findByRole('progressbar', { name: 'טוען את המסך' })).toBeTruthy();
+    expect(await screen.findByText('טוען את המסך…')).toBeTruthy();
+    expect(stripe()?.hasAttribute('data-busy')).toBe(true);
     expect(document.querySelector('main')?.hasAttribute('data-pending')).toBe(true);
     await act(async () => {
       finish();
       await moving;
     });
-    expect(screen.queryByRole('progressbar')).toBeNull();
+    expect(stripe()?.hasAttribute('data-busy')).toBe(false);
+    expect(screen.queryByText('טוען את המסך…')).toBeNull();
     expect(document.querySelector('main')?.hasAttribute('data-pending')).toBe(false);
   });
 });
