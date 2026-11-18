@@ -192,6 +192,10 @@ describe('engagement request page', () => {
     await userEvent.selectOptions(screen.getByRole('combobox', { name: /^יחידה/u }), 'u1');
     await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול ושמירה ביחידה' }));
     await userEvent.click(await screen.findByRole('button', { name: 'חזרה לפרטי הבקשה' }));
+    // Focus moves to the step heading on the next frame; typing before it loses keys.
+    await vi.waitFor(() => {
+      expect(document.activeElement?.textContent).toBe('פרטי הבקשה');
+    });
     const value = screen.getByLabelText<HTMLInputElement>(/^אומדן בש״ח/u);
     expect(value.value).toBe('120000');
     expect(screen.getByLabelText<HTMLInputElement>(/^נושא/u).value).toBe('ייעוץ ארגוני');
