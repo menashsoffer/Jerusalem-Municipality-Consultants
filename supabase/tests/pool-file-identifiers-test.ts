@@ -107,7 +107,7 @@ describe('identifier candidates from a pool file', () => {
     );
     const id = pending.rows[0]?.id;
     assert.ok(id);
-    await as(db, USERS.editor, () =>
+    await as(db, USERS.admin, () =>
       db.query('select public.decide_identifier_candidate($1, true)', [id]),
     );
     const added = await db.query<{ scheme: string; source: string; review_status: string }>(

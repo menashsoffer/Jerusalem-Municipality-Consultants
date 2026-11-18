@@ -1,7 +1,7 @@
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
 import { candidateSchema } from '../model/candidate.ts';
 export async function loadCandidates() {
-  await requireRoles(['editor', 'unit_manager']);
+  await requireRoles(['admin']);
   const [candidates, suppliers] = await Promise.all([
     rows('identifier_candidates', { status: 'eq.pending' }, z.array(candidateSchema)),
     rows(

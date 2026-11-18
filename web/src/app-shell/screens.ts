@@ -37,7 +37,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     to: '/identifiers',
     title: 'מועמדי מזהה ספק',
     description: 'אישור ח.פ. שנמצא לספק',
-    roles: EDITORS,
+    roles: [],
     group: 'work',
     waiting: { key: 'identifiers_pending', one: 'מועמד ממתין אחד', many: 'מועמדים ממתינים' },
   },

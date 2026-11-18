@@ -48,9 +48,18 @@ async function proposalId(db: PGlite, startsOn: string): Promise<string> {
   return id;
 }
 
-function decide(db: PGlite, user: string | null, choice: { id: string; approve: boolean }) {
+interface Choice {
+  id: string;
+  approve: boolean;
+  note?: string;
+}
+function decide(db: PGlite, user: string | null, choice: Choice) {
   return as(db, user, () =>
-    db.query('select public.decide_threshold_proposal($1, $2)', [choice.id, choice.approve]),
+    db.query('select public.decide_threshold_proposal($1, $2, $3)', [
+      choice.id,
+      choice.approve,
+      choice.note ?? null,
+    ]),
   );
 }
 
@@ -123,7 +132,13 @@ describe('threshold proposals', () => {
   it('keeps a rejected month closed to new proposals', async () => {
     assert.equal(await propose(db, '2026-12-16'), 'proposed');
     const id = await proposalId(db, '2026-12-16');
-    await decide(db, USERS.admin, { id, approve: false });
+    await assert.rejects(decide(db, USERS.admin, { id, approve: false }), /invalid:required/);
+    await decide(db, USERS.admin, { id, approve: false, note: 'המדד תוקן אחרי הפרסום' });
+    const kept = await db.query<{ decision_note: string }>(
+      'select decision_note from public.threshold_proposals where id = $1',
+      [id],
+    );
+    assert.equal(kept.rows[0]?.decision_note, 'המדד תוקן אחרי הפרסום');
     assert.equal(
       await count(db, "select 1 from public.thresholds where valid_from = '2026-12-16'"),
       0,

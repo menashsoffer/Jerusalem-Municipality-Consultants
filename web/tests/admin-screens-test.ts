@@ -23,7 +23,7 @@ describe('admin screens by role', () => {
   });
 
   it('gives each role the screens its own checks allow', () => {
-    assert.deepEqual(paths(access(['editor'])), ['/identifiers', '/supplier/new']);
+    assert.deepEqual(paths(access(['editor'])), ['/supplier/new']);
     assert.deepEqual(paths(access(['auditor'])), ['/load-control']);
     assert.ok(paths(access(['unit_manager'])).includes('/users'));
     assert.equal(paths(access(['admin'])).length, 7);
@@ -35,7 +35,7 @@ describe('admin screens by role', () => {
 
   it('names who a screen is for and the user role', () => {
     assert.equal(audienceOf('/users'), 'מנהל יחידה או מנהל מערכת');
-    assert.equal(audienceOf('/identifiers'), 'עורך, מנהל יחידה או מנהל מערכת');
+    assert.equal(audienceOf('/identifiers'), 'מנהל מערכת');
     assert.equal(audienceOf('/thresholds'), 'מנהל מערכת');
     assert.equal(audienceOf('/catalog'), null);
     assert.equal(mainRole(access(['viewer', 'editor'])), 'עורך');
