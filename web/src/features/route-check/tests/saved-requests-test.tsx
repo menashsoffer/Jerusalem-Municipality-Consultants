@@ -3,7 +3,6 @@ import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { DataError } from '../../../data/client.ts';
 import { RULE_MESSAGES } from '../../../lib/rules/messages.ts';
 import * as saved from '../api/saved.ts';
 import type { SavedRequest } from '../api/saved.ts';
@@ -24,12 +23,17 @@ const REQUEST: SavedRequest = {
   changedSinceCheck: true,
 };
 
-function show(requests: SavedRequest[]) {
+function show(requests: SavedRequest[], edit = vi.fn()) {
   const loader = vi.fn(() => null);
   const reload = vi.fn(() => Promise.resolve());
   const Page = () => (
     <ReloadSavedProvider value={reload}>
-      <SavedRequests requests={requests} units={new Map([['u1', 'רכש']])} today="2026-11-18" />
+      <SavedRequests
+        requests={requests}
+        units={new Map([['u1', 'רכש']])}
+        today="2026-11-18"
+        edit={edit}
+      />
     </ReloadSavedProvider>
   );
   const router = createMemoryRouter([{ id: 'saved', path: '/', Component: Page, loader }], {
@@ -65,40 +69,25 @@ describe('saved requests', () => {
     expect(table.textContent).toMatch(/הפרטים שונו מאז, כדאי לבדוק שוב/u);
   });
 
-  it('saves edited details and reloads the list', async () => {
-    const update = vi.spyOn(saved, 'updateRequest').mockResolvedValue();
-    const reload = show([REQUEST]);
+  it('opens a request for editing in the details form, not in a dialog', async () => {
+    const edit = vi.fn();
+    show([REQUEST], edit);
     await userEvent.click(screen.getByRole('button', { name: 'עריכת הבקשה: ייעוץ ארגוני' }));
-    const form = screen.getByRole('form', { name: 'עריכת הבקשה' });
-    const value = within(form).getByLabelText<HTMLInputElement>(/^אומדן בש״ח/u);
-    expect(value.value).toBe('90000');
-    await userEvent.clear(value);
-    await userEvent.type(value, '75,000');
-    await userEvent.type(within(form).getByLabelText(/^פטור מבוקש/u), '3(8)');
-    await userEvent.click(within(form).getByRole('button', { name: 'שמירת השינויים' }));
-    expect(update).toHaveBeenCalledWith(REQUEST.id, {
-      subject: 'ייעוץ ארגוני',
-      estimated_value: 75000,
-      value_includes_vat: true,
-      requested_exemption: '3(8)',
-    });
-    await vi.waitFor(() => {
-      expect(reload).toHaveBeenCalled();
-    });
+    expect(edit).toHaveBeenCalledWith(REQUEST);
+    expect(screen.queryByRole('form', { name: 'עריכת הבקשה' })).toBeNull();
   });
 
   it('says when the list could not be fetched again after a change', () => {
-    render(<SavedRequests requests={[REQUEST]} stale units={new Map()} today="2026-11-18" />);
+    render(
+      <SavedRequests
+        requests={[REQUEST]}
+        stale
+        units={new Map()}
+        today="2026-11-18"
+        edit={vi.fn()}
+      />,
+    );
     expect(screen.getByText('הרשימה לא התעדכנה.')).toBeDefined();
-  });
-
-  it('shows why the database refused an edit', async () => {
-    const refused = new DataError(400, RULE_MESSAGES.request_closed);
-    vi.spyOn(saved, 'updateRequest').mockRejectedValue(refused);
-    show([REQUEST]);
-    await userEvent.click(screen.getByRole('button', { name: 'עריכת הבקשה: ייעוץ ארגוני' }));
-    await userEvent.click(screen.getByRole('button', { name: 'שמירת השינויים' }));
-    expect(await screen.findByText(RULE_MESSAGES.request_closed)).toBeDefined();
   });
 
   it('cancels a request only with a reason', async () => {

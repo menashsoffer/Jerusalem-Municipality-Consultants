@@ -14,13 +14,7 @@ import { dayOf } from '../../../lib/dates.ts';
 import { checkRoute } from '../api/check.ts';
 import type { SavedRequest } from '../api/saved.ts';
 import { money, STATUS_LABELS, type CheckResult } from '../model/result.ts';
-import {
-  CANCEL_REQUEST,
-  CancelRequest,
-  EDIT_REQUEST,
-  EditRequest,
-  editable,
-} from './request-changes.tsx';
+import { CANCEL_REQUEST, CancelRequest, editable } from './request-changes.tsx';
 import { ResultPanel } from './result-panel.tsx';
 import styles from './route-check.module.css';
 
@@ -30,6 +24,8 @@ interface Props {
   stale?: boolean;
   units: Map<string, string>;
   today: string;
+  /** Opens the request in the details form above the list. */
+  edit: (request: SavedRequest) => void;
 }
 const RECHECK = 'recheck-request';
 const COLUMNS = [
@@ -86,11 +82,16 @@ function statusText(request: SavedRequest): string {
 }
 
 type Mode = 'recheck' | 'edit' | 'cancel';
-const DIALOGS: Record<Mode, { id: string; title: string; icon: IconName }> = {
+/** Edit has no dialog: it opens the details form (owner's request, 18.11). */
+const DIALOGS: Record<Mode, { id: string | null; title: string; icon: IconName }> = {
   recheck: { id: RECHECK, title: 'בדיקה מחדש', icon: 'refresh' },
-  edit: { id: EDIT_REQUEST, title: 'עריכת הבקשה', icon: 'pencil' },
+  edit: { id: null, title: 'עריכת הבקשה', icon: 'pencil' },
   cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה', icon: 'trash' },
 };
+
+function commandFor(target: string | null) {
+  return target ? { command: { target, action: 'show-modal' as const } } : {};
+}
 
 /** Icon buttons: the full name for screen readers, the short one in the bubble (DESIGN.md 6.2). */
 function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mode) => void }) {
@@ -103,7 +104,7 @@ function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mo
           icon={DIALOGS[mode].icon}
           label={`${DIALOGS[mode].title}: ${request.subject}`}
           tip={DIALOGS[mode].title}
-          command={{ target: DIALOGS[mode].id, action: 'show-modal' }}
+          {...commandFor(DIALOGS[mode].id)}
           onClick={() => {
             choose(mode);
           }}
@@ -138,9 +139,6 @@ function RequestDialogs({
           <Recheck key={request.id} request={request} unit={unitName(request)} today={today} />
         )}
       </Dialog>
-      <Dialog id={EDIT_REQUEST} title={titled('edit', chosen)}>
-        {request && chosen.mode === 'edit' && <EditRequest key={request.id} request={request} />}
-      </Dialog>
       <Dialog id={CANCEL_REQUEST} title={titled('cancel', chosen)}>
         {request && chosen.mode === 'cancel' && (
           <CancelRequest key={request.id} request={request} />
@@ -150,7 +148,7 @@ function RequestDialogs({
   );
 }
 
-export function SavedRequests({ requests, stale = false, units, today }: Props) {
+export function SavedRequests({ requests, stale = false, units, today, edit }: Props) {
   const [chosen, setChosen] = useState<Chosen>(null);
   const unitName = (r: SavedRequest) => units.get(r.unit_id) ?? 'יחידה לא זמינה';
   const rows = requests.map((r) => ({
@@ -165,7 +163,8 @@ export function SavedRequests({ requests, stale = false, units, today }: Props) 
         <RowActions
           request={r}
           choose={(mode) => {
-            setChosen({ request: r, mode });
+            if (mode === 'edit') edit(r);
+            else setChosen({ request: r, mode });
           }}
         />
       ),

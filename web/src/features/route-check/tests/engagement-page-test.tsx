@@ -5,6 +5,7 @@ import { createMemoryRouter, RouterProvider } from 'react-router';
 import { EngagementPage } from '../engagement-page.tsx';
 import * as check from '../api/check.ts';
 import { DataError } from '../../../data/client.ts';
+import { RULE_MESSAGES } from '../../../lib/rules/messages.ts';
 import * as engagement from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { loader } from '../engagement-page.tsx';
@@ -38,6 +39,22 @@ const supplier = {
   phones: [],
   lastApproached: '2026-10-01',
 };
+
+function savedRow(): SavedRequest {
+  return {
+    id: REQUEST,
+    unit_id: 'u1',
+    subject: 'ייעוץ ארגוני',
+    estimated_value: 90000,
+    value_includes_vat: true,
+    requested_exemption: null,
+    status: 'draft',
+    created_at: '2026-11-10T08:00:00Z',
+    updated_at: '2026-11-10T08:00:00Z',
+    lastStatus: 'blocked',
+    changedSinceCheck: false,
+  };
+}
 
 function page(units: PageData['units'], more: Partial<PageData> = {}) {
   const value: PageData = {
@@ -305,5 +322,47 @@ describe('engagement request page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'בדיקת המסלול' }));
     expect(run).toHaveBeenCalledWith({ request_id: REQUEST, on: '2026-12-01' });
     expect(await screen.findByText('8(ד)(1)')).toBeDefined();
+  });
+  // 18.11.2026: the owner asked to edit a saved request in the details form, not a dialog.
+  it('edits a saved request in the details form and checks it again', async () => {
+    const row = savedRow();
+    page([{ id: 'u1', name: 'אגף 1' }], { saved: [row] });
+    const update = vi.spyOn(savedApi, 'updateRequest').mockResolvedValue();
+    const run = vi.spyOn(check, 'checkRoute').mockResolvedValue({ ...result, id: 9 });
+    await userEvent.click(screen.getByRole('button', { name: 'עריכת הבקשה: ייעוץ ארגוני' }));
+    const heading = screen.getByRole('heading', { name: 'עריכת הבקשה: ייעוץ ארגוני' });
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(heading);
+    });
+    const editor = within(screen.getByRole('region', { name: 'עריכת הבקשה: ייעוץ ארגוני' }));
+    const value = editor.getByLabelText<HTMLInputElement>(/^אומדן בש״ח/u);
+    expect(value.value).toBe('90000');
+    expect(editor.getByLabelText<HTMLInputElement>(/^האומדן כולל/u).checked).toBe(true);
+    await userEvent.clear(value);
+    await userEvent.type(value, '75,000');
+    await userEvent.click(editor.getByRole('button', { name: 'שמירת השינויים ובדיקה חוזרת' }));
+    expect(await editor.findByText('8(ד)(1)')).toBeDefined();
+    expect(update).toHaveBeenCalledWith(REQUEST, {
+      subject: 'ייעוץ ארגוני',
+      estimated_value: 75000,
+      value_includes_vat: true,
+      requested_exemption: null,
+    });
+    expect(run).toHaveBeenCalledWith({ request_id: REQUEST, on: '2026-11-17' });
+    await userEvent.click(editor.getByRole('button', { name: 'סגירת העריכה' }));
+    expect(screen.queryByRole('heading', { name: /^עריכת הבקשה/u })).toBeNull();
+  });
+
+  it('shows why the database refused an edit and checks nothing', async () => {
+    page([{ id: 'u1', name: 'אגף 1' }], { saved: [savedRow()] });
+    const refused = new DataError(400, RULE_MESSAGES.request_closed);
+    vi.spyOn(savedApi, 'updateRequest').mockRejectedValue(refused);
+    const run = vi.spyOn(check, 'checkRoute');
+    await userEvent.click(screen.getByRole('button', { name: 'עריכת הבקשה: ייעוץ ארגוני' }));
+    await userEvent.type(screen.getByLabelText(/^פטור מבוקש/u), '3(8)');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירת השינויים ובדיקה חוזרת' }));
+    expect(await screen.findByText('השינויים לא נשמרו.')).toBeDefined();
+    expect(screen.getByText(RULE_MESSAGES.request_closed)).toBeDefined();
+    expect(run).not.toHaveBeenCalled();
   });
 });
