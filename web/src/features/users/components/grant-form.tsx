@@ -1,46 +1,60 @@
 import { useActionState, useState } from 'react';
 import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
-import { StatusMessage } from '../../../ui/status-message.tsx';
+import { Dialog } from '../../../ui/dialog.tsx';
+import { FormActions } from '../../../ui/form-actions.tsx';
+import { Notice } from '../../../ui/notice.tsx';
 import { DataError } from '../../../data/client.ts';
 import { addGrant, type Profile, type Unit } from '../api/users.ts';
 import { parseGrant } from '../model/permissions.ts';
 import { GrantFields } from './grant-fields.tsx';
+
+export const GRANT_DIALOG = 'grant-role';
 interface Props {
   profiles: Profile[];
   scope: { admin: boolean; units: Unit[] };
+  /** The row whose "מתן תפקיד" opened the dialog, if any. */
+  chosen: string;
 }
-export function GrantForm({ profiles, scope }: Props) {
-  const [role, setRole] = useState('viewer');
+function useGrant(scope: Props['scope']) {
   const refresh = useRevalidator();
-  const [result, action, pending] = useActionState(
-    async (_previous: { message: string; error: string }, form: FormData) => {
-      const input = parseGrant(Object.fromEntries(form), scope);
-      if (!input.data) return { message: '', error: input.error };
-      try {
-        await addGrant(input.data);
-        await refresh.revalidate();
-        return { message: 'התפקיד הוענק.', error: '' };
-      } catch (error) {
-        return {
-          message: '',
-          error:
-            error instanceof DataError
-              ? error.message
-              : 'לא ניתן להשלים. יש לרענן ולבדוק לפני ניסיון נוסף.',
-        };
-      }
-    },
-    { message: '', error: '' },
-  );
+  return useActionState(async (_: string, form: FormData) => {
+    const input = parseGrant(Object.fromEntries(form), scope);
+    if (!input.data) return input.error;
+    try {
+      await addGrant(input.data);
+    } catch (error) {
+      return error instanceof DataError
+        ? error.message
+        : 'לא ניתן להשלים. יש לרענן ולבדוק לפני ניסיון נוסף.';
+    }
+    const dialog = document.getElementById(GRANT_DIALOG);
+    if (dialog instanceof HTMLDialogElement) dialog.close();
+    await refresh.revalidate();
+    return '';
+  }, '');
+}
+/** "מתן תפקיד": a dialog with user, role and unit (screens-spec 6). */
+export function GrantDialog({ profiles, scope, chosen }: Props) {
+  const [role, setRole] = useState('viewer');
+  const [error, action, pending] = useGrant(scope);
   return (
-    <form action={action} aria-label="הענקת תפקיד">
-      <GrantFields profiles={profiles} scope={scope} role={{ value: role, change: setRole }} />
-      <Button type="submit" disabled={pending}>
-        הענקת התפקיד
-      </Button>
-      <StatusMessage>{pending ? 'שומר…' : result.message}</StatusMessage>
-      {result.error && <p role="alert">{result.error}</p>}
-    </form>
+    <Dialog id={GRANT_DIALOG} title="מתן תפקיד">
+      <form action={action} aria-label="מתן תפקיד">
+        {error && <Notice tone="error" title={error} />}
+        <GrantFields
+          key={`${chosen}:${error}`}
+          profiles={profiles}
+          scope={scope}
+          role={{ value: role, change: setRole }}
+          chosen={{ user: chosen }}
+        />
+        <FormActions>
+          <Button type="submit" pending={pending}>
+            מתן התפקיד
+          </Button>
+        </FormActions>
+      </form>
+    </Dialog>
   );
 }

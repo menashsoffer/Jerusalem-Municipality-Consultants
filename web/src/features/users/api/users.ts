@@ -1,3 +1,4 @@
+import { DataError } from '../../../data/client.ts';
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
 import { loadChanges } from './changes.ts';
 const role = z.enum(['viewer', 'editor', 'unit_manager', 'admin', 'auditor']);
@@ -51,4 +52,29 @@ export const grantInputSchema = z.object({
 export type GrantInput = z.infer<typeof grantInputSchema>;
 export async function addGrant(input: GrantInput): Promise<void> {
   await rpc('grant_role', input, z.string());
+}
+
+export interface Approval {
+  userId: string;
+  role: GrantInput['wanted_role'];
+  /** The unit of the role; the request's own unit when it is the same. */
+  unit: string | null;
+  requestUnit: string | null;
+}
+/**
+ * Approves and grants the chosen role in one database step (decision 4). Where that function is
+ * not deployed yet, a plain viewer approval of the request's unit still works the old way.
+ */
+export async function approveProfile({ userId, role, unit, requestUnit }: Approval) {
+  try {
+    await rpc(
+      'approve_profile',
+      { target_user: userId, wanted_role: role, target_unit: unit, note: null },
+      z.null(),
+    );
+  } catch (error) {
+    const missing = error instanceof DataError && error.status === 404;
+    if (!missing || role !== 'viewer' || unit !== requestUnit) throw error;
+    await reviewProfile(userId, 'active', '');
+  }
 }

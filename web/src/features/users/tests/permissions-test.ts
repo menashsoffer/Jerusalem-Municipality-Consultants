@@ -1,6 +1,13 @@
 import assert from 'node:assert/strict';
 import { it } from 'node:test';
-import { activeGrants, availableUnits, parseGrant, noteError } from '../model/permissions.ts';
+import {
+  activeGrants,
+  availableUnits,
+  mayRevoke,
+  parseGrant,
+  noteError,
+} from '../model/permissions.ts';
+import { matchesPerson } from '../model/people.ts';
 import type { Access } from '../../../data/access.ts';
 const units = [
   { id: 'own', name: 'יחידה א' },
@@ -57,4 +64,17 @@ it('excludes revoked and expired grants at the exact expiry boundary', () => {
     activeGrants([{ ...base, expires_at: null, revoked_at: '2026-11-15T12:00:00Z' }], now).length,
     0,
   );
+});
+it('lets a manager remove only viewer and editor roles of their units', () => {
+  assert.equal(mayRevoke({ role: 'editor', unit_id: 'own' }, manager), true);
+  assert.equal(mayRevoke({ role: 'editor', unit_id: 'other' }, manager), false);
+  assert.equal(mayRevoke({ role: 'unit_manager', unit_id: 'own' }, manager), false);
+  assert.equal(mayRevoke({ role: 'admin', unit_id: null }, { ...manager, admin: true }), true);
+});
+it('finds people by every word of a name or email', () => {
+  const person = { first_name: 'דנה', last_name: 'כהן', email: 'Dana@X.test' };
+  assert.equal(matchesPerson(person, '  כהן   דנה '), true);
+  assert.equal(matchesPerson(person, 'dana@x'), true);
+  assert.equal(matchesPerson(person, 'לוי'), false);
+  assert.equal(matchesPerson(person, ''), true);
 });

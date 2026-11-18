@@ -1,45 +1,61 @@
-import { useLoaderData, useNavigation } from 'react-router';
+import { useState } from 'react';
+import { Link, useLoaderData, useNavigation, useSearchParams } from 'react-router';
+import { Button } from '../../ui/button.tsx';
 import { EmptyState } from '../../ui/empty-state.tsx';
+import { PageHeader } from '../../ui/page-header.tsx';
 import { Skeleton } from '../../ui/skeleton.tsx';
 import { loadUsers } from './api/users.ts';
-import { activeGrants, availableUnits } from './model/permissions.ts';
+import { activeGrants, availableUnits, mayRevoke } from './model/permissions.ts';
 import { ProfileReview } from './components/profile-review.tsx';
-import { GrantForm } from './components/grant-form.tsx';
-import { GrantsTable } from './components/grants-table.tsx';
+import { GRANT_DIALOG, GrantDialog } from './components/grant-form.tsx';
+import { UsersTable } from './components/users-table.tsx';
 import { ChangeRequests } from './components/change-review.tsx';
+import styles from './components/users.module.css';
+
 export const loader = loadUsers;
-function Loading() {
+type Data = Awaited<ReturnType<typeof loader>>;
+const TITLE = 'משתמשים ותפקידים';
+
+function Tabs({ current, waiting, people }: { current: string; waiting: number; people: number }) {
+  const tabs = [
+    ['requests', `בקשות ממתינות (${String(waiting)})`],
+    ['users', `משתמשים (${String(people)})`],
+  ] as const;
   return (
-    <>
-      <h1 tabIndex={-1}>משתמשים ותפקידים</h1>
-      <Skeleton />
-    </>
+    <nav aria-label="אזורי המסך" className={styles.tabs}>
+      {tabs.map(([id, label]) => (
+        <Link key={id} to={`?tab=${id}`} aria-current={current === id ? 'page' : undefined}>
+          {label}
+        </Link>
+      ))}
+    </nav>
   );
 }
-export function UsersPage() {
-  const data = useLoaderData<typeof loader>();
-  const navigation = useNavigation();
+
+function Requests({
+  data,
+  scope,
+}: {
+  data: Data;
+  scope: { admin: boolean; units: Data['units'] };
+}) {
   const pending = data.profiles.filter((p) => p.status === 'pending');
-  const active = data.profiles.filter((p) => p.status === 'active');
-  const grants = activeGrants(data.grants, data.now);
-  const units = availableUnits(data.units, data.who.access);
   const unitNames = new Map(data.units.map((u) => [u.id, u.name]));
-  if (navigation.state === 'loading') return <Loading />;
   return (
     <>
-      <h1 tabIndex={-1}>משתמשים ותפקידים</h1>
-      <h2>בקשות גישה ממתינות</h2>
+      <h2>בקשות גישה</h2>
       {pending.length ? (
         pending.map((profile) => (
           <ProfileReview
             key={profile.user_id}
             profile={profile}
             currentUser={data.who.userId}
-            unit={data.units.find((u) => u.id === profile.unit_id)?.name ?? 'יחידה לא זמינה'}
+            unit={unitNames.get(profile.unit_id ?? '') ?? 'יחידה לא זמינה'}
+            scope={scope}
           />
         ))
       ) : (
-        <EmptyState title="אין בקשות ממתינות" />
+        <EmptyState title="אין בקשות גישה ממתינות" />
       )}
       {data.changes && (
         <ChangeRequests
@@ -49,18 +65,54 @@ export function UsersPage() {
           units={unitNames}
         />
       )}
-      <h2>הענקת תפקיד</h2>
-      {active.length ? (
-        <GrantForm profiles={active} scope={{ admin: data.who.access.admin, units }} />
-      ) : (
-        <EmptyState title="אין משתמשים פעילים" />
-      )}
-      <h2>הרשאות פעילות</h2>
-      {grants.length ? (
-        <GrantsTable grants={grants} profiles={data.profiles} units={data.units} />
-      ) : (
-        <EmptyState title="אין תפקידים פעילים להצגה" />
-      )}
     </>
+  );
+}
+
+export function UsersPage() {
+  const data = useLoaderData<typeof loader>();
+  const navigation = useNavigation();
+  const [params] = useSearchParams();
+  const [grantTo, setGrantTo] = useState('');
+  const active = data.profiles.filter((p) => p.status === 'active');
+  const waiting =
+    data.profiles.filter((p) => p.status === 'pending').length + (data.changes?.length ?? 0);
+  const tab = params.get('tab') ?? (waiting ? 'requests' : 'users');
+  const scope = {
+    admin: data.who.access.admin,
+    units: availableUnits(data.units, data.who.access),
+  };
+  if (navigation.state === 'loading') return <Skeleton />;
+  return (
+    <div className={styles.page}>
+      <PageHeader
+        title={TITLE}
+        lead="אישור בקשות גישה ושינוי, ומתן או הסרה של תפקידים."
+        back={{ to: '/admin', label: 'ניהול' }}
+        action={
+          <Button
+            command={{ target: GRANT_DIALOG, action: 'show-modal' }}
+            onClick={() => {
+              setGrantTo('');
+            }}
+          >
+            מתן תפקיד
+          </Button>
+        }
+      />
+      <Tabs current={tab} waiting={waiting} people={active.length} />
+      {tab === 'users' ? (
+        <UsersTable
+          profiles={active}
+          grants={activeGrants(data.grants, data.now)}
+          units={new Map(data.units.map((u) => [u.id, u.name]))}
+          mayRevoke={(grant) => mayRevoke(grant, data.who.access)}
+          grantTo={setGrantTo}
+        />
+      ) : (
+        <Requests data={data} scope={scope} />
+      )}
+      <GrantDialog profiles={active} scope={scope} chosen={grantTo} />
+    </div>
   );
 }

@@ -12,6 +12,12 @@ import { DataError } from './client.ts';
 interface AdminRpc {
   decide_threshold_proposal: { proposal: string; approve: boolean };
   decide_profile: { target_user: string; decision: 'active' | 'rejected'; note: string | null };
+  approve_profile: {
+    target_user: string;
+    wanted_role: Role;
+    target_unit: string | null;
+    note: string | null;
+  };
   grant_role: { target_user: string; wanted_role: Role; target_unit: string | null };
   revoke_role: { grant_id: string };
   decide_identifier_candidate: { candidate: string; accept: boolean };
@@ -58,6 +64,7 @@ declare module '../database.types.ts' {
       Returns: string | null;
     };
     decide_profile: { Args: AdminRpc['decide_profile']; Returns: null };
+    approve_profile: { Args: AdminRpc['approve_profile']; Returns: null };
     grant_role: { Args: AdminRpc['grant_role']; Returns: string };
     revoke_role: { Args: AdminRpc['revoke_role']; Returns: null };
     decide_identifier_candidate: {

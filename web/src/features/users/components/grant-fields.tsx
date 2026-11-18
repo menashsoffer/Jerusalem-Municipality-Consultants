@@ -1,17 +1,15 @@
 import { SelectField } from '../../../ui/select-field.tsx';
 import type { Profile, Unit } from '../api/users.ts';
 import { ROLE_LABELS, globalRole } from '../model/permissions.ts';
-interface UserProps {
-  profiles: Profile[];
-}
-function UserChoice({ profiles }: UserProps) {
+
+function UserChoice({ profiles, chosen }: { profiles: Profile[]; chosen: string }) {
   return (
     <SelectField
       field={{ label: 'משתמש' }}
       select={{
         name: 'target_user',
         required: true,
-        defaultValue: '',
+        defaultValue: chosen,
         children: (
           <>
             <option value="">בחירת משתמש</option>
@@ -29,8 +27,9 @@ function UserChoice({ profiles }: UserProps) {
 interface UnitProps {
   units: Unit[];
   global: boolean;
+  chosen: string;
 }
-function UnitChoice({ units, global }: UnitProps) {
+function UnitChoice({ units, global, chosen }: UnitProps) {
   return (
     <SelectField
       field={{
@@ -41,7 +40,7 @@ function UnitChoice({ units, global }: UnitProps) {
         name: 'target_unit',
         required: !global,
         disabled: global,
-        defaultValue: '',
+        defaultValue: chosen,
         children: (
           <>
             <option value="">בחירת יחידה</option>
@@ -57,17 +56,20 @@ function UnitChoice({ units, global }: UnitProps) {
   );
 }
 interface Props {
-  profiles: Profile[];
+  /** Left out when the user is already known, as in approving a request. */
+  profiles?: Profile[];
   scope: { admin: boolean; units: Unit[] };
   role: { value: string; change: (value: string) => void };
+  chosen?: { user?: string; unit?: string };
 }
-export function GrantFields({ profiles, scope, role }: Props) {
+/** User, role and unit; a unit manager is offered only viewer and editor of their units. */
+export function GrantFields({ profiles, scope, role, chosen = {} }: Props) {
   const roles = Object.entries(ROLE_LABELS).filter(
     ([key]) => scope.admin || ['viewer', 'editor'].includes(key),
   );
   return (
     <>
-      <UserChoice profiles={profiles} />
+      {profiles && <UserChoice profiles={profiles} chosen={chosen.user ?? ''} />}
       <SelectField
         field={{ label: 'תפקיד' }}
         select={{
@@ -83,7 +85,7 @@ export function GrantFields({ profiles, scope, role }: Props) {
           )),
         }}
       />
-      <UnitChoice units={scope.units} global={globalRole(role.value)} />
+      <UnitChoice units={scope.units} global={globalRole(role.value)} chosen={chosen.unit ?? ''} />
     </>
   );
 }

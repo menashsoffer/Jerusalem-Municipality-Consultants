@@ -49,3 +49,11 @@ export function noteError(decision: string, note: string): string {
   const checked = check(decisionNote(decision), { note });
   return checked.ok ? '' : (checked.errors.note ?? '');
 }
+/** Roles this person may remove: an admin any, a unit manager viewer and editor of their units. */
+export function mayRevoke(grant: Pick<GrantRow, 'role' | 'unit_id'>, access: Access): boolean {
+  if (access.admin) return true;
+  return (
+    ['viewer', 'editor'].includes(grant.role) &&
+    access.grants.some((g) => g.role === 'unit_manager' && g.unitId === grant.unit_id)
+  );
+}
