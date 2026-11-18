@@ -197,7 +197,11 @@ describe('category request decision', () => {
   });
 
   it('saves, refreshes, and says when the refresh failed', async () => {
-    expect(await decideRequest('r', form(approve), ok)).toEqual({ error: '', committed: true });
+    expect(await decideRequest('r', form(approve), ok)).toEqual({
+      error: '',
+      field: {},
+      committed: true,
+    });
     expect((await decideRequest('r', form(approve), broken)).error).toMatch(/נשמרה/u);
   });
 
