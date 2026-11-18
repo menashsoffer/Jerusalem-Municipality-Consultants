@@ -1,6 +1,6 @@
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { splitFields } from '../../../lib/fields.ts';
-import { ENTITY_KINDS, REVIEW, safeSourceUrl } from './labels.ts';
+import { ENTITY_KINDS, REVIEW } from './labels.ts';
 
 /** What the supplier screen shows, worked out from the detail record (spec sections 4.1-4.3). */
 export type Tone = 'success' | 'warning' | 'danger' | 'neutral';
@@ -106,7 +106,6 @@ export interface ListingView {
   fields: string[];
   validity: string;
   engagement: string | null;
-  source: { url: string; page: number | null } | null;
 }
 
 function validityText(from: string | null, until: string | null, today: string): string {
@@ -125,12 +124,6 @@ function listingBadge(item: Member, expired: boolean): Badge {
     tone: REVIEW_TONE[item.review_status] ?? 'neutral',
     text: REVIEW[item.review_status] ?? 'מצב לא ידוע',
   };
-}
-
-function sourceOf(data: SupplierDetail, version: Version, page: number | null) {
-  const document = data.documents.find((value) => value.id === version?.source_document_id);
-  const url = document ? safeSourceUrl(document.url) : null;
-  return url ? { url, page } : null;
 }
 
 /** A listing's own dates win; otherwise the registry version's validity applies. */
@@ -156,7 +149,6 @@ function listing(data: SupplierDetail, item: Member, today: string): Omit<Listin
     fields: splitFields(field?.source_text ?? '') ?? [],
     validity: validityText(from, until, today),
     engagement: started ? `תחילת התקשרות: ${displayDate(started)}` : null,
-    source: sourceOf(data, version, item.source_page),
   };
 }
 

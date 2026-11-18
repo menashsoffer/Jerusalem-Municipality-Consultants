@@ -56,7 +56,8 @@ describe('supplier details', () => {
     expect(screen.getByText('תחילת התקשרות: 01.02.2024')).toBeDefined();
     expect(screen.queryByText(/לא תועד/)).toBeNull();
     expect(screen.getByText('bad').closest('a')).toBeNull();
-    const links = screen.getAllByRole('link', { name: /מסמך המאגר|מסמך מקור/ });
+    expect(screen.queryByRole('link', { name: /מסמך המאגר/ })).toBeNull();
+    const links = screen.getAllByRole('link', { name: /מסמך מקור/ });
     expect(links.length).toBeGreaterThan(0);
     expect(links.every((link) => link.getAttribute('href') === 'https://example.test/source')).toBe(
       true,
@@ -78,7 +79,11 @@ describe('supplier details', () => {
     expect(tip.hidden).toBe(false);
     await userEvent.keyboard('{Escape}');
     expect(tip.hidden).toBe(true);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('ממתין לאימות');
+    // The mark sits beside the status badge, above the name (Menash, 18.11).
+    expect(screen.getByRole('heading', { level: 1 }).textContent).not.toContain('ממתין לאימות');
+    expect(
+      mark.parentElement?.parentElement?.querySelector('ul[aria-label="מצב הספק"]'),
+    ).not.toBeNull();
   });
 
   it('shows the history as sentences with field names only, when the server sends it', async () => {
