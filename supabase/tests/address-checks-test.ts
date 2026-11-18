@@ -4,7 +4,7 @@ import { after, before, describe, it } from 'node:test';
 import type { PGlite } from '@electric-sql/pglite';
 
 import { ACCESS_FIXTURE, SUPPLIER, USERS } from './access-fixture.ts';
-import { as, migratedDatabase } from './pglite.ts';
+import { as, count, migratedDatabase } from './pglite.ts';
 
 const PERSON = '40000000-0000-0000-0000-000000000002';
 const ADDRESS = '50000000-0000-0000-0000-000000000001';
@@ -132,6 +132,24 @@ describe('address checks', () => {
     assert.equal(answer.counts.not_found, 1);
     const code = await errorCode(listed(db, USERS.viewer));
     assert.equal(code, '42501');
+  });
+
+  it('lets members read the answers, and nobody sign in and write them', async () => {
+    const read = (user: string | null) =>
+      as(db, user, () => count(db, 'select 1 from public.address_checks'));
+    assert.equal(await read(USERS.viewer), 2);
+    assert.equal(await read(USERS.auditor), 2);
+    assert.equal(await read(USERS.pending), 0);
+    assert.equal(await read(USERS.blocked), 0);
+    assert.equal(await errorCode(read(null)), '42501');
+    const write = (sql: string) => as(db, USERS.admin, () => errorCode(db.query(sql)));
+    assert.equal(
+      await write(`insert into public.address_checks (contact_id, checked_value, result)
+        values ('${PRIVATE}', 'x', 'found')`),
+      '42501',
+    );
+    assert.equal(await write("update public.address_checks set result = 'found'"), '42501');
+    assert.equal(await write('delete from public.address_checks'), '42501');
   });
 
   it('checks an address again once its text changes', async () => {

@@ -5,7 +5,7 @@ import { join } from 'node:path';
 
 import { mergeReports, parseLcov, percent, summarize } from './lcov.ts';
 import { formatReport, type Thresholds } from './report.ts';
-import { mergeCalls, parseCalls } from './sql.ts';
+import { mergeCalls, PARTIAL_PREFIX, parseCalls } from './sql.ts';
 
 const ROOT = process.cwd();
 const COVERAGE = join(ROOT, 'coverage');
@@ -19,7 +19,10 @@ function readSqlCalls() {
   const dir = join(COVERAGE, 'sql');
   if (!existsSync(dir)) throw new Error(`Missing ${dir}. Run npm run coverage.`);
   const files = readdirSync(dir).filter((name) => name.endsWith('.json'));
-  return mergeCalls(files.map((name) => parseCalls(readFileSync(join(dir, name), 'utf8'))));
+  const read = (names: string[]) =>
+    names.map((name) => parseCalls(readFileSync(join(dir, name), 'utf8')));
+  const partial = files.filter((name) => name.startsWith(PARTIAL_PREFIX));
+  return mergeCalls(read(files.filter((name) => !partial.includes(name))), read(partial));
 }
 
 const scope = JSON.parse(readFileSync(join(ROOT, 'scripts/coverage/scope.json'), 'utf8')) as {
