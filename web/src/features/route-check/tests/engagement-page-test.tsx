@@ -9,6 +9,7 @@ import * as engagement from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { loader } from '../engagement-page.tsx';
 import type { SavedRequest } from '../api/saved.ts';
+import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 type PageData = Awaited<ReturnType<typeof loader>>;
 
 const REQUEST = '50000000-0000-4000-8000-000000000001';
@@ -84,6 +85,7 @@ describe('engagement request page', () => {
   });
 
   it('saves the request, checks it by id and then records the approach', async () => {
+    replaceShortlist([supplier.id]);
     page([{ id: 'u1', name: 'אגף 1' }]);
     vi.spyOn(engagement, 'saveRequest').mockResolvedValue(REQUEST);
     const run = vi.spyOn(check, 'checkRoute').mockResolvedValue({ ...result, id: 9 });
@@ -97,6 +99,8 @@ describe('engagement request page', () => {
       expect(run).toHaveBeenCalled();
     });
     expect(run).toHaveBeenCalledWith({ request_id: REQUEST, on: '2026-11-17' });
+    // The catalog tray closes: the picked suppliers now belong to the saved request.
+    expect(shortlistIds()).toEqual([]);
     await userEvent.click(await screen.findByRole('button', { name: 'רישום פנייה לספקים' }));
     expect(record).toHaveBeenCalledWith(REQUEST, [supplier.id]);
     expect(await screen.findByText('נרשמו 1 פניות להיום.')).toBeDefined();

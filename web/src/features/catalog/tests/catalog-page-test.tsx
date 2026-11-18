@@ -1,11 +1,11 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import * as reactCatalog from '../../../data/react-catalog.ts';
 import * as rpc from '../../../data/rpc.ts';
-import { replaceShortlist } from '../../../lib/shortlist.ts';
+import { replaceShortlist, toggleShortlist } from '../../../lib/shortlist.ts';
 import { access } from '../../../../tests/catalog-fixture.ts';
 import { CatalogPage, loader } from '../catalog-page.tsx';
 import { state } from './fixture.ts';
@@ -51,7 +51,7 @@ describe('catalog page', () => {
       access: access({ editor: true, grants: [{ role: 'editor', unitId: 'u1' }] }),
     };
     vi.spyOn(reactCatalog, 'useCatalogSnapshot').mockReturnValue(editor);
-    replaceShortlist([A]);
+    toggleShortlist(A);
     page(Promise.resolve({ userId: 'u', access: access() }));
     expect(await screen.findByRole('link', { name: 'הוספת ספק' })).toBeDefined();
     const bar = screen.getByRole('region', { name: 'בקשת התקשרות' });
@@ -62,6 +62,25 @@ describe('catalog page', () => {
     await userEvent.click(screen.getByRole('button', { name: 'ניקוי' }));
     expect(screen.queryByRole('region', { name: 'בקשת התקשרות' })).toBeNull();
     expect(screen.getByRole('searchbox', { name: 'חיפוש ספקים' })).toBeDefined();
+  });
+
+  it('shows the request tray for ten seconds after an add, and not for an older list', () => {
+    vi.useFakeTimers();
+    try {
+      vi.spyOn(reactCatalog, 'useCatalogSnapshot').mockReturnValue(state());
+      toggleShortlist(A);
+      page(Promise.resolve({ userId: 'u', access: access() }));
+      expect(screen.getByRole('region', { name: 'בקשת התקשרות' })).toBeDefined();
+      act(() => {
+        vi.advanceTimersByTime(10_001);
+      });
+      expect(screen.queryByRole('region', { name: 'בקשת התקשרות' })).toBeNull();
+      cleanup();
+      page(Promise.resolve({ userId: 'u', access: access() }));
+      expect(screen.queryByRole('region', { name: 'בקשת התקשרות' })).toBeNull();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it('refuses a user who is not an active member, and waits without a catalog', async () => {

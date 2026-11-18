@@ -17,6 +17,8 @@ import styles from './route-check.module.css';
 interface Checked {
   result: CheckResult;
   requestId: string | null;
+  /** Kept from the moment of the check: saving empties the tab's list, and a reload reads it. */
+  suppliers: EngagementData['suppliers'];
 }
 
 function useWizard() {
@@ -63,7 +65,11 @@ function ResultStep({
   return (
     <>
       <ResultPanel result={checked.result} />
-      <ShortlistTools suppliers={data.suppliers} today={data.today} requestId={checked.requestId} />
+      <ShortlistTools
+        suppliers={checked.suppliers}
+        today={data.today}
+        requestId={checked.requestId}
+      />
       <Button variant="quiet" onClick={back} className={styles.back}>
         חזרה לפרטי הבקשה
       </Button>
@@ -97,7 +103,7 @@ export function NewRequest({ data }: { data: EngagementData }) {
             move('suppliers');
           }}
           complete={(result, requestId) => {
-            setChecked({ result, requestId });
+            setChecked({ result, requestId, suppliers: data.suppliers });
             move('result');
           }}
         />

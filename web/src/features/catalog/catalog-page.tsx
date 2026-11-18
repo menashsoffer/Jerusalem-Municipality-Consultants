@@ -11,6 +11,7 @@ import controls from '../../ui/control.module.css';
 import { israelToday } from './model/filters.ts';
 import { CatalogBrowser } from './components/catalog-browser.tsx';
 import styles from './components/catalog.module.css';
+import { useRecentAdd } from './components/use-recent-add.ts';
 /** Start the catalog request in the loader, before mounting React content. */
 export function loader() {
   const verified = identity();
@@ -21,12 +22,23 @@ function AccessCheck({ who }: { who: Identity }) {
   if (!who.access.member || who.access.state !== 'active') throw new DataError(403);
   return null;
 }
-/** Pinned to the bottom while browsing, so the request is one step away (spec 1.7). */
+/**
+ * Pinned to the bottom for a few seconds after a supplier is added, so the request is one step
+ * away (spec 1.7); later the request stays under the "בקשות התקשרות" tab.
+ */
 function ShortlistBar() {
   const picked = useShortlist();
-  if (!picked.length) return null;
+  const tray = useRecentAdd();
+  if (!picked.length || !tray.open) return null;
   return (
-    <section className={styles.shortlist} aria-label="בקשת התקשרות">
+    <section
+      className={styles.shortlist}
+      aria-label="בקשת התקשרות"
+      onPointerEnter={tray.hold}
+      onPointerLeave={tray.release}
+      onFocus={tray.hold}
+      onBlur={tray.release}
+    >
       <p>
         {picked.length === 1 ? (
           'ספק אחד בבקשה'

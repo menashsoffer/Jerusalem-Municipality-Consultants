@@ -7,6 +7,7 @@ import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
 import { errorText } from '../../../data/errors.ts';
 import { checkRoute } from '../api/check.ts';
+import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
 import { readDraft, type DraftFields } from '../model/draft.ts';
 import type { CheckResult } from '../model/result.ts';
@@ -108,6 +109,8 @@ function useCheck(today: string, complete: Complete) {
       return failed(error);
     }
     setSaved(id);
+    // The picked suppliers now belong to the saved request, so the catalog tray closes.
+    replaceShortlist([]);
     return checkSaved(id, run, true);
   }, NONE);
   return { saved, state };
