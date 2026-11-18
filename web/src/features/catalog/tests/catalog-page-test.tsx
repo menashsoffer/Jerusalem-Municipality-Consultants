@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
+import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 
 import * as reactCatalog from '../../../data/react-catalog.ts';
@@ -45,12 +46,21 @@ describe('catalog page', () => {
 
   it('shows the catalog, the add link for editors and the picked-suppliers bar', async () => {
     const value = state();
-    const editor = { ...value, access: access({ editor: true }) };
+    const editor = {
+      ...value,
+      access: access({ editor: true, grants: [{ role: 'editor', unitId: 'u1' }] }),
+    };
     vi.spyOn(reactCatalog, 'useCatalogSnapshot').mockReturnValue(editor);
     replaceShortlist([A]);
     page(Promise.resolve({ userId: 'u', access: access() }));
-    expect(await screen.findByRole('link', { name: 'הוספת ספק למאגר' })).toBeDefined();
-    expect(screen.getByRole('region', { name: 'בקשת התקשרות' }).textContent).toMatch(/1/u);
+    expect(await screen.findByRole('link', { name: 'הוספת ספק' })).toBeDefined();
+    const bar = screen.getByRole('region', { name: 'בקשת התקשרות' });
+    expect(bar.textContent).toMatch(/ספק אחד בבקשה/u);
+    expect(screen.getByRole('link', { name: 'מעבר לבקשה' }).getAttribute('href')).toBe(
+      '/engagement',
+    );
+    await userEvent.click(screen.getByRole('button', { name: 'ניקוי' }));
+    expect(screen.queryByRole('region', { name: 'בקשת התקשרות' })).toBeNull();
     expect(screen.getByRole('searchbox', { name: 'חיפוש ספקים' })).toBeDefined();
   });
 
@@ -58,6 +68,6 @@ describe('catalog page', () => {
     vi.spyOn(reactCatalog, 'useCatalogSnapshot').mockReturnValue(null);
     page(Promise.resolve({ userId: 'u', access: access({ member: false }) }));
     expect(await screen.findByRole('alert')).toBeDefined();
-    expect(screen.queryByRole('link', { name: 'הוספת ספק למאגר' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'הוספת ספק' })).toBeNull();
   });
 });
