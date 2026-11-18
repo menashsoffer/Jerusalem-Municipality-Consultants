@@ -114,9 +114,9 @@ describe('supplier page', () => {
     const create = vi.spyOn(reactCatalog, 'createSupplierDetailResource').mockReturnValue(resource);
     const args = { params: { id: ID }, request: new Request('https://x.test') } as never;
     expect(await supplierLoader(args)).toEqual({ resource });
-    expect(create).toHaveBeenCalledWith('token', ID);
+    expect(create).toHaveBeenCalledWith('token', ID, expect.any(Function));
     await supplierLoader({ params: {}, request: new Request('https://x.test') } as never);
-    expect(create).toHaveBeenLastCalledWith('token', '');
+    expect(create).toHaveBeenLastCalledWith('token', '', expect.any(Function));
   });
 
   it.each([

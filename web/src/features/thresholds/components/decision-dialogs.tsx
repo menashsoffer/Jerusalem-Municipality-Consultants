@@ -1,5 +1,4 @@
 import { useActionState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
@@ -17,18 +16,15 @@ export const rejectId = (id: string) => `reject-thresholds-${id}`;
 
 /** Runs a decision; '' on success. 404 means another admin already decided it. */
 function useDecide(id: string) {
-  const revalidator = useRevalidator();
   return async (approve: boolean, note: string | null = null): Promise<string> => {
     try {
       await decideProposal(id, approve, note);
     } catch (error) {
       if (error instanceof DataError && error.status === 404) {
-        await revalidator.revalidate().catch(() => undefined);
         return '';
       }
       return errorText(error);
     }
-    await revalidator.revalidate().catch(() => undefined);
     return '';
   };
 }

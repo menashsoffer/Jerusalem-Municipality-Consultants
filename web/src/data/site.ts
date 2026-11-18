@@ -7,6 +7,7 @@ import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './environment.ts';
 import type { EventRequest } from '../lib/tracker.ts';
 import { IndexedCatalogCache } from './catalog-cache.ts';
 import { SnapshotLoader, tokenUserId, type CatalogState } from './snapshot.ts';
+import { clearScreenData } from './screen-data.ts';
 
 export const BASE = SUPABASE_URL;
 const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
@@ -126,6 +127,8 @@ export async function loadSnapshot(
 export async function clearCatalog(userId?: string, notify = true): Promise<void> {
   const id = userId ?? tokenUserId(currentToken ?? '') ?? undefined;
   currentToken = null;
+  // Screen data belongs to the person who loaded it, like the catalog.
+  clearScreenData();
   const clearing = loader.clear(id);
   if (notify) publishState(null);
   await clearing;

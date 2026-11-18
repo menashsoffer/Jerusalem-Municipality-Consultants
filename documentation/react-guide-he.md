@@ -89,8 +89,8 @@ features/thresholds/
 | קומפיילר | React Compiler דרך `@vitejs/plugin-react` | מוסיף memoization אוטומטית, ולכן לא כותבים `useMemo`/`useCallback`/`memo` ידנית | |
 | בנייה | Vite (קיים) | כבר בשימוש, כולל ה-CSP בזמן בנייה | |
 | ניתוב | React Router 8 במצב ספרייה, `createHashRouter`, ומסכים ב-`lazy` | GitHub Pages לא מחזיר `index.html` לכתובת עמוקה. Hash עובד בלי טריק 404 | Next.js, Remix, TanStack Router |
-| נתונים | `data/` שלנו: snapshot של הקטלוג (אפיון #44) ופונקציות RPC מוקלדות | בקשה אחת לקטלוג, מטמון IndexedDB לפי גרסה. ספריית מטמון כללית הייתה מכפילה את המטמון | TanStack Query, Redux, Zustand, SWR |
-| מצב | `useState`, `useReducer`, `useSyncExternalStore` למאגר הקטלוג, Context רק לנתונים שכמעט לא משתנים (משתמש, הרשאות) | מספיק לגודל המערכת | ספריית state גלובלית |
+| נתונים | `data/` שלנו: snapshot של הקטלוג (אפיון #44), פונקציות RPC מוקלדות, ו-`data/screen-data.ts` לנתוני מסך לפי מפתח ([אפיון ניהול state](state-management-spec-he.md)) | בקשה אחת לקטלוג, מטמון IndexedDB לפי גרסה. ספריית מטמון כללית הייתה מכפילה את המטמון ועוברת את תקציב הקוד הראשוני. מתי כן עוברים ל-TanStack Query: סעיף 6 באפיון | TanStack Query (לעת עתה), Redux, Zustand, SWR |
+| מצב | `useState`, `useReducer`, `useSyncExternalStore` למאגרים של `data/` ו-`lib/`, Context רק לנתונים שכמעט לא משתנים (משתמש, הרשאות). טיוטות טפסים ב-`lib/form-draft.ts` ו-`lib/use-form-draft.ts`, ללשונית בלבד | מספיק לגודל המערכת | ספריית state גלובלית, `localStorage` לטיוטות |
 | טפסים | `<form action>` של React 19 עם `useActionState`, ואימות ב-Zod | אותה סכמה כמו ב-Edge Function | React Hook Form, Formik |
 | אימות קלט | Zod 4 | הוחלט בהחלטה 0001. משותף עם `supabase/functions/_shared` | |
 | עיצוב | CSS רגיל: משתנים ב-`styles/tokens.css`, `@layer`, nesting מובנה, CSS Modules (`*.module.css`) לרכיבים | אפס תלויות, עברית וימין לשמאל עובדים הכי טוב עם HTML ו-CSS רגילים | Tailwind, CSS-in-JS, ספריית רכיבים |
@@ -120,6 +120,9 @@ features/thresholds/
 - **הקטלוג נטען פעם אחת** דרך `catalog_snapshot` (אפיון [טעינת המידע](data-loading-spec-he.md)), נשמר במאגר אחד ב-`data/`, ומסכים קוראים ממנו ב-`useSyncExternalStore`. מסך לא מעתיק את הקטלוג ל-state משלו.
 - **פעולה שמשנה כמה טבלאות היא RPC אחת** בצד המסד (כלל 5 בכללי הקוד). הלקוח לא מרכיב טרנזקציה מכמה קריאות.
 - **אחרי כתיבה מוצלחת** מבקשים snapshot עם הגרסה הנוכחית, ולא טוענים את כל הקטלוג מחדש.
+- **נתוני מסך שאינם הקטלוג** נטענים ב-loader דרך `getScreenData(key, fetcher)`, והמסך מציג אותם ב-`useScreenData`. פונקציית הכתיבה ב-`api/` היא המקום היחיד שקורא ל-`invalidate(key)`, ולא הרכיב. כך רק מה שהשתנה נטען שוב, גם בלשוניות אחרות, ובלי להריץ את כל ה-loader ולאפס את המסך.
+- **טופס עם כמה שלבים** מחזיק את הערכים ואת מזהה מה שכבר נשמר ברכיב שמעל השלבים, לא בתוך שלב.
+- **טופס ארוך** שומר טיוטה ללשונית (`useFormDraft`) ומוחק אותה אחרי שמירה מוצלחת.
 - **עדכון אופטימי** (`useOptimistic`) רק לפעולה שהשרת כמעט תמיד מאשר ושקל לבטל. לאישורים רגישים (סף חודשי, מזהה ספק) מחכים לתשובת השרת.
 - **הרשאות בממשק הן נוחות בלבד.** הסתרת כפתור לא מגינה על כלום. כל פעולה נבדקת ב-RLS או בפונקציה במסד, והממשק מציג את השגיאה שחזרה.
 

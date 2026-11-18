@@ -1,5 +1,6 @@
 // Saved engagement requests with the state of their latest route check (screens-spec 2.ב).
 import { z, rows, rpc, permitted, type Identity } from '../../../data/rpc.ts';
+import { invalidate } from '../../../data/screen-data.ts';
 
 const requestSchema = z.object({
   id: z.string(),
@@ -26,6 +27,11 @@ export type SavedRequest = z.infer<typeof requestSchema> & {
 };
 /** The roles that may save requests and check them again; the database enforces it too. */
 export const SAVED_ROLES = ['editor', 'unit_manager'] as const;
+
+/** The saved list's key in the screen data (state-management-spec-he.md 5.3). */
+export const SAVED_KEY = ['engagement', 'saved'] as const;
+/** Every write below marks the list changed, so the page shows it at once. */
+export const savedChanged = () => invalidate(SAVED_KEY);
 
 /** Newest first; null for a user who cannot see saved requests. */
 export async function loadSaved(who: Identity): Promise<SavedRequest[] | null> {
@@ -65,9 +71,11 @@ export interface RequestDetails {
 /** Runs as the signed-in user; the database refuses a closed request or another unit's. */
 export async function updateRequest(request: string, draft: RequestDetails): Promise<void> {
   await rpc('update_engagement_request', { request, draft }, z.null());
+  void savedChanged();
 }
 
 /** A request is never deleted: it is cancelled with a reason and leaves the list. */
 export async function cancelRequest(request: string, note: string): Promise<void> {
   await rpc('cancel_engagement_request', { request, note }, z.null());
+  void savedChanged();
 }

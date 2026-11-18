@@ -1,5 +1,4 @@
 import { useActionState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
@@ -30,11 +29,10 @@ const text = (form: FormData, key: string) => {
 };
 
 function useDecision({ request, kind }: Props) {
-  const refresh = useRevalidator();
   return useActionState(
     async (previous: State, form: FormData): Promise<State> => {
       form.set('decision', kind);
-      const done = await decideRequest(request.id, form, () => refresh.revalidate());
+      const done = await decideRequest(request.id, form);
       if (done.committed) {
         const dialog = document.getElementById(dialogId(request.id, kind));
         if (dialog instanceof HTMLDialogElement) dialog.close();

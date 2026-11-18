@@ -1,5 +1,4 @@
 import { useActionState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
@@ -24,7 +23,6 @@ interface Result {
 const IDLE: Result = { error: '', fieldError: '' };
 
 function useDecision(id: string) {
-  const refresh = useRevalidator();
   return useActionState(async (_: Result, form: FormData): Promise<Result> => {
     const approve = form.get('decision') === 'approve';
     const value = form.get('note');
@@ -33,7 +31,6 @@ function useDecision(id: string) {
     if (invalid) return { ...IDLE, fieldError: invalid };
     try {
       await decideChange(id, approve, note);
-      await refresh.revalidate();
       return IDLE;
     } catch (error) {
       return { ...IDLE, error: errorText(error) };

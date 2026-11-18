@@ -1,6 +1,7 @@
 import { DataError } from '../../../data/client.ts';
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
 import { loadChanges } from './changes.ts';
+import { invalidate } from '../../../data/screen-data.ts';
 const role = z.enum(['viewer', 'editor', 'unit_manager', 'admin', 'auditor']);
 export const profileSchema = z.object({
   user_id: z.string(),
@@ -24,6 +25,11 @@ const unitSchema = z.object({ id: z.string(), name: z.string() });
 export type Profile = z.infer<typeof profileSchema>;
 export type GrantRow = z.infer<typeof grantSchema>;
 export type Unit = z.infer<typeof unitSchema>;
+/** The screen's key in the screen data (state-management-spec-he.md 5.3). */
+export const USERS_KEY = ['users'] as const;
+/** Every write below marks the screen changed, so it shows the change at once. */
+const changed = () => invalidate(USERS_KEY);
+
 export async function loadUsers() {
   const who = await requireRoles(['admin', 'unit_manager']);
   const [profiles, grants, units, changes] = await Promise.all([
@@ -40,9 +46,11 @@ export async function reviewProfile(
   note: string,
 ): Promise<void> {
   await rpc('decide_profile', { target_user: userId, decision, note: note || null }, z.null());
+  await changed();
 }
 export async function removeGrant(id: string): Promise<void> {
   await rpc('revoke_role', { grant_id: id }, z.null());
+  await changed();
 }
 export const grantInputSchema = z.object({
   target_user: z.string().min(1),
@@ -52,6 +60,7 @@ export const grantInputSchema = z.object({
 export type GrantInput = z.infer<typeof grantInputSchema>;
 export async function addGrant(input: GrantInput): Promise<void> {
   await rpc('grant_role', input, z.string());
+  await changed();
 }
 
 export interface Approval {
@@ -72,6 +81,7 @@ export async function approveProfile({ userId, role, unit, requestUnit }: Approv
       { target_user: userId, wanted_role: role, target_unit: unit, note: null },
       z.null(),
     );
+    await changed();
   } catch (error) {
     const missing = error instanceof DataError && error.status === 404;
     if (!missing || role !== 'viewer' || unit !== requestUnit) throw error;

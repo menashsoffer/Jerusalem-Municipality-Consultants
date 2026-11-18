@@ -6,6 +6,7 @@ import { UsersPage } from '../users-page.tsx';
 import * as api from '../api/users.ts';
 import * as changes from '../api/changes.ts';
 import { DataError } from '../../../data/client.ts';
+import * as rpc from '../../../data/rpc.ts';
 const target: api.Profile = {
   user_id: 'target',
   first_name: 'משתמש',
@@ -52,6 +53,17 @@ function page(value: ReturnType<typeof data>) {
   );
   render(<RouterProvider router={router} />);
 }
+/**
+ * The real write function runs against a stubbed database; `change` is what the database does.
+ * The screen then reloads through the screen data, which reads `value` again.
+ */
+function database(value: ReturnType<typeof data>, change: () => void) {
+  vi.spyOn(api, 'loadUsers').mockImplementation(() => Promise.resolve(value));
+  return vi.spyOn(rpc, 'rpc').mockImplementation(() => {
+    change();
+    return Promise.resolve(null);
+  });
+}
 beforeAll(() => {
   HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
     this.open = true;
@@ -82,15 +94,18 @@ describe('pending change requests', () => {
   it('shows what changes and why, and approves it', async () => {
     const value = { ...data(), changes: [CHANGE] };
     page(value);
-    const decide = vi.spyOn(changes, 'decideChange').mockImplementation(() => {
+    const decide = database(value, () => {
       value.changes = [];
-      return Promise.resolve();
     });
     const card = await screen.findByRole('article', { name: /עדכון פרטים: תפקיד בעירייה/ });
     expect(within(card).getByText('תפקיד בעירייה: יועצת בכירה')).toBeDefined();
     expect(within(card).getByText(/הסיבה: קיבלתי קידום/)).toBeDefined();
     await userEvent.click(within(card).getByRole('button', { name: 'אישור' }));
-    expect(decide).toHaveBeenCalledWith('c1', true, '');
+    expect(decide).toHaveBeenCalledWith(
+      'decide_access_change',
+      { request_id: 'c1', approve: true, note: null },
+      expect.anything(),
+    );
     expect(await screen.findByRole('heading', { name: 'אין בקשות שינוי ממתינות' })).toBeDefined();
   });
   it('needs a reason to reject and reports a refusal', async () => {
@@ -153,9 +168,8 @@ describe('access requests', () => {
   it('approves with the chosen role and the request unit in one step', async () => {
     const value = data();
     page(value);
-    const approve = vi.spyOn(api, 'approveProfile').mockImplementation(() => {
+    const approve = database(value, () => {
       value.profiles = value.profiles.map((p) => ({ ...p, status: 'active' }));
-      return Promise.resolve();
     });
     await userEvent.click(await screen.findByRole('button', { name: 'אישור הגישה' }));
     const dialog = screen.getByRole('form', { name: 'אישור הגישה של משתמש לדוגמה' });
@@ -167,12 +181,11 @@ describe('access requests', () => {
       'editor',
     );
     await userEvent.click(within(dialog).getByRole('button', { name: 'אישור ומתן התפקיד' }));
-    expect(approve).toHaveBeenCalledWith({
-      userId: 'target',
-      role: 'editor',
-      unit: 'own',
-      requestUnit: 'own',
-    });
+    expect(approve).toHaveBeenCalledWith(
+      'approve_profile',
+      { target_user: 'target', wanted_role: 'editor', target_unit: 'own', note: null },
+      expect.anything(),
+    );
     expect(await screen.findByRole('link', { name: 'בקשות ממתינות (0)' })).toBeDefined();
   });
 });
@@ -228,9 +241,8 @@ describe('users and roles', () => {
     const value = data();
     value.grants = [ADMIN_GRANT];
     page(value);
-    const remove = vi.spyOn(api, 'removeGrant').mockImplementation(() => {
+    const remove = database(value, () => {
       value.grants = [];
-      return Promise.resolve();
     });
     await userEvent.click(await screen.findByRole('link', { name: /משתמשים/ }));
     await userEvent.click(
@@ -239,7 +251,7 @@ describe('users and roles', () => {
     expect(remove).not.toHaveBeenCalled();
     expect(screen.getByText('להסיר את התפקיד צופה · יחידה א ממנהל לדוגמה?')).toBeDefined();
     await userEvent.click(screen.getByRole('button', { name: 'הסרת התפקיד' }));
-    expect(remove).toHaveBeenCalledWith('grant');
+    expect(remove).toHaveBeenCalledWith('revoke_role', { grant_id: 'grant' }, expect.anything());
     expect(await screen.findByText('אין תפקיד')).toBeDefined();
   });
 });

@@ -1,5 +1,4 @@
 import { useActionState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { decide, INITIAL_DECISION } from '../api/decision.ts';
@@ -18,9 +17,8 @@ function Name({ name, supplier }: { name: string; supplier: string }) {
 }
 
 function Decision({ id, supplier }: { id: string; supplier: string }) {
-  const refresh = useRevalidator();
   const [result, action, pending] = useActionState(
-    (_: typeof INITIAL_DECISION, form: FormData) => decide(id, form, () => refresh.revalidate()),
+    (_: typeof INITIAL_DECISION, form: FormData) => decide(id, form),
     INITIAL_DECISION,
   );
   return (

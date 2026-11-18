@@ -1,5 +1,5 @@
+import { supplierKey } from '../../../data/react-catalog.ts';
 import { useActionState, useState, type ReactNode } from 'react';
-import { useRevalidator } from 'react-router';
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import type { FieldErrors } from '../../../lib/rules/forms.ts';
 import { Button } from '../../../ui/button.tsx';
@@ -89,7 +89,6 @@ function Contacts({ data, errors, typed }: ContactsProps) {
  * mistake beside it; the database checks the same rules again and stores all or nothing.
  */
 export function EditForm({ data, aside }: Props) {
-  const revalidator = useRevalidator();
   const [version, setVersion] = useState(0);
   const [state, action, pending] = useActionState(async (_: State, form: FormData) => {
     const parsed = parseEditForm(form, data);
@@ -103,7 +102,7 @@ export function EditForm({ data, aside }: Props) {
     if ('unchanged' in parsed) return { ...START, message: 'אין שינויים לשמירה.' };
     const result = await saveAndRefresh(
       update(parsed.update),
-      () => revalidator.revalidate(),
+      supplierKey(data.supplier.id),
       'השינויים נשמרו.',
     );
     if (!result.error) setVersion((value) => value + 1);

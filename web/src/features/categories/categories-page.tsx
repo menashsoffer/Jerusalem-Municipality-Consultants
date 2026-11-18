@@ -2,12 +2,18 @@ import { useLoaderData, useNavigation } from 'react-router';
 import { EmptyState } from '../../ui/empty-state.tsx';
 import { PageHeader } from '../../ui/page-header.tsx';
 import { Skeleton } from '../../ui/skeleton.tsx';
-import { loadRequests } from './api/requests.ts';
+import { CATEGORY_REQUESTS_KEY, loadRequests } from './api/requests.ts';
+import { getScreenData } from '../../data/screen-data.ts';
+import { useScreenData } from '../../data/react-screen-data.ts';
 import { RequestCard } from './components/request-card.tsx';
 import styles from './components/request.module.css';
-export const loader = loadRequests;
+export const loader = () => getScreenData(CATEGORY_REQUESTS_KEY, loadRequests);
 export function CategoriesPage() {
-  const data = useLoaderData<typeof loader>(),
+  const data = useScreenData(
+      CATEGORY_REQUESTS_KEY,
+      useLoaderData<typeof loader>(),
+      loadRequests,
+    ).value,
     navigation = useNavigation();
   return (
     <div className={styles.list}>

@@ -1,5 +1,4 @@
 import { useDeferredValue, useState } from 'react';
-import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { ConfirmDialog } from '../../../ui/confirm-dialog.tsx';
 import { IconButton } from '../../../ui/icon-button.tsx';
@@ -64,12 +63,10 @@ function RoleTag({ grant, label, person, removable, pick }: TagProps) {
 }
 
 function useRevoke(grant: GrantRow | null) {
-  const refresh = useRevalidator();
   return async () => {
     if (!grant) return '';
     try {
       await removeGrant(grant.id);
-      await refresh.revalidate();
       return '';
     } catch (error) {
       return errorText(error);

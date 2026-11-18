@@ -7,6 +7,7 @@ import {
   type SupplierUpdate,
 } from '../../../data/site.ts';
 import type { WriteContext } from '../../../data/write-context.ts';
+import { refreshScreen, type Key } from '../../../data/screen-data.ts';
 import { requestAddressCheck } from './address-check.ts';
 
 export interface SaveResult {
@@ -15,10 +16,13 @@ export interface SaveResult {
 }
 export const IDLE: SaveResult = { message: '', error: '' };
 
-/** Runs a write, then refreshes the shared catalog so every screen sees the change. */
+/**
+ * Runs a write, then refreshes the shared catalog so every screen sees the change, and the
+ * screen data under `changed` (the supplier's card), here and in other tabs.
+ */
 export async function saveAndRefresh(
   request: (token: string) => Promise<string>,
-  refresh: () => Promise<void>,
+  changed: Key | null,
   saved: string,
 ): Promise<SaveResult> {
   let token: string;
@@ -30,7 +34,7 @@ export async function saveAndRefresh(
   }
   try {
     await loadSnapshot(token);
-    await refresh();
+    if (changed) await refreshScreen(changed);
   } catch {
     return {
       message: 'השינוי נשמר, אך התצוגה לא התרעננה. יש לרענן לפני ניסיון נוסף.',

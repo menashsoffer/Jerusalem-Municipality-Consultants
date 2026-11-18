@@ -1,3 +1,5 @@
+import { invalidate } from '../../../data/screen-data.ts';
+import { USERS_KEY } from './users.ts';
 import { rows, rpc, z } from '../../../data/rpc.ts';
 import { changeSchema, type ChangeRequest } from '../../../data/access-changes.ts';
 
@@ -20,4 +22,5 @@ export async function loadChanges(me: string): Promise<PendingChange[] | null> {
 
 export async function decideChange(id: string, approve: boolean, note: string): Promise<void> {
   await rpc('decide_access_change', { request_id: id, approve, note: note || null }, z.null());
+  await invalidate(USERS_KEY);
 }

@@ -1,5 +1,8 @@
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
 import { DataError } from '../../../data/client.ts';
+import { invalidate } from '../../../data/screen-data.ts';
+/** The screen's key in the screen data (state-management-spec-he.md 5.3). */
+export const PROPOSALS_KEY = ['threshold-proposals'] as const;
 const amount = z.number().positive();
 export const thresholdSchema = z.object({
   id: z.string(),
@@ -41,6 +44,13 @@ export async function decideProposal(id: string, approve: boolean, note: string 
     await rpc('decide_threshold_proposal', { proposal: id, approve, note }, decided);
   } catch (error) {
     if (!(error instanceof DataError && error.status === 404)) throw error;
-    await rpc('decide_threshold_proposal', { proposal: id, approve }, decided);
+    try {
+      await rpc('decide_threshold_proposal', { proposal: id, approve }, decided);
+    } finally {
+      // Decided here or by another admin: either way the list on screen is out of date.
+      await invalidate(PROPOSALS_KEY);
+    }
+    return;
   }
+  await invalidate(PROPOSALS_KEY);
 }

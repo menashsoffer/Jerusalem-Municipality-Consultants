@@ -4,6 +4,7 @@ import { REASON_MESSAGES } from '../../../lib/errors/reasons.ts';
 import { kindOfStatus, type FailureKind } from '../../../lib/errors/failure.ts';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../../../data/environment.ts';
 import { checkInputSchema, resultSchema, type CheckInput } from '../model/result.ts';
+import { savedChanged } from './saved.ts';
 /** Messages the route check owns, for answers that mean more here than in general. */
 const NOT_FOUND = 'הבקשה כבר לא קיימת או שאינה ביחידה שלך. רעננו את רשימת הבקשות השמורות.';
 /** The function says "Database unavailable" when it could not reach the database. */
@@ -65,5 +66,7 @@ export async function checkRoute(input: CheckInput, fetcher: typeof fetch = fetc
   }
   const result = resultSchema.safeParse(raw);
   if (!result.success) throw new DataError(0);
+  // A saved request's check is stored, and the saved list shows its latest result.
+  if ('request_id' in body) void savedChanged();
   return result.data;
 }

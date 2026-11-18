@@ -5,12 +5,11 @@ import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
-import { errorText } from '../../../data/errors.ts';
+import { NONE, failed, notUpdated, savedButUnchecked, type Outcome } from '../model/outcome.ts';
 import { checkRoute } from '../api/check.ts';
 import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
 import { updateRequest } from '../api/saved.ts';
-import { useReloadSaved } from './saved-list.tsx';
 import { readDraft, type DraftFields } from '../model/draft.ts';
 import { detailsOf, valuesOf, type Entry, type SavedEntry } from '../model/entry.ts';
 import type { CheckResult } from '../model/result.ts';
@@ -26,37 +25,14 @@ interface Props {
   /** Kept by the wizard, so the details survive moving between steps. */
   entry: Entry;
   keep: (entry: Entry) => void;
+  /** Empties the details and their tab draft; a saved request's editor has none. */
+  clear?: () => void;
 }
 interface FieldsProps {
   entry: Entry;
   units: Props['units'];
   unit: string;
   change: (id: string) => void;
-}
-
-/** What the form says after a failed attempt (error-handling-spec-he.md sections 3 and 5). */
-interface Outcome {
-  tone: 'error' | 'warning';
-  title: string;
-  text: string;
-}
-const NONE: Outcome | null = null;
-
-/** The request is saved, so the check runs on it again and never saves a second copy. */
-function savedButUnchecked(error: unknown): Outcome {
-  return {
-    tone: 'warning',
-    title: 'הבקשה נשמרה, אבל הבדיקה נכשלה.',
-    text: `${errorText(error)} הבקשה מחכה גם ב"בקשות שמורות", ואפשר לבדוק אותה שוב בלי לשמור מחדש.`,
-  };
-}
-
-function notUpdated(error: unknown): Outcome {
-  return { tone: 'error', title: 'השינויים לא נשמרו.', text: errorText(error) };
-}
-
-function failed(error: unknown): Outcome {
-  return { tone: 'error', title: 'לא ניתן לבדוק את הבקשה.', text: errorText(error) };
 }
 
 function UnitField({
@@ -147,7 +123,6 @@ async function saveNew(fields: DraftFields, run: Run) {
  * again; a second copy is never saved. What was typed is kept for a return to this step.
  */
 function useCheck({ entry, keep, ...run }: Run & Pick<Props, 'entry' | 'keep'>) {
-  const reload = useReloadSaved();
   return useActionState(async (_: Outcome | null, form: FormData) => {
     const values = valuesOf(form, entry);
     keep({ ...entry, values });
@@ -156,8 +131,7 @@ function useCheck({ entry, keep, ...run }: Run & Pick<Props, 'entry' | 'keep'>) 
     if (!entry.saved && !fields.unitId) return checkDraft(fields, run);
     const done = entry.saved ? await resave(entry.saved, fields, run) : await saveNew(fields, run);
     keep({ values, saved: done.saved });
-    // After the check, so the row in the saved list shows its result too.
-    if (done.saved) await reload();
+    // The save and the check each mark the saved list changed, so it shows the new row at once.
     return done.outcome;
   }, NONE);
 }
@@ -212,12 +186,20 @@ function label(saved: boolean, unit: string): string {
  * when the request is saved. After a save the same form edits that request.
  */
 export function DraftForm(props: Props) {
-  const { units, today, back, complete, entry, keep, backLabel = 'לשלב הקודם' } = props;
+  const { units, today, back, complete, entry, keep, clear, backLabel = 'לשלב הקודם' } = props;
   const [unit, setUnit] = useState(entry.values.unit_id);
   const form = useRef<HTMLFormElement>(null);
   const [outcome, action, pending] = useCheck({ today, complete, entry, keep });
   return (
-    <form ref={form} action={action} aria-label="פרטי הבקשה" className={styles.form}>
+    <form
+      ref={form}
+      action={action}
+      aria-label="פרטי הבקשה"
+      className={styles.form}
+      onChange={(event) => {
+        keep({ ...entry, values: valuesOf(new FormData(event.currentTarget), entry) });
+      }}
+    >
       {outcome && (
         <Notice tone={outcome.tone} title={outcome.title}>
           {outcome.text}
@@ -241,6 +223,11 @@ export function DraftForm(props: Props) {
         >
           {backLabel}
         </Button>
+        {!entry.saved && clear && (
+          <Button variant="quiet" onClick={clear} disabled={pending}>
+            ניקוי הפרטים
+          </Button>
+        )}
       </FormActions>
       <StatusMessage>{pending ? 'בודק את המסלול…' : ''}</StatusMessage>
     </form>

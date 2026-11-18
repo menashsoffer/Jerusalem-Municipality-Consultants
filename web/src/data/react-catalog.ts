@@ -3,6 +3,7 @@ import { getCatalogState, subscribe, detail } from './site.ts';
 import type { SupplierDetail } from './supplier-detail.ts';
 import { tokenUserId } from './snapshot.ts';
 import { DataError } from './client.ts';
+import { getScreenData } from './screen-data.ts';
 const serverSnapshot = () => null;
 /** The existing catalog remains the single store; React keeps no copy of it. */
 export function useCatalogSnapshot() {
@@ -13,12 +14,19 @@ export interface SupplierDetailResource {
   readonly userId: string | null;
   readonly promise: Promise<SupplierDetail>;
 }
-/** Create in a route loader or event, before rendering. Each visit rechecks server access. */
+/** The supplier card's key in the screen data (state-management-spec-he.md 5.3). */
+export const supplierKey = (supplierId: string) => ['supplier', supplierId] as const;
+
+/**
+ * Create in a route loader or event, before rendering. A card seen in the last moments comes
+ * from memory; the loader still rechecks server access on every visit.
+ */
 export function createSupplierDetailResource(
   token: string,
   supplierId: string,
+  load: () => Promise<SupplierDetail> = () => detail(token, supplierId),
 ): SupplierDetailResource {
-  const promise = detail(token, supplierId);
+  const promise = getScreenData(supplierKey(supplierId), load);
   // A lazy screen may mount after the request rejects; keep it handled until React reads it.
   void promise.catch(() => undefined);
   return { supplierId, userId: tokenUserId(token), promise };
