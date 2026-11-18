@@ -122,7 +122,7 @@ export function EditForm({ data, aside }: Props) {
       />
       <Contacts data={data} errors={state.errors} typed={state.typed} />
       <div className={styles.dialogActions}>
-        <Button type="submit" disabled={pending}>
+        <Button type="submit" pending={pending}>
           שמירה
         </Button>
         {aside}

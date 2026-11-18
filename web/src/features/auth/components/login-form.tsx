@@ -17,10 +17,10 @@ export function LoginForm() {
           maxLength: 320,
         }}
       />
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" pending={pending} pendingLabel="שולח קישור…">
         שליחת קישור כניסה
       </Button>
-      <StatusMessage>{pending ? 'שולח קישור…' : state.message}</StatusMessage>
+      <StatusMessage>{pending ? '' : state.message}</StatusMessage>
       {state.error && <p role="alert">{state.error}</p>}
     </form>
   );

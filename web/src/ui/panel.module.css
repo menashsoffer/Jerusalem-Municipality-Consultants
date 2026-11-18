@@ -71,15 +71,6 @@
     padding: 0;
     border-color: transparent;
   }
-  .skeleton {
-    display: grid;
-    gap: var(--space-lg);
-    & span {
-      block-size: var(--space-lg);
-      background: var(--color-subtle);
-      border-radius: var(--radius-control);
-    }
-  }
   .tableRegion {
     max-inline-size: 100%;
     overflow: auto;
@@ -167,16 +158,6 @@
     }
     .actionsCell {
       white-space: normal;
-    }
-  }
-  @media (prefers-reduced-motion: no-preference) {
-    .skeleton {
-      animation: pulse var(--duration-pulse) ease-in-out infinite alternate;
-    }
-    @keyframes pulse {
-      to {
-        opacity: var(--skeleton-opacity-min);
-      }
     }
   }
 }

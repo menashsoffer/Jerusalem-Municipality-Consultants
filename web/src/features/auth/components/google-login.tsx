@@ -41,7 +41,13 @@ export function GoogleLogin() {
   const [error, action, pending] = useActionState(authorize, '');
   return (
     <form action={action} aria-label="כניסה עם Google">
-      <Button type="submit" variant="secondary" className={styles.google} disabled={pending}>
+      <Button
+        type="submit"
+        variant="secondary"
+        className={styles.google}
+        pending={pending}
+        pendingLabel="מעביר ל-Google…"
+      >
         <GoogleMark />
         כניסה באמצעות Google
       </Button>

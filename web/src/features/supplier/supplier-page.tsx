@@ -35,7 +35,7 @@ export function SupplierPage() {
         fallback={
           <>
             <h1 tabIndex={-1}>פרטי ספק</h1>
-            <Skeleton />
+            <Skeleton shape="detail" label="טוען את פרטי הספק…" />
           </>
         }
       >

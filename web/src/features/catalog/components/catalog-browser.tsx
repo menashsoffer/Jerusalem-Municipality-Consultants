@@ -1,6 +1,7 @@
 import { useDeferredValue, useEffect, useState } from 'react';
 import { useLocation } from 'react-router';
 import { FormField } from '../../../ui/form-field.tsx';
+import { LogoDots } from '../../../ui/logo-dots.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
 import { filterCatalog } from '../../../catalog-filter.ts';
 import type { CatalogState } from '../../../data/snapshot.ts';
@@ -41,6 +42,20 @@ function SearchBox({ value, change }: { value: string; change: (query: string) =
   );
 }
 
+/** A quiet note while the catalog checks for newer data in the background. */
+function RefreshStatus({ refreshing }: { refreshing: boolean }) {
+  return (
+    <StatusMessage>
+      {refreshing && (
+        <>
+          <LogoDots size="small" />
+          בודק עדכונים והרשאות…
+        </>
+      )}
+    </StatusMessage>
+  );
+}
+
 export function CatalogBrowser({ state, today }: Props) {
   const [filters, setFilters] = useSavedFilters(today);
   const current = reconcile(filters, state.suppliers),
@@ -48,7 +63,7 @@ export function CatalogBrowser({ state, today }: Props) {
   const matches = filterCatalog(state.suppliers, { ...current, query });
   return (
     <>
-      <StatusMessage>{state.refreshing ? 'בודק עדכונים והרשאות…' : ''}</StatusMessage>
+      <RefreshStatus refreshing={state.refreshing} />
       <search aria-label="חיפוש וסינון ספקים" className={styles.searchPanel}>
         <SearchBox
           value={filters.query}
