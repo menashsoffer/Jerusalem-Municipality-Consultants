@@ -10,6 +10,8 @@ export const SHORTLIST_MAX = 50;
 const EMPTY: readonly string[] = [];
 const listeners = new Set<() => void>();
 let current: readonly string[] | null = null;
+/** When a supplier was last added in this tab (ms); the catalog shows its tray for a while. */
+let addedAt = 0;
 
 /** Keeps valid, distinct ids up to the limit, in the order given. */
 export function cleanIds(values: readonly unknown[]): string[] {
@@ -55,8 +57,13 @@ export function toggleShortlist(id: string): boolean {
     return true;
   }
   if (ids.length >= SHORTLIST_MAX) return false;
+  addedAt = Date.now();
   write([...ids, id]);
   return true;
+}
+
+export function lastAddedAt(): number {
+  return addedAt;
 }
 
 export function replaceShortlist(ids: readonly string[]): void {
