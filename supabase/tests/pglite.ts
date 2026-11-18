@@ -73,7 +73,7 @@ const FUNCTION_CALLS = `
     and not exists (
       select 1 from pg_depend d where d.objid = p.oid and d.deptype = 'e')`;
 
-async function trackFunctionCalls(db: PGlite, dir: string): Promise<void> {
+async function trackFunctionCalls(db: PGlite, file: string): Promise<void> {
   await db.exec("set track_functions = 'all'");
   const close = db.close.bind(db);
   db.close = async () => {
@@ -81,8 +81,8 @@ async function trackFunctionCalls(db: PGlite, dir: string): Promise<void> {
     await db.query('select pg_stat_force_next_flush()');
     await db.query('select 1');
     const { rows } = await db.query<{ name: string; calls: number }>(FUNCTION_CALLS);
-    await mkdir(dir, { recursive: true });
-    await writeFile(resolve(dir, `${randomUUID()}.json`), JSON.stringify(rows));
+    await mkdir(dirname(file), { recursive: true });
+    await writeFile(file, JSON.stringify(rows));
     await close();
   };
 }
@@ -91,7 +91,9 @@ export async function migratedDatabase(range: MigrationRange = {}): Promise<PGli
   const db = await emptyDatabase();
   await applyMigrations(db, range);
   const dir = process.env.SQL_COVERAGE_DIR;
-  if (dir) await trackFunctionCalls(db, dir);
+  // A database stopped at an older migration may hold functions a later one drops.
+  const prefix = range.until === undefined ? '' : 'partial-';
+  if (dir) await trackFunctionCalls(db, resolve(dir, `${prefix}${randomUUID()}.json`));
   return db;
 }
 

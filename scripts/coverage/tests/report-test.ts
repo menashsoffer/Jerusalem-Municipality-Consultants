@@ -80,4 +80,17 @@ describe('SQL call counts', () => {
     assert.deepEqual(uncalled(merged), ['public.a()', 'public.c()']);
     assert.equal(merged.get('public.b()'), 2);
   });
+
+  it('counts calls in an older database but not the functions only it still has', () => {
+    const merged = mergeCalls(
+      [[{ name: 'public.a()', calls: 0 }]],
+      [
+        [
+          { name: 'public.a()', calls: 1 },
+          { name: 'public.dropped(int)', calls: 0 },
+        ],
+      ],
+    );
+    assert.deepEqual([...merged], [['public.a()', 1]]);
+  });
 });

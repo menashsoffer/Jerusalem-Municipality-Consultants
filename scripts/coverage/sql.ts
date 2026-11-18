@@ -1,5 +1,7 @@
 // Merges the per-database function call counts that supabase/tests/pglite.ts writes when
-// SQL_COVERAGE_DIR is set. A function is covered when any test database called it.
+// SQL_COVERAGE_DIR is set. A function is covered when any test database called it. Only the
+// functions of fully migrated databases count: a database stopped at an older migration still
+// has functions that a later migration drops, and those must not be listed as untested.
 
 export interface FunctionCalls {
   name: string;
@@ -19,11 +21,21 @@ export function parseCalls(text: string): FunctionCalls[] {
   });
 }
 
-export function mergeCalls(dumps: FunctionCalls[][]): Map<string, number> {
+export function mergeCalls(
+  full: FunctionCalls[][],
+  partial: FunctionCalls[][] = [],
+): Map<string, number> {
   const merged = new Map<string, number>();
-  for (const row of dumps.flat()) merged.set(row.name, (merged.get(row.name) ?? 0) + row.calls);
+  for (const row of full.flat()) merged.set(row.name, (merged.get(row.name) ?? 0) + row.calls);
+  for (const row of partial.flat()) {
+    const calls = merged.get(row.name);
+    if (calls !== undefined) merged.set(row.name, calls + row.calls);
+  }
   return merged;
 }
+
+/** Dumps of databases stopped at an older migration carry this file name prefix. */
+export const PARTIAL_PREFIX = 'partial-';
 
 export function uncalled(merged: Map<string, number>): string[] {
   return [...merged]
