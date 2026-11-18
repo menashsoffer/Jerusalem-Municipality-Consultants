@@ -86,7 +86,7 @@ type Mode = 'recheck' | 'edit' | 'cancel';
 const DIALOGS: Record<Mode, { id: string; title: string; icon: IconName }> = {
   recheck: { id: RECHECK, title: 'בדיקה מחדש', icon: 'refresh' },
   edit: { id: EDIT_REQUEST, title: 'עריכת הבקשה', icon: 'pencil' },
-  cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה', icon: 'ban' },
+  cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה', icon: 'trash' },
 };
 
 /** Icon buttons: the name is in aria-label, and title shows it on hover (DESIGN.md 7). */

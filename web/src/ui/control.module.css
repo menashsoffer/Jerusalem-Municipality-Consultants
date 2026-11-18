@@ -74,6 +74,37 @@
   .button[aria-disabled='true'] {
     cursor: progress;
   }
+  /* Saving (DESIGN.md 6.8): the logo stripe from the header flows along the button's bottom edge,
+     the same sign the site uses for every wait, instead of a separate loader inside the label. */
+  .button[data-pending] {
+    position: relative;
+    overflow: hidden;
+    &::after {
+      content: '';
+      position: absolute;
+      inset-inline: 0;
+      inset-block-end: 0;
+      block-size: var(--stripe-size);
+      background: var(--gradient-jlm-loop) 100% 0 / 200% 100%;
+      pointer-events: none;
+      @media (prefers-reduced-motion: no-preference) {
+        animation: button-stripe-flow var(--duration-stripe) linear infinite;
+      }
+      @media (prefers-reduced-motion: reduce) {
+        animation: button-stripe-breathe var(--duration-breathe) ease-in-out infinite alternate;
+      }
+    }
+  }
+  @keyframes button-stripe-flow {
+    to {
+      background-position: 300% 0;
+    }
+  }
+  @keyframes button-stripe-breathe {
+    to {
+      opacity: var(--skeleton-opacity-min);
+    }
+  }
   .field {
     display: grid;
     gap: var(--space-sm);

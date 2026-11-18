@@ -1,14 +1,14 @@
 import type { ComponentProps, MouseEvent } from 'react';
 import { runCommand } from '../lib/dialogs.ts';
 import styles from './control.module.css';
-import { LogoDots } from './logo-dots.tsx';
 
 export type ButtonVariant = 'primary' | 'secondary' | 'quiet' | 'danger';
 interface Props extends ComponentProps<'button'> {
   command?: { target: string; action: 'show-modal' | 'close' };
   /** ui-building-blocks-spec-he.md 4.1: danger only inside a confirm dialog. */
   variant?: ButtonVariant;
-  /** While saving: dots and `pendingLabel` replace the label; another press does nothing (4.4). */
+  /** While saving: `pendingLabel` replaces the label over a flowing logo stripe; another press does
+   * nothing (4.4). */
   pending?: boolean;
   pendingLabel?: string;
 }
@@ -18,6 +18,8 @@ const CLASS: Record<ButtonVariant, string | undefined> = {
   quiet: styles.quiet,
   danger: styles.danger,
 };
+// aria-disabled keeps a saving button focusable; data-pending draws the flowing stripe.
+const PENDING = { 'aria-disabled': true, 'data-pending': '' } as const;
 /** Retains native button semantics, including keyboard activation and dialog commands. */
 export function Button({
   command,
@@ -46,19 +48,12 @@ export function Button({
     <button
       {...props}
       {...attributes}
+      {...(pending ? PENDING : {})}
       type={type}
       onClick={activate}
-      aria-disabled={pending || props['aria-disabled']}
       className={`${CLASS[variant] ?? ''} ${className}`}
     >
-      {pending ? (
-        <>
-          <LogoDots size="small" />
-          {pendingLabel}
-        </>
-      ) : (
-        children
-      )}
+      {pending ? pendingLabel : children}
     </button>
   );
 }

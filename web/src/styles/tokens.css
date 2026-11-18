@@ -120,6 +120,7 @@
     --duration-sheen: 1.4s;
     --duration-breathe: 2.4s;
     --duration-stripe: 2s;
+    --stripe-size: 0.1875rem;
     --delay-pending: 200ms;
     --pending-opacity: 0.6;
   }
