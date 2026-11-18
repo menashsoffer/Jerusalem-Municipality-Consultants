@@ -36,7 +36,30 @@ const controlSchema = z.object({
 });
 export type LoadControl = z.infer<typeof controlSchema>;
 
-export async function loadControl(): Promise<LoadControl> {
-  await requireRoles(['admin', 'auditor']);
-  return rpc('load_control', {}, controlSchema);
+const errorsSchema = z.array(
+  z.object({
+    kind: z.string(),
+    screen: z.string(),
+    failures: z.coerce.number().int().nonnegative(),
+    last_at: z.string(),
+  }),
+);
+export type ErrorRow = z.infer<typeof errorsSchema>[number];
+
+/** error-handling-spec-he.md section 8: administrators only. Null before the migration. */
+async function errorSummary(): Promise<ErrorRow[] | null> {
+  try {
+    return await rpc('error_summary', {}, errorsSchema);
+  } catch {
+    return null;
+  }
+}
+
+export async function loadControl(): Promise<LoadControl & { errors: ErrorRow[] | null }> {
+  const who = await requireRoles(['admin', 'auditor']);
+  const [control, errors] = await Promise.all([
+    rpc('load_control', {}, controlSchema),
+    who.access.admin ? errorSummary() : Promise.resolve(null),
+  ]);
+  return { ...control, errors };
 }

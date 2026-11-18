@@ -1,5 +1,6 @@
 // One way to turn any failure into the words the site shows (error-handling-spec-he.md).
 import { DataError, unanswered } from './client.ts';
+import { reportBoundaryError } from '../lib/telemetry.ts';
 import { FAILURES, failureSentence, type FailureKind } from '../lib/errors/failure.ts';
 
 export interface Failure {
@@ -28,6 +29,9 @@ function networkFailure(error: unknown): DataError | null {
   return timeout || network ? unanswered(error) : null;
 }
 
+/** The text to show beside a button or form; the error is counted once (spec section 8). */
 export function errorText(error: unknown): string {
-  return describeError(error).text;
+  const failure = describeError(error);
+  reportBoundaryError(error, 'action', failure.kind);
+  return failure.text;
 }

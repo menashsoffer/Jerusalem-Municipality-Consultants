@@ -3,6 +3,7 @@ import { PageHeader } from '../../ui/page-header.tsx';
 import { loadControl } from './api/control.ts';
 import { RegistryTable, TechnicalDetails } from './components/control-tables.tsx';
 import { StatCards } from './components/stat-cards.tsx';
+import { ErrorTable } from './components/error-table.tsx';
 import styles from './components/control.module.css';
 
 export const loader = loadControl;
@@ -17,6 +18,7 @@ export function LoadControlPage() {
         back={{ to: '/admin', label: 'ניהול' }}
       />
       <StatCards data={data} />
+      <ErrorTable errors={data.errors} />
       <RegistryTable registries={data.registries} />
       <TechnicalDetails jobs={data.jobs} batches={data.batches} />
     </div>
