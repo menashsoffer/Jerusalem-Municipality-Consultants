@@ -1,19 +1,26 @@
-import { useActionState, useState } from 'react';
+import { useActionState, useRef, useState } from 'react';
+import { Link } from 'react-router';
 import type { RegistryOption, WriteContext } from '../../../data/write-context.ts';
 import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { SelectField } from '../../../ui/select-field.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
+import { FormActions } from '../../../ui/form-actions.tsx';
+import { Notice } from '../../../ui/notice.tsx';
+import controls from '../../../ui/control.module.css';
 import { membership, saveAndRefresh } from '../api/write.ts';
 import { parseAddForm, fieldsOf, versionLabel } from '../model/add-form.ts';
 import { duplicates } from '../model/duplicates.ts';
 import { ENTITY_KINDS, ID_TYPES } from '../model/labels.ts';
 import { DuplicateChoices } from './duplicate-choices.tsx';
+import styles from './supplier.module.css';
 
 interface Result {
   message: string;
   error: string;
   saved: number;
+  /** The supplier the last saved row belongs to, for "לכרטיס הספק". */
+  supplierId: string | null;
 }
 const options = (entries: [string, string][]) =>
   entries.map(([value, label]) => (
@@ -43,7 +50,8 @@ function PoolFields({ context }: { context: WriteContext }) {
   const [versionId, setVersion] = useState('');
   const fields = fieldsOf(context, versionId);
   return (
-    <>
+    <fieldset className={styles.group}>
+      <legend>רישום במאגר</legend>
       <SelectField
         field={{ label: 'מאגר וגרסה' }}
         select={{
@@ -69,13 +77,14 @@ function PoolFields({ context }: { context: WriteContext }) {
           ]),
         }}
       />
-    </>
+      <Dates />
+    </fieldset>
   );
 }
 
-function DatesAndContacts() {
+function Dates() {
   return (
-    <>
+    <div className={styles.row}>
       <FormField
         field={{ label: 'תחילת רישום' }}
         input={{ name: 'registered_from', type: 'date' }}
@@ -88,12 +97,25 @@ function DatesAndContacts() {
         field={{ label: 'תחילת התקשרות' }}
         input={{ name: 'engagement_started_on', type: 'date' }}
       />
-      <FormField field={{ label: 'טלפון' }} input={{ name: 'phone', type: 'tel', maxLength: 80 }} />
-      <FormField
-        field={{ label: 'דוא״ל' }}
-        input={{ name: 'email', type: 'email', maxLength: 160, autoComplete: 'off' }}
-      />
-    </>
+    </div>
+  );
+}
+
+function Contacts() {
+  return (
+    <fieldset className={styles.group}>
+      <legend>פרטי קשר</legend>
+      <div className={styles.row}>
+        <FormField
+          field={{ label: 'טלפון' }}
+          input={{ name: 'phone', type: 'tel', maxLength: 80 }}
+        />
+        <FormField
+          field={{ label: 'דוא״ל' }}
+          input={{ name: 'email', type: 'email', maxLength: 160, autoComplete: 'off' }}
+        />
+      </div>
+    </fieldset>
   );
 }
 
@@ -102,8 +124,26 @@ function Fields({ context }: { context: WriteContext }) {
   const [identifier, setIdentifier] = useState('');
   return (
     <>
+      <fieldset className={styles.group}>
+        <legend>הספק</legend>
+        <SupplierFields setName={setName} setIdentifier={setIdentifier} />
+      </fieldset>
+      <DuplicateChoices candidates={duplicates(context, name, identifier)} />
+      <PoolFields context={context} />
+      <Contacts />
+    </>
+  );
+}
+
+interface SupplierFieldsProps {
+  setName: (value: string) => void;
+  setIdentifier: (value: string) => void;
+}
+function SupplierFields({ setName, setIdentifier }: SupplierFieldsProps) {
+  return (
+    <>
       <FormField
-        field={{ label: 'שם ספק' }}
+        field={{ label: 'שם הספק' }}
         input={{
           name: 'display_name',
           required: true,
@@ -117,55 +157,94 @@ function Fields({ context }: { context: WriteContext }) {
         field={{ label: 'סוג ישות' }}
         select={{ name: 'entity_kind', children: options(Object.entries(ENTITY_KINDS)) }}
       />
-      <SelectField
-        field={{ label: 'סוג מזהה' }}
-        select={{
-          name: 'identifier_scheme',
-          children: options([['', 'ללא מזהה'], ...MANUAL_ID_TYPES]),
-        }}
-      />
-      <FormField
-        field={{ label: 'מזהה רשמי', hint: '5 עד 9 ספרות, בלי מקפים. ממלאים יחד עם סוג המזהה.' }}
-        input={{
-          name: 'identifier',
-          inputMode: 'numeric',
-          pattern: '[0-9]{5,9}',
-          maxLength: 9,
-          onChange: (e) => {
-            setIdentifier(e.currentTarget.value);
-          },
-        }}
-      />
-      <DuplicateChoices candidates={duplicates(context, name, identifier)} />
-      <PoolFields context={context} />
-      <DatesAndContacts />
+      <div className={styles.row}>
+        <SelectField
+          field={{ label: 'סוג מזהה' }}
+          select={{
+            name: 'identifier_scheme',
+            children: options([['', 'ללא מזהה'], ...MANUAL_ID_TYPES]),
+          }}
+        />
+        <FormField
+          field={{ label: 'מזהה רשמי', hint: '5 עד 9 ספרות, בלי מקפים. ממלאים יחד עם סוג המזהה.' }}
+          input={{
+            name: 'identifier',
+            inputMode: 'numeric',
+            pattern: '[0-9]{5,9}',
+            maxLength: 9,
+            onChange: (e) => {
+              setIdentifier(e.currentTarget.value);
+            },
+          }}
+        />
+      </div>
     </>
+  );
+}
+
+async function submit(previous: Result, form: FormData): Promise<Result> {
+  const parsed = parseAddForm(form);
+  if (!parsed.payload) return { ...previous, message: '', error: parsed.error };
+  let supplierId: string | null = null;
+  const save = membership(parsed.payload);
+  const outcome = await saveAndRefresh(
+    async (token) => {
+      supplierId = await save(token);
+      return supplierId;
+    },
+    () => Promise.resolve(),
+    'הספק נוסף וממתין לאימות של משתמש אחר.',
+  );
+  if (outcome.error) return { ...previous, ...outcome };
+  return { ...outcome, saved: previous.saved + 1, supplierId };
+}
+
+function Saved({ result, again }: { result: Result; again: () => void }) {
+  if (!result.message) return null;
+  return (
+    <Notice tone="success" title={result.message}>
+      {result.supplierId && (
+        <Link to={`/supplier/${encodeURIComponent(result.supplierId)}`}>לכרטיס הספק</Link>
+      )}{' '}
+      <button type="button" className={controls.quiet} onClick={again}>
+        הוספת ספק נוסף
+      </button>
+    </Notice>
   );
 }
 
 /** A saved form remounts its fields (new key), which clears every value and duplicate hint. */
 export function AddForm({ context }: { context: WriteContext }) {
-  const [result, action, pending] = useActionState(
-    async (previous: Result, form: FormData): Promise<Result> => {
-      const parsed = parseAddForm(form);
-      if (!parsed.payload) return { ...previous, message: '', error: parsed.error };
-      const outcome = await saveAndRefresh(
-        membership(parsed.payload),
-        () => Promise.resolve(),
-        'הרישום נשמר וממתין לאימות.',
-      );
-      return { ...outcome, saved: previous.saved + (outcome.error ? 0 : 1) };
-    },
-    { message: '', error: '', saved: 0 },
-  );
+  const [result, action, pending] = useActionState(submit, {
+    message: '',
+    error: '',
+    saved: 0,
+    supplierId: null,
+  });
+  const form = useRef<HTMLFormElement>(null);
   return (
-    <form action={action} aria-label="הוספת ספק למאגר">
+    <form ref={form} action={action} aria-label="הוספת ספק למאגר" className={styles.addForm}>
+      <Saved
+        result={result}
+        again={() => {
+          form.current?.querySelector<HTMLInputElement>('input[name="display_name"]')?.focus();
+        }}
+      />
+      {result.error && (
+        <Notice tone="error" title="הספק לא נוסף.">
+          {result.error}
+        </Notice>
+      )}
       <Fields key={result.saved} context={context} />
-      <Button type="submit" disabled={pending || context.versions.length === 0}>
-        שמירה
-      </Button>
-      <StatusMessage>{pending ? 'שומר…' : result.message}</StatusMessage>
-      {result.error && <p role="alert">{result.error}</p>}
+      <FormActions>
+        <Button type="submit" pending={pending} pendingLabel="שומר…">
+          הוספת הספק
+        </Button>
+        <Link to="/catalog" className={controls.quiet}>
+          ביטול
+        </Link>
+      </FormActions>
+      <StatusMessage>{pending ? 'שומר…' : ''}</StatusMessage>
     </form>
   );
 }

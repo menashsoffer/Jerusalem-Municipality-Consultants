@@ -1,4 +1,6 @@
-import { Link, useLoaderData } from 'react-router';
+import { useLoaderData } from 'react-router';
+import { PageHeader } from '../../ui/page-header.tsx';
+import { RequiredNote } from '../../ui/field-parts.tsx';
 import { DataError } from '../../data/client.ts';
 import { identity } from '../../data/rpc.ts';
 import { EmptyState } from '../../ui/empty-state.tsx';
@@ -16,17 +18,20 @@ export function AddSupplierPage() {
   const { context } = useLoaderData<typeof loader>();
   return (
     <>
-      <p>
-        <Link to="/catalog">חזרה לאיתור ספקים</Link>
-      </p>
-      <h1 tabIndex={-1}>הוספת ספק למאגר</h1>
-      <p>רשומה חדשה ממתינה לאימות של משתמש אחר.</p>
+      <PageHeader
+        title="הוספת ספק"
+        lead="רשומה חדשה ממתינה לאימות של משתמש אחר."
+        back={{ to: '/catalog', label: 'איתור ספקים' }}
+      />
       {context.versions.length === 0 ? (
         <EmptyState title="אין מאגר זמין ביחידה שלך">
           <p>אפשר להוסיף ספק רק למאגר של יחידה שבה יש לך הרשאת עריכה.</p>
         </EmptyState>
       ) : (
-        <AddForm context={context} />
+        <>
+          <RequiredNote />
+          <AddForm context={context} />
+        </>
       )}
     </>
   );

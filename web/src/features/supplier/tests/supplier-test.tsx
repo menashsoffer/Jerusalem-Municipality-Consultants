@@ -262,12 +262,17 @@ describe('adding a supplier', () => {
     mockWrites();
     const save = vi.spyOn(site, 'saveMembership').mockResolvedValue('ok');
     show(<AddForm context={context()} />);
-    await userEvent.type(await screen.findByRole('textbox', { name: /שם ספק/ }), 'שם נוכחי');
-    await userEvent.click(screen.getByRole('radio', { name: 'שם נוכחי' }));
+    await userEvent.type(await screen.findByRole('textbox', { name: /שם הספק/ }), 'שם נוכחי');
+    const similar = screen.getByRole('radio', { name: /^שם נוכחי/u });
+    expect(similar.closest('label')?.textContent).toMatch(/מאגר א/u);
+    await userEvent.click(similar);
     await userEvent.selectOptions(screen.getByRole('combobox', { name: /מאגר וגרסה/ }), 'v1');
     await userEvent.selectOptions(screen.getByRole('combobox', { name: /תחום/ }), 'f1');
-    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
-    expect(await screen.findByText('הרישום נשמר וממתין לאימות.')).toBeDefined();
+    await userEvent.click(screen.getByRole('button', { name: 'הוספת הספק' }));
+    expect(await screen.findByText('הספק נוסף וממתין לאימות של משתמש אחר.')).toBeDefined();
+    expect(screen.getByRole('link', { name: 'לכרטיס הספק' }).getAttribute('href')).toBe(
+      '/supplier/ok',
+    );
     const payload = save.mock.calls[0]?.[1];
     expect(payload).toMatchObject({
       display_name: 'שם נוכחי',
@@ -276,7 +281,7 @@ describe('adding a supplier', () => {
       registry_field_id: 'f1',
     });
     await waitFor(() => {
-      expect(screen.getByRole<HTMLInputElement>('textbox', { name: /שם ספק/ }).value).toBe('');
+      expect(screen.getByRole<HTMLInputElement>('textbox', { name: /שם הספק/ }).value).toBe('');
     });
     expect(screen.queryByRole('radio')).toBeNull();
   });

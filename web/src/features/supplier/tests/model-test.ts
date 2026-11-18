@@ -14,6 +14,11 @@ const catalog = {
     { id: 'c', display_name: 'חברת אלון בעמ', status: 'inactive' },
   ],
   names: [{ supplier_id: 'a', name: 'אלון ייעוץ' }],
+  memberships: [
+    { supplier_id: 'b', registry_version_id: 'v2' },
+    { supplier_id: 'b', registry_version_id: 'v2' },
+    { supplier_id: 'b', registry_version_id: 'missing' },
+  ],
   registries: [
     { id: 'r1', name: 'מאגר א', status: 'active', owner_unit_id: 'u1' },
     { id: 'r2', name: 'מאגר ב', status: 'active', owner_unit_id: 'u2' },
@@ -50,7 +55,10 @@ describe('duplicate suppliers', () => {
     );
     assert.equal(duplicates(context, 'אלון ייעוץ', '')[0]?.id, 'a');
     const byNumber = duplicates(context, 'לא דומה', '512345678');
-    assert.deepEqual(byNumber, [{ id: 'b', name: 'ספק אחר', identifierMatch: true }]);
+    assert.deepEqual(byNumber, [
+      { id: 'b', name: 'ספק אחר', identifierMatch: true, registries: ['מאגר ב'] },
+    ]);
+    assert.deepEqual(duplicates(context, 'חברת אלון', '')[0]?.registries, []);
     assert.deepEqual(duplicates(context, '', ''), []);
   });
 });

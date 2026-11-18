@@ -13,6 +13,7 @@ export default defineConfig({
     // Keep jsdom workers within CI resources; parallel startup can starve router hydration.
     maxWorkers: 1,
     restoreMocks: true,
+    setupFiles: ['web/tests/vitest-setup.ts'],
     coverage: {
       provider: 'v8',
       include: scope.include,
