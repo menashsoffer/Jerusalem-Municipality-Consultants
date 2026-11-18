@@ -7,6 +7,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y-x';
 import reactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
+import { buttonOwners, buttonRestrictions } from './scripts/lint/button-rules.ts';
 
 // Import direction of the React site (documentation/react-guide-he.md, section 1):
 // lib <- ui, data <- features <- app-shell. A feature never imports another feature.
@@ -72,8 +73,12 @@ export default defineConfig(
     extends: [reactHooks.configs.flat['recommended-latest'], jsxA11y.configs.recommended],
     plugins: { 'import-x': importX },
     languageOptions: { globals: globals.browser },
-    rules: { 'import-x/no-restricted-paths': ['error', { zones: [...layers, ...featureZones] }] },
+    rules: {
+      'import-x/no-restricted-paths': ['error', { zones: [...layers, ...featureZones] }],
+      'no-restricted-syntax': ['error', ...buttonRestrictions],
+    },
   },
+  { files: buttonOwners, rules: { 'no-restricted-syntax': 'off' } },
   {
     files: [
       'supabase/functions/tests/**/*.ts',

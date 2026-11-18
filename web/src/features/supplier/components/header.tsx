@@ -1,6 +1,5 @@
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { Button } from '../../../ui/button.tsx';
-import { Icon } from '../../../ui/icon.tsx';
 import { SHORTLIST_MAX, toggleShortlist, useShortlist } from '../../../lib/shortlist.ts';
 import {
   alsoKnownAs,
@@ -84,8 +83,11 @@ export function SupplierHeader({ data, editor }: Props) {
       </div>
       <div className={styles.actions}>
         {editor && (
-          <Button variant="secondary" command={{ target: EDIT_DIALOG, action: 'show-modal' }}>
-            <Icon name="pencil" />
+          <Button
+            variant="secondary"
+            icon="pencil"
+            command={{ target: EDIT_DIALOG, action: 'show-modal' }}
+          >
             עריכה
           </Button>
         )}

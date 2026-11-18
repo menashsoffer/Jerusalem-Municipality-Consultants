@@ -6,7 +6,8 @@ import { Dialog } from '../../../ui/dialog.tsx';
 import { EmptyState } from '../../../ui/empty-state.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
-import { Icon, type IconName } from '../../../ui/icon.tsx';
+import type { IconName } from '../../../ui/icon.tsx';
+import { IconButton } from '../../../ui/icon-button.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { errorText } from '../../../data/errors.ts';
 import { dayOf } from '../../../lib/dates.ts';
@@ -89,25 +90,22 @@ const DIALOGS: Record<Mode, { id: string; title: string; icon: IconName }> = {
   cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה', icon: 'trash' },
 };
 
-/** Icon buttons: the name is in aria-label, and title shows it on hover (DESIGN.md 7). */
+/** Icon buttons: the full name for screen readers, the short one in the bubble (DESIGN.md 6.2). */
 function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mode) => void }) {
   const modes: Mode[] = editable(request) ? ['recheck', 'edit', 'cancel'] : ['recheck', 'cancel'];
   return (
     <div className={styles.rowActions}>
       {modes.map((mode) => (
-        <Button
+        <IconButton
           key={mode}
-          variant="quiet"
-          className={styles.iconButton}
-          aria-label={`${DIALOGS[mode].title}: ${request.subject}`}
-          title={DIALOGS[mode].title}
+          icon={DIALOGS[mode].icon}
+          label={`${DIALOGS[mode].title}: ${request.subject}`}
+          tip={DIALOGS[mode].title}
           command={{ target: DIALOGS[mode].id, action: 'show-modal' }}
           onClick={() => {
             choose(mode);
           }}
-        >
-          <Icon name={DIALOGS[mode].icon} />
-        </Button>
+        />
       ))}
     </div>
   );

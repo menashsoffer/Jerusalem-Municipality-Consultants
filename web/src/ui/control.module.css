@@ -12,21 +12,46 @@
     font: inherit;
     font-size: var(--font-body-size);
   }
-  .button {
-    composes: control;
+  /* Every button (DESIGN.md 6.2): shared behaviour only. The variants below add the look. */
+  .base {
     cursor: pointer;
+    &:disabled {
+      opacity: var(--skeleton-opacity-min);
+      cursor: not-allowed;
+    }
+    &[aria-disabled='true'] {
+      cursor: progress;
+    }
+  }
+  /* Special patterns (action tile, step indicator, status mark) style themselves. */
+  .plain {
+    composes: base;
+  }
+  .button {
+    composes: control base;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm);
     color: var(--color-on-brand);
     background: var(--color-brand);
     border-color: var(--color-brand);
     font-weight: var(--font-weight-strong);
     overflow-wrap: anywhere;
-    &:hover:not(:disabled) {
+    text-align: center;
+    @media (prefers-reduced-motion: no-preference) {
+      transition:
+        background-color var(--duration-quick),
+        border-color var(--duration-quick),
+        color var(--duration-quick);
+    }
+    &:hover:not(:disabled, [aria-disabled='true']),
+    &:active:not(:disabled, [aria-disabled='true']) {
       background: var(--color-brand-hover);
       border-color: var(--color-brand-hover);
     }
-    &:disabled {
-      opacity: var(--skeleton-opacity-min);
-      cursor: wait;
+    & svg {
+      flex: none;
     }
   }
   .secondary {
@@ -34,19 +59,21 @@
     color: var(--color-brand);
     background: var(--color-surface);
     border-color: var(--color-brand-line);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled, [aria-disabled='true']),
+    &:active:not(:disabled, [aria-disabled='true']) {
       color: var(--color-brand-hover);
       background: var(--color-brand-soft);
       border-color: var(--color-brand-line);
     }
   }
-  /* Cancel, clear filters, links styled as actions: text only (spec 4.1). */
+  /* Cancel, clear filters, links styled as actions, icon buttons: no fill (spec 4.1). */
   .quiet {
     composes: button;
     color: var(--color-brand);
     background: transparent;
     border-color: transparent;
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled, [aria-disabled='true']),
+    &:active:not(:disabled, [aria-disabled='true']) {
       color: var(--color-brand-hover);
       background: var(--color-brand-soft);
       border-color: transparent;
@@ -58,7 +85,8 @@
     color: var(--color-on-brand);
     background: var(--color-error);
     border-color: var(--color-error);
-    &:hover:not(:disabled) {
+    &:hover:not(:disabled, [aria-disabled='true']),
+    &:active:not(:disabled, [aria-disabled='true']) {
       background: var(--color-badge-danger-text);
       border-color: var(--color-badge-danger-text);
       filter: brightness(0.9);
@@ -66,17 +94,11 @@
   }
   /* A link that looks like a button, such as "הוספת ספק" or "מעבר לבקשה". */
   a.button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     text-decoration: none;
-  }
-  .button[aria-disabled='true'] {
-    cursor: progress;
   }
   /* Saving (DESIGN.md 6.8): the logo stripe from the header flows along the button's bottom edge,
      the same sign the site uses for every wait, instead of a separate loader inside the label. */
-  .button[data-pending] {
+  .base[data-pending] {
     position: relative;
     overflow: hidden;
     &::after {

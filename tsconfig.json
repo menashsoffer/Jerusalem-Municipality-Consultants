@@ -26,6 +26,7 @@
     "scripts/thresholds/**/*.ts",
     "scripts/schema/**/*.ts",
     "scripts/bundle/**/*.ts",
-    "scripts/coverage/**/*.ts"
+    "scripts/coverage/**/*.ts",
+    "scripts/lint/**/*.ts"
   ]
 }

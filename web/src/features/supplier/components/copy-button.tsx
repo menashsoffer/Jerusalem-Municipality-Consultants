@@ -1,10 +1,10 @@
 import { useRef, useState } from 'react';
-import { Icon } from '../../../ui/icon.tsx';
+import { IconButton } from '../../../ui/icon-button.tsx';
 import styles from './supplier.module.css';
 
 /**
- * Copies one contact value. The bubble is the live region, outside the button, and stays
- * visible for both outcomes; the button is never disabled, so a retry is always possible.
+ * Copies one contact value. The result shows in the button's bubble and is announced by a
+ * separate live region; the button is never disabled, so a retry is always possible.
  */
 export function CopyButton({ value, label }: { value: string; label: string }) {
   const [message, setMessage] = useState('');
@@ -26,21 +26,18 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
     }, 2000);
   }
   return (
-    <span className={styles.copy}>
-      <button
-        type="button"
-        className={styles.iconButton}
-        aria-label={`העתקת ${label}`}
-        data-copied={message === 'הועתק' ? '' : undefined}
+    <>
+      <IconButton
+        icon={message === 'הועתק' ? 'check' : 'copy'}
+        label={`העתקת ${label}`}
+        note={message || undefined}
         onClick={() => {
           void copy();
         }}
-      >
-        <Icon name={message === 'הועתק' ? 'check' : 'copy'} />
-      </button>
-      <span role="status" className={styles.tip}>
+      />
+      <span role="status" className={styles.visuallyHidden}>
         {message}
       </span>
-    </span>
+    </>
   );
 }

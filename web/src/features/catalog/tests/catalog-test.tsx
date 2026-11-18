@@ -147,7 +147,8 @@ describe('filter row', () => {
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'תוקף' }), 'valid');
     await userEvent.selectOptions(screen.getByRole('combobox', { name: 'מאגר' }), 'r1');
     const tags = screen.getByRole('list', { name: 'מסננים פעילים' });
-    expect([...tags.querySelectorAll('li')].map((li) => li.textContent)).toEqual([
+    // The tag's own text; the remove button's name bubble is hidden until hover.
+    expect([...tags.querySelectorAll('li')].map((li) => li.firstChild?.textContent)).toEqual([
       expect.stringMatching(/^מאגר: /u),
       'תוקף: בתוקף',
     ]);

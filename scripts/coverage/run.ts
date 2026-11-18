@@ -10,6 +10,7 @@ const NODE_TESTS = [
   'web/src/**/tests/*-test.ts',
   'scripts/bundle/tests/*-test.ts',
   'scripts/coverage/tests/*-test.ts',
+  'scripts/lint/tests/*-test.ts',
 ];
 
 const scope = JSON.parse(readFileSync('scripts/coverage/scope.json', 'utf8')) as {

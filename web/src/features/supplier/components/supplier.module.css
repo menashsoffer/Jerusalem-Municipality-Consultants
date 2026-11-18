@@ -1,23 +1,5 @@
 @layer features {
   /* Supplier screen: documentation/supplier-page-spec-he.md and DESIGN.md section 6.5. */
-  .back {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-sm);
-    min-block-size: var(--control-min-size);
-    padding-inline: var(--space-lg);
-    border: var(--border-width) solid var(--color-brand-line);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-brand);
-    font: inherit;
-    font-weight: var(--font-weight-strong);
-    text-decoration: none;
-    cursor: pointer;
-    &:hover {
-      background: var(--color-brand-soft);
-    }
-  }
   .card {
     padding: var(--space-xl);
     background: var(--color-surface);
@@ -211,39 +193,6 @@
     color: var(--color-badge-warning-text);
     font-size: var(--font-small);
   }
-  .copy {
-    position: relative;
-    display: inline-flex;
-  }
-  .iconButton {
-    display: grid;
-    place-items: center;
-    min-inline-size: var(--control-min-size);
-    min-block-size: var(--control-min-size);
-    border: 0;
-    border-radius: var(--radius-control);
-    background: transparent;
-    color: var(--color-brand);
-    cursor: pointer;
-    &:hover {
-      background: var(--color-brand-soft);
-    }
-  }
-  .tip {
-    position: absolute;
-    inset-block-end: 100%;
-    inset-inline-end: 0;
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-tag);
-    background: var(--color-text);
-    color: var(--color-surface);
-    font-size: var(--font-xs);
-    white-space: nowrap;
-    pointer-events: none;
-    &:empty {
-      opacity: 0;
-    }
-  }
   .pairs {
     display: grid;
     gap: var(--space-md);
@@ -338,12 +287,7 @@
       margin-block: 0;
     }
   }
-  /* Verification mark beside the name: the bubble sits above it, on hover, focus or tap. */
-  .mark {
-    position: relative;
-    display: inline-flex;
-    vertical-align: middle;
-  }
+  /* Verification mark beside the name: an IconButton coloured by state (DESIGN.md 6.2). */
   .markButton {
     display: grid;
     place-items: center;
@@ -369,24 +313,6 @@
   }
   .verified svg path:last-child {
     stroke: var(--color-surface);
-  }
-  .markTip {
-    position: absolute;
-    inset-block-end: 100%;
-    inset-inline-start: 50%;
-    translate: 50% 0;
-    z-index: 1;
-    padding: var(--space-xs) var(--space-sm);
-    border-radius: var(--radius-tag);
-    background: var(--color-text);
-    color: var(--color-surface);
-    font-size: var(--font-xs);
-    font-weight: var(--font-weight-label);
-    line-height: var(--line-height-body);
-    white-space: nowrap;
-    &[hidden] {
-      display: none;
-    }
   }
   .visuallyHidden {
     position: absolute;

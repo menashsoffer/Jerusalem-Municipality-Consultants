@@ -1,4 +1,5 @@
 import { useId } from 'react';
+import { Button } from '../../../ui/button.tsx';
 import { Icon, type IconName } from '../../../ui/icon.tsx';
 import { signOut } from '../api/session.ts';
 import { CHANGE_DIALOG } from './my-roles.tsx';
@@ -26,15 +27,15 @@ function TileBody({ icon, title, text, textId }: Tile & { textId: string }) {
 function ActionTile({ tile, run }: { tile: Tile; run: () => void }) {
   const textId = useId();
   return (
-    <button
-      type="button"
+    <Button
+      variant="plain"
       className={styles.tile}
       aria-label={tile.title}
       aria-describedby={textId}
       onClick={run}
     >
       <TileBody {...tile} textId={textId} />
-    </button>
+    </Button>
   );
 }
 
@@ -72,8 +73,9 @@ export function AccountActions({ edit, askChange }: Props) {
         />
       )}
       <form action={signOut} className={styles.tileForm}>
-        <button
+        <Button
           type="submit"
+          variant="plain"
           className={`${styles.tile ?? ''} ${styles.quietTile ?? ''}`}
           aria-label="יציאה מהמערכת"
           aria-describedby={signOutText}
@@ -84,7 +86,7 @@ export function AccountActions({ edit, askChange }: Props) {
             text="סיום ההתחברות בדפדפן הזה."
             textId={signOutText}
           />
-        </button>
+        </Button>
       </form>
     </section>
   );

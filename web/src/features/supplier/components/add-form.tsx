@@ -206,9 +206,9 @@ function Saved({ result, again }: { result: Result; again: () => void }) {
       {result.supplierId && (
         <Link to={`/supplier/${encodeURIComponent(result.supplierId)}`}>לכרטיס הספק</Link>
       )}{' '}
-      <button type="button" className={controls.quiet} onClick={again}>
+      <Button variant="quiet" onClick={again}>
         הוספת ספק נוסף
-      </button>
+      </Button>
     </Notice>
   );
 }

@@ -12,7 +12,7 @@
     "format:check": "prettier --check .",
     "test": "npm run test:ts && npm run test:supabase && npm run test:web && npm run test:components",
     "test:ts": "node --test \"supabase/functions/tests/*-test.ts\"",
-    "test:web": "node --test \"web/tests/*-test.ts\" \"web/src/**/tests/*-test.ts\" \"scripts/bundle/tests/*-test.ts\" \"scripts/coverage/tests/*-test.ts\"",
+    "test:web": "node --test \"web/tests/*-test.ts\" \"web/src/**/tests/*-test.ts\" \"scripts/bundle/tests/*-test.ts\" \"scripts/coverage/tests/*-test.ts\" \"scripts/lint/tests/*-test.ts\"",
     "check": "npm run format:check && npm run lint && npm run typecheck && npm run types:db:check && npm run coverage && npm run build:web && npm run size:check",
     "test:supabase": "node --test \"supabase/tests/*-test.ts\"",
     "build:web": "vite build",

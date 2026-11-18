@@ -59,19 +59,9 @@
       white-space: nowrap;
     }
   }
+  /* An IconButton (size small) inside the role tag: only its colours change here. */
   .tagRemove {
-    inline-size: 1.75rem;
-    block-size: 1.75rem;
-    min-inline-size: 1.75rem;
-    min-block-size: 1.75rem;
-    padding: 0;
-    justify-content: center;
-    border: 0;
-    border-radius: 50%;
-    background: transparent;
     color: var(--color-text);
-    font-size: 1.1em;
-    cursor: pointer;
     &:hover {
       background: var(--color-surface);
     }
