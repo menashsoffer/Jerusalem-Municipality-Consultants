@@ -5,7 +5,7 @@ import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { checkRoute } from '../api/check.ts';
 import { saveRequest } from '../api/engagement.ts';
 import { readDraft, type DraftFields } from '../model/draft.ts';
@@ -19,11 +19,25 @@ interface Props {
   complete: (result: CheckResult, requestId: string | null) => void;
 }
 
-/** With a unit the request is saved first and the check is stored; without one nothing is. */
-async function run({ draft, unitId, subject }: DraftFields, on: string) {
-  if (!unitId) return { result: await checkRoute({ draft, on }), requestId: null };
-  const requestId = await saveRequest({ ...draft, unit_id: unitId, subject });
-  return { result: await checkRoute({ request_id: requestId, on }), requestId };
+/** What the form says after a failed attempt (error-handling-spec-he.md sections 3 and 5). */
+interface Outcome {
+  tone: 'error' | 'warning';
+  title: string;
+  text: string;
+}
+const NONE: Outcome | null = null;
+
+/** The request is saved, so the check runs on it again and never saves a second copy. */
+function savedButUnchecked(error: unknown): Outcome {
+  return {
+    tone: 'warning',
+    title: 'הבקשה נשמרה, אבל הבדיקה נכשלה.',
+    text: `${errorText(error)} הבקשה מחכה גם ב"בקשות שמורות", ואפשר לבדוק אותה שוב בלי לשמור מחדש.`,
+  };
+}
+
+function failed(error: unknown): Outcome {
+  return { tone: 'error', title: 'לא ניתן לבדוק את הבקשה.', text: errorText(error) };
 }
 
 function UnitField({
@@ -55,50 +69,87 @@ function UnitField({
   );
 }
 
-function useCheck(today: string, complete: Props['complete']) {
-  return useActionState(async (_: string, form: FormData) => {
+type Complete = Props['complete'];
+
+async function checkSaved(id: string, run: { today: string; complete: Complete }, fresh = false) {
+  try {
+    run.complete(await checkRoute({ request_id: id, on: run.today }), id);
+    return NONE;
+  } catch (error) {
+    return fresh ? savedButUnchecked(error) : failed(error);
+  }
+}
+
+async function checkDraft({ draft }: DraftFields, run: { today: string; complete: Complete }) {
+  try {
+    run.complete(await checkRoute({ draft, on: run.today }), null);
+    return NONE;
+  } catch (error) {
+    return failed(error);
+  }
+}
+
+/**
+ * With a unit the request is saved first and the check is stored; without one nothing is.
+ * Once saved, `saved` holds its id and every later attempt only checks that request.
+ */
+function useCheck(today: string, complete: Complete) {
+  const [saved, setSaved] = useState<string | null>(null);
+  const run = { today, complete };
+  const state = useActionState(async (_: Outcome | null, form: FormData) => {
+    if (saved) return checkSaved(saved, run);
     const fields = readDraft(form);
-    if (typeof fields === 'string') return fields;
+    if (typeof fields === 'string') return { tone: 'error' as const, title: fields, text: '' };
+    if (!fields.unitId) return checkDraft(fields, run);
+    let id: string;
     try {
-      const { result, requestId } = await run(fields, today);
-      complete(result, requestId);
-      return '';
+      id = await saveRequest({ ...fields.draft, unit_id: fields.unitId, subject: fields.subject });
     } catch (error) {
-      return error instanceof DataError ? error.message : 'הבדיקה נכשלה. יש לנסות שוב.';
+      return failed(error);
     }
-  }, '');
+    setSaved(id);
+    return checkSaved(id, run, true);
+  }, NONE);
+  return { saved, state };
 }
 
 /** Step 2: the request details. The subject is needed only when the request is saved. */
 export function DraftForm({ units, today, back, complete }: Props) {
   const [unit, setUnit] = useState('');
-  const [error, action, pending] = useCheck(today, complete);
+  const { saved, state } = useCheck(today, complete);
+  const [outcome, action, pending] = state;
   return (
     <form action={action} aria-label="פרטי הבקשה" className={styles.form}>
-      {error && (
-        <Notice tone="error" title="לא ניתן לבדוק את הבקשה.">
-          {error}
+      {outcome && (
+        <Notice tone={outcome.tone} title={outcome.title}>
+          {outcome.text}
         </Notice>
       )}
-      <FormField
-        field={{ label: 'נושא' }}
-        input={{ name: 'subject', maxLength: 500, required: !!unit }}
-      />
-      <FormField
-        field={{ label: 'אומדן בש״ח' }}
-        input={{ name: 'estimated_value', inputMode: 'decimal', required: true, dir: 'ltr' }}
-      />
-      <label className={styles.check}>
-        <input type="checkbox" name="value_includes_vat" /> האומדן כולל מע״מ
-      </label>
-      <FormField
-        field={{ label: 'פטור מבוקש', hint: 'אם יש, למשל 3(8).' }}
-        input={{ name: 'requested_exemption', maxLength: 10, dir: 'ltr' }}
-      />
-      {units.length > 0 && <UnitField units={units} unit={unit} change={setUnit} />}
+      <fieldset disabled={saved !== null} className={styles.fields}>
+        <FormField
+          field={{ label: 'נושא' }}
+          input={{ name: 'subject', maxLength: 500, required: !!unit }}
+        />
+        <FormField
+          field={{ label: 'אומדן בש״ח' }}
+          input={{ name: 'estimated_value', inputMode: 'decimal', required: true, dir: 'ltr' }}
+        />
+        <label className={styles.check}>
+          <input type="checkbox" name="value_includes_vat" /> האומדן כולל מע״מ
+        </label>
+        <FormField
+          field={{ label: 'פטור מבוקש', hint: 'אם יש, למשל 3(8).' }}
+          input={{ name: 'requested_exemption', maxLength: 10, dir: 'ltr' }}
+        />
+        {units.length > 0 && <UnitField units={units} unit={unit} change={setUnit} />}
+      </fieldset>
       <FormActions>
         <Button type="submit" pending={pending} pendingLabel="בודק…">
-          {unit ? 'בדיקת מסלול ושמירה ביחידה' : 'בדיקת מסלול בלבד'}
+          {saved
+            ? 'בדיקה חוזרת של הבקשה השמורה'
+            : unit
+              ? 'בדיקת מסלול ושמירה ביחידה'
+              : 'בדיקת מסלול בלבד'}
         </Button>
         <Button variant="secondary" onClick={back} disabled={pending}>
           לשלב הקודם

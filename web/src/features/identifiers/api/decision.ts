@@ -1,3 +1,4 @@
+import { errorText } from '../../../data/errors.ts';
 import { DataError } from '../../../data/client.ts';
 import { decideCandidate } from './candidates.ts';
 export const INITIAL_DECISION = { error: '', message: '', committed: false };
@@ -13,7 +14,7 @@ export async function decide(id: string, form: FormData, refresh: () => Promise<
     if (!(error instanceof DataError && error.status === 404))
       return {
         ...INITIAL_DECISION,
-        error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',
+        error: errorText(error),
       };
     message = 'המועמד כבר טופל.';
   }

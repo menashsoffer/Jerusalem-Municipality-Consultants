@@ -4,7 +4,7 @@ import { Button } from '../../../ui/button.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { addGrant, type Profile, type Unit } from '../api/users.ts';
 import { parseGrant } from '../model/permissions.ts';
 import { GrantFields } from './grant-fields.tsx';
@@ -24,9 +24,7 @@ function useGrant(scope: Props['scope']) {
     try {
       await addGrant(input.data);
     } catch (error) {
-      return error instanceof DataError
-        ? error.message
-        : 'לא ניתן להשלים. יש לרענן ולבדוק לפני ניסיון נוסף.';
+      return errorText(error);
     }
     const dialog = document.getElementById(GRANT_DIALOG);
     if (dialog instanceof HTMLDialogElement) dialog.close();

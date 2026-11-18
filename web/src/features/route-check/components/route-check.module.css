@@ -26,12 +26,19 @@
       outline: none;
     }
   }
-  .form {
+  .form,
+  .fields {
     display: grid;
     gap: var(--space-sm);
     & > div {
       margin-block: 0;
     }
+  }
+  .fields {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    min-inline-size: 0;
   }
   .check {
     display: flex;

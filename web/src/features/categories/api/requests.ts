@@ -1,5 +1,6 @@
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
 import { requestSchema, parseDecision, type DecisionField } from '../model/decision.ts';
+import { errorText } from '../../../data/errors.ts';
 import { DataError } from '../../../data/client.ts';
 export async function loadRequests() {
   const who = await requireRoles(['admin']);
@@ -26,7 +27,7 @@ export const INITIAL_DECISION: DecisionState = { error: '', field: {}, committed
 function failure(error: unknown): DecisionState {
   return {
     ...INITIAL_DECISION,
-    error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',
+    error: errorText(error),
   };
 }
 

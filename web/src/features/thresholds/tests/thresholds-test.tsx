@@ -122,7 +122,7 @@ describe('monthly threshold decisions', () => {
     const form = screen.getByRole('form', { name: 'דחיית ההצעה לספים מ-16.11.2026' });
     await userEvent.type(within(form).getByRole('textbox', { name: /נימוק/ }), 'המדד תוקן');
     await userEvent.click(within(form).getByRole('button', { name: 'דחיית ההצעה' }));
-    expect(await within(form).findByText('לא ניתן לשמור את ההחלטה.')).toBeDefined();
+    expect(await within(form).findByText(/תקלה במערכת/u)).toBeDefined();
     expect(within(form).getByRole<HTMLInputElement>('textbox', { name: /נימוק/ }).value).toBe(
       'המדד תוקן',
     );

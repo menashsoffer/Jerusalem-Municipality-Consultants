@@ -10,9 +10,9 @@ afterEach(() => {
   cleanup();
   setTelemetryReporter(() => undefined);
 });
-for (const [Component, boundary] of [
-  [ScreenError, 'route'],
-  [RouteError, 'root'],
+for (const [Component, boundary, heading] of [
+  [ScreenError, 'route', 'לא ניתן להציג את המסך'],
+  [RouteError, 'root', 'משהו השתבש'],
 ] as const) {
   it(`reports the ${boundary} error boundary without serializing private error text`, async () => {
     const events: TelemetryEvent[] = [];
@@ -32,10 +32,12 @@ for (const [Component, boundary] of [
         <RouterProvider router={router} />
       </StrictMode>,
     );
-    expect(await screen.findByRole('heading', { name: 'משהו השתבש' })).toBeDefined();
+    expect(await screen.findByRole('heading', { name: heading })).toBeDefined();
     await waitFor(() => {
       expect(events).toEqual([{ name: 'error', error_code: 'http_5xx', boundary }]);
     });
     expect(JSON.stringify(events)).not.toMatch(/secret|supplier|access_token|stack|message/);
+    // Private error text never reaches the screen either.
+    expect(document.body.textContent).not.toMatch(/secret/);
   });
 }

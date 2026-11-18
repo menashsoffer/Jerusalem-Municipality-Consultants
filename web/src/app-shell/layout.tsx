@@ -3,6 +3,7 @@ import { Outlet, useLocation, useMatches, useNavigation, useRevalidator } from '
 
 import type { RouteHandle } from './routes.tsx';
 import { SiteHeader } from './site-header.tsx';
+import { OfflineBanner } from './offline-banner.tsx';
 
 const SITE_NAME = 'איתור ספקים';
 
@@ -70,6 +71,7 @@ export function Layout() {
       </a>
       <SiteHeader />
       <NavigationProgress />
+      <OfflineBanner />
       <main
         id="main"
         ref={main}

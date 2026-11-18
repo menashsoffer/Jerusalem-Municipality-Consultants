@@ -5,7 +5,7 @@ import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { Notice } from '../../../ui/notice.tsx';
-import { DataError } from '../../../data/client.ts';
+import { errorText } from '../../../data/errors.ts';
 import { approveProfile, type Profile, type Unit } from '../api/users.ts';
 import { decideReview, INITIAL_REVIEW } from '../api/review.ts';
 import { parseGrant } from '../model/permissions.ts';
@@ -25,7 +25,7 @@ function closeDialog(id: string) {
 }
 
 function failure(error: unknown): string {
-  return error instanceof DataError ? error.message : 'לא ניתן לשמור. יש לרענן ולבדוק.';
+  return errorText(error);
 }
 
 function useApprove({ profile, scope }: Props) {
