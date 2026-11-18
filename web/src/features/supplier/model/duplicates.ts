@@ -4,6 +4,23 @@ export interface Candidate {
   id: string;
   name: string;
   identifierMatch: boolean;
+  /** The pools the supplier is listed in, so the user can tell similar names apart. */
+  registries: string[];
+}
+
+function registriesOf(context: WriteContext): Map<string, string[]> {
+  const { catalog } = context;
+  const names = new Map(catalog.registries.map((r) => [r.id, r.name]));
+  const versions = new Map(catalog.versions.map((v) => [v.id, names.get(v.registry_id) ?? '']));
+  const result = new Map<string, string[]>();
+  for (const m of catalog.memberships) {
+    const name = versions.get(m.registry_version_id);
+    if (!name) continue;
+    const list = result.get(m.supplier_id) ?? [];
+    if (!list.includes(name)) list.push(name);
+    result.set(m.supplier_id, list);
+  }
+  return result;
 }
 function normalize(value: string): string {
   return value
@@ -49,6 +66,7 @@ export function duplicates(context: WriteContext, name: string, identifier: stri
     values.push(row.name);
     names.set(row.supplier_id, values);
   }
+  const pools = registriesOf(context);
   return context.catalog.suppliers
     .filter((row) => row.status === 'active')
     .flatMap((row) => {
@@ -57,7 +75,14 @@ export function duplicates(context: WriteContext, name: string, identifier: stri
         closeName(value, name),
       );
       return idMatch || nameMatch
-        ? [{ id: row.id, name: row.display_name, identifierMatch: idMatch }]
+        ? [
+            {
+              id: row.id,
+              name: row.display_name,
+              identifierMatch: idMatch,
+              registries: pools.get(row.id) ?? [],
+            },
+          ]
         : [];
     })
     .sort(
