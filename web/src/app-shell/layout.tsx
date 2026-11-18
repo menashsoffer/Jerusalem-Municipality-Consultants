@@ -21,26 +21,22 @@ function useRouteTitle(): string {
 }
 
 /**
- * While the next screen loads: a bar in the logo colors under the header, and the current screen
- * fades, so a press never looks ignored (DESIGN.md 6.8). Both wait a moment before showing, so a
- * quick move does not flash.
+ * True while the next screen or a reload after a change (approve, grant, remove) is on its way.
+ * The logo stripe then flows and the current screen fades (DESIGN.md 6.8).
  */
-function NavigationProgress() {
-  const moving = useNavigation().state !== 'idle';
-  // A screen that reloads its data after a change (approve, grant, remove) also shows the bar.
-  const reloading = useRevalidator().state !== 'idle';
-  const busy = moving || reloading;
-  return (
-    <div className="shell-progress-slot">
-      {busy && <progress className="shell-progress" aria-label="טוען את המסך" />}
-    </div>
-  );
+function useBusy(): { moving: boolean; busy: boolean } {
+  const navigation = useNavigation().state;
+  const revalidation = useRevalidator().state;
+  return {
+    moving: navigation === 'loading',
+    busy: navigation !== 'idle' || revalidation !== 'idle',
+  };
 }
 
 /** Shared frame: skip link, header, one main region. Moves focus to the new screen's h1. */
 export function Layout() {
   const title = useRouteTitle();
-  const busy = useNavigation().state === 'loading';
+  const { moving, busy } = useBusy();
   const { pathname } = useLocation();
   const main = useRef<HTMLElement>(null);
   const firstRender = useRef(true);
@@ -69,15 +65,17 @@ export function Layout() {
       >
         דילוג לתוכן
       </a>
-      <SiteHeader />
-      <NavigationProgress />
+      <SiteHeader busy={busy} />
+      <p className="shell-busy" role="status">
+        {busy ? 'טוען את המסך…' : ''}
+      </p>
       <OfflineBanner />
       <main
         id="main"
         ref={main}
         className="shell-main"
         tabIndex={-1}
-        data-pending={busy || undefined}
+        data-pending={moving || undefined}
       >
         <Outlet />
       </main>
