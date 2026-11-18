@@ -47,7 +47,7 @@ describe('workflow functions', () => {
     );
     await as(db, USERS.admin, async () => {
       const revoke = `select public.revoke_role('${grant.rows[0]?.id ?? ''}')`;
-      await assert.rejects(db.query(revoke), /last admin/);
+      await assert.rejects(db.query(revoke), /reason:last_admin/);
     });
   });
 

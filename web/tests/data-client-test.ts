@@ -199,3 +199,16 @@ it('confirms an update or a delete only when rows came back', async () => {
   const none = api(() => Promise.resolve(Response.json({})));
   await assert.rejects(none.remove('supplier_names', { id: 'eq.x' }), /לא ברור אם השינוי נשמר/);
 });
+
+it('shows the Hebrew reason a database function gave, and keeps its status', async () => {
+  const refused = api(() =>
+    Promise.resolve(
+      Response.json({ code: 'P0002', message: 'reason:already_decided' }, { status: 404 }),
+    ),
+  );
+  await assert.rejects(refused.rpc('load_control', {}), {
+    kind: 'reason',
+    status: 404,
+    message: /כבר הוחלט/,
+  });
+});

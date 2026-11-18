@@ -84,11 +84,13 @@ async function check(job: Accepted, fetcher: typeof fetch): Promise<Response> {
   }
   const input = loaded.body as CheckInput;
   const checked = runEngine(input, target.on);
-  if (!checked) return failure(`No thresholds in force on ${target.on}`, 422);
+  // reason:<key> is shown to the person (error-handling-spec-he.md section 6).
+  if (!checked) return failure('reason:no_thresholds', 422);
   if ('draft' in target) return json({ id: null, ...checked.result });
   const row = record(checked, input, target);
   const saved = await rest(env, { path: 'route_checks', body: row, as: 'service' }, fetcher);
-  if (saved.status !== 201) return failure('Could not save the route check', 502);
+  // Not the person's to fix: the site says it is a fault in the system, without "try again".
+  if (saved.status !== 201) return failure('system', 502);
   const [stored] = saved.body as { id: number }[];
   return json({ id: stored?.id ?? null, ...checked.result });
 }

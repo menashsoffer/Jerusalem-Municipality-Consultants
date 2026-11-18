@@ -95,7 +95,7 @@ describe('user administration invariants used by R5', () => {
     await as(db, USERS.admin, async () => {
       await assert.rejects(
         db.query('select public.revoke_role($1)', [grant.rows[0]?.id]),
-        /last admin/i,
+        /reason:last_admin/,
       );
     });
   });

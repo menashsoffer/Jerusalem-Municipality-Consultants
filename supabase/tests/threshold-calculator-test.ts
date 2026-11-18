@@ -74,7 +74,7 @@ describe('threshold calculator', () => {
       await assert.rejects(db.query(record('2026-11-16')), /Not authorized/);
     });
     await as(db, USERS.admin, async () => {
-      await assert.rejects(db.query(record('2026-11-17')), /16th/);
+      await assert.rejects(db.query(record('2026-11-17')), /reason:threshold_start_day/);
       await db.query(record('2026-11-16'));
       await assert.rejects(db.query(record('2026-11-16')));
       const stored = await db.query<{ valid_until: string; is_official: boolean }>(

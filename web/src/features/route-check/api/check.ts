@@ -1,22 +1,13 @@
 import { freshToken, recoverSession } from '../../../data/rpc.ts';
-import { DataError, REQUEST_TIMEOUT_MS, unanswered } from '../../../data/client.ts';
+import { DataError, REQUEST_TIMEOUT_MS, refusal, unanswered } from '../../../data/client.ts';
+import { REASON_MESSAGES } from '../../../lib/errors/reasons.ts';
 import { kindOfStatus, type FailureKind } from '../../../lib/errors/failure.ts';
 import { SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY } from '../../../data/environment.ts';
 import { checkInputSchema, resultSchema, type CheckInput } from '../model/result.ts';
 /** Messages the route check owns, for answers that mean more here than in general. */
-const OWN: Partial<Record<number, string>> = {
-  404: 'הבקשה כבר לא קיימת או שאינה ביחידה שלך. רעננו את רשימת הבקשות השמורות.',
-  422: 'אין סף מכרז מאושר לתאריך הזה. בחרו תאריך אחר, או בקשו ממנהל מערכת לאשר את הסף החודשי.',
-};
+const NOT_FOUND = 'הבקשה כבר לא קיימת או שאינה ביחידה שלך. רעננו את רשימת הבקשות השמורות.';
 /** The function says "Database unavailable" when it could not reach the database. */
 const DATABASE_DOWN = 'Database unavailable';
-
-class CheckError extends DataError {
-  constructor(status: number, message: string) {
-    super(status, null, kindOf(status, message));
-    this.message = OWN[status] ?? this.message;
-  }
-}
 
 function kindOf(status: number, message: string): FailureKind {
   if (status === 422) return 'reason';
@@ -24,7 +15,17 @@ function kindOf(status: number, message: string): FailureKind {
   return kindOfStatus(status);
 }
 
-async function failed(response: Response): Promise<CheckError> {
+/** `reason:<key>` from the function wins; a 422 from an older deployment means the same. */
+function checkError(status: number, message: string): DataError {
+  const error = refusal(status, message, kindOf(status, message));
+  if (error.kind === 'reason' && !message.startsWith('reason:')) {
+    error.message = REASON_MESSAGES.no_thresholds;
+  }
+  if (status === 404) error.message = NOT_FOUND;
+  return error;
+}
+
+async function failed(response: Response): Promise<DataError> {
   let message = '';
   try {
     const body = (await response.json()) as { error?: unknown };
@@ -32,7 +33,7 @@ async function failed(response: Response): Promise<CheckError> {
   } catch {
     /* An empty or broken body keeps the status alone. */
   }
-  return new CheckError(response.status, message);
+  return checkError(response.status, message);
 }
 
 export async function checkRoute(input: CheckInput, fetcher: typeof fetch = fetch) {
