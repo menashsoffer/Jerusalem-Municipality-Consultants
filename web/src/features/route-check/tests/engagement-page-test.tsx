@@ -51,6 +51,11 @@ function page(units: PageData['units'], more: Partial<PageData> = {}) {
 }
 async function fill() {
   await userEvent.click(screen.getByRole('button', { name: 'המשך' }));
+  // The wizard moves focus to the step heading on the next frame; typing before that frame
+  // sends the keys to the heading on a slow machine, leaving the estimate empty.
+  await vi.waitFor(() => {
+    expect(document.activeElement?.textContent).toBe('פרטי הבקשה');
+  });
   await userEvent.type(screen.getByLabelText(/^אומדן בש״ח/u), '120000');
 }
 afterEach(() => {
