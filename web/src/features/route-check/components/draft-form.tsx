@@ -9,38 +9,19 @@ import { errorText } from '../../../data/errors.ts';
 import { checkRoute } from '../api/check.ts';
 import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
-import { updateRequest, type RequestDetails } from '../api/saved.ts';
+import { updateRequest } from '../api/saved.ts';
 import { useReloadSaved } from './saved-list.tsx';
 import { readDraft, type DraftFields } from '../model/draft.ts';
+import { detailsOf, valuesOf, type Entry, type SavedEntry } from '../model/entry.ts';
 import type { CheckResult } from '../model/result.ts';
 import styles from './route-check.module.css';
-
-/** What was typed, as typed, so a return to this step shows it again. */
-export interface Values {
-  subject: string;
-  estimated_value: string;
-  vat: boolean;
-  requested_exemption: string;
-  unit_id: string;
-}
-/** The request saved from this form, and its details as last stored. */
-interface SavedEntry {
-  id: string;
-  key: string;
-}
-export interface Entry {
-  values: Values;
-  saved: SavedEntry | null;
-}
-export const EMPTY_ENTRY: Entry = {
-  values: { subject: '', estimated_value: '', vat: false, requested_exemption: '', unit_id: '' },
-  saved: null,
-};
 
 interface Props {
   units: { id: string; name: string }[];
   today: string;
   back: () => void;
+  /** The back button's name; the saved-request editor closes instead of stepping back. */
+  backLabel?: string;
   complete: (result: CheckResult, requestId: string | null) => void;
   /** Kept by the wizard, so the details survive moving between steps. */
   entry: Entry;
@@ -51,21 +32,6 @@ interface FieldsProps {
   units: Props['units'];
   unit: string;
   change: (id: string) => void;
-}
-
-function raw(form: FormData, key: string): string {
-  const value = form.get(key);
-  return typeof value === 'string' ? value : '';
-}
-
-function valuesOf(form: FormData, entry: Entry): Values {
-  return {
-    subject: raw(form, 'subject'),
-    estimated_value: raw(form, 'estimated_value'),
-    vat: form.get('value_includes_vat') === 'on',
-    requested_exemption: raw(form, 'requested_exemption'),
-    unit_id: entry.saved ? entry.values.unit_id : raw(form, 'unit_id'),
-  };
 }
 
 /** What the form says after a failed attempt (error-handling-spec-he.md sections 3 and 5). */
@@ -147,12 +113,6 @@ async function checkDraft({ draft }: DraftFields, run: Run) {
   } catch (error) {
     return failed(error);
   }
-}
-
-/** The details as stored, and a key that tells whether they changed since the last save. */
-function detailsOf({ draft, subject }: DraftFields): { details: RequestDetails; key: string } {
-  const details = { subject, ...draft };
-  return { details, key: JSON.stringify(details) };
 }
 
 /** A saved request: changed details are stored first, then it is checked again by id. */
@@ -251,7 +211,8 @@ function label(saved: boolean, unit: string): string {
  * Step 2: the request details, filled with what was typed before. The subject is needed only
  * when the request is saved. After a save the same form edits that request.
  */
-export function DraftForm({ units, today, back, complete, entry, keep }: Props) {
+export function DraftForm(props: Props) {
+  const { units, today, back, complete, entry, keep, backLabel = 'לשלב הקודם' } = props;
   const [unit, setUnit] = useState(entry.values.unit_id);
   const form = useRef<HTMLFormElement>(null);
   const [outcome, action, pending] = useCheck({ today, complete, entry, keep });
@@ -278,7 +239,7 @@ export function DraftForm({ units, today, back, complete, entry, keep }: Props) 
           }}
           disabled={pending}
         >
-          לשלב הקודם
+          {backLabel}
         </Button>
       </FormActions>
       <StatusMessage>{pending ? 'בודק את המסלול…' : ''}</StatusMessage>
