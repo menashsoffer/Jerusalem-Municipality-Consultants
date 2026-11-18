@@ -54,6 +54,7 @@ function page(account: Partial<Account>, access: Access = ACTIVE, entry = '/auth
     units: UNITS,
     grants: [GRANT],
     changes: [],
+    signedInAt: null,
     ...account,
   };
   const router = createMemoryRouter(
@@ -85,7 +86,10 @@ describe('my account', () => {
   it('shows details and role tags, and sends only changed details for approval', async () => {
     const ask = vi.spyOn(api, 'askDetails').mockResolvedValue();
     page({});
-    expect(await screen.findByRole('heading', { name: 'החשבון שלי', level: 1 })).toBeDefined();
+    expect(await screen.findByRole('heading', { name: 'האזור האישי', level: 1 })).toBeDefined();
+    expect(screen.getByRole('heading', { name: 'דנה כהן', level: 2 })).toBeDefined();
+    expect(screen.getByText('17.11.2026')).toBeDefined();
+    expect(screen.getByText('לא ידוע')).toBeDefined();
     expect(screen.getByText('dana@example.test')).toBeDefined();
     expect(screen.getByText('עורך · אגף החינוך')).toBeDefined();
     await userEvent.click(screen.getByRole('button', { name: 'עריכת הפרטים שלי' }));
@@ -135,7 +139,10 @@ describe('my account', () => {
 
   it('asks for a role change with the fields the kind needs', async () => {
     const ask = vi.spyOn(api, 'askChange').mockResolvedValue();
-    page({}, ACTIVE, '/auth?part=roles');
+    page({});
+    await userEvent.click(
+      await screen.findByRole('button', { name: 'בקשה לשינוי תפקיד או יחידה' }),
+    );
     const form = await screen.findByRole('form', { name: 'בקשה לשינוי תפקיד או יחידה' });
     await userEvent.selectOptions(
       within(form).getByRole('combobox', { name: /מה לבקש/ }),
@@ -162,6 +169,15 @@ describe('my account', () => {
       grant_id: '',
       reason: 'אני מנהלת צוות',
     });
+  });
+
+  it('shows the last sign-in and opens the details form from its tile', async () => {
+    page({ signedInAt: '2026-11-18T06:55:00Z' });
+    expect(await screen.findByText(/18\.11\.2026/)).toBeDefined();
+    expect(screen.queryByRole('form', { name: 'עריכת הפרטים שלי' })).toBeNull();
+    await userEvent.click(screen.getByRole('button', { name: 'עריכת הפרטים שלי' }));
+    expect(screen.getByRole('form', { name: 'עריכת הפרטים שלי' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'יציאה מהמערכת' })).toBeDefined();
   });
 
   it('keeps details read-only where change requests are not available', async () => {

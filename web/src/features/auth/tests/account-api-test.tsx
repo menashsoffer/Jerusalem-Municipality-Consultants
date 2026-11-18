@@ -2,9 +2,17 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import type * as RpcModule from '../../../data/rpc.ts';
 import * as rpc from '../../../data/rpc.ts';
 import * as snapshot from '../../../data/snapshot.ts';
+import * as site from '../../../data/site.ts';
 import type { Access } from '../../../data/access.ts';
 import { changeSummary, detailsText, grantLabel } from '../../../data/access-change-labels.ts';
-import { askChange, askDetails, cancelChange, loadAccount, requestAccess } from '../api/account.ts';
+import {
+  askChange,
+  askDetails,
+  cancelChange,
+  lastSignIn,
+  loadAccount,
+  requestAccess,
+} from '../api/account.ts';
 import type { ChangeRequest } from '../api/account.ts';
 
 vi.mock('../../../data/rpc.ts', async (original) => ({
@@ -33,7 +41,13 @@ describe('account loader', () => {
   it('reads only departments for someone without a profile', async () => {
     const account = await loadAccount({ userId: 'me', access: access('unregistered') });
     expect(tables()).toEqual(['org_units']);
-    expect(account).toEqual({ profile: null, units: [], grants: [], changes: null });
+    expect(account).toEqual({
+      profile: null,
+      units: [],
+      grants: [],
+      changes: null,
+      signedInAt: null,
+    });
   });
   it('reads only the profile while the request waits', async () => {
     await loadAccount({ userId: 'me', access: access('pending') });
@@ -53,6 +67,21 @@ describe('account loader', () => {
       table === 'access_change_requests' ? Promise.reject(new Error('404')) : Promise.resolve([]),
     );
     expect((await loadAccount({ userId: 'me', access: access('active') })).changes).toBeNull();
+  });
+});
+
+describe('last sign-in', () => {
+  it('reads it from Supabase Auth and leaves it out on any failure', async () => {
+    const user = vi.spyOn(site, 'authUser');
+    user.mockResolvedValueOnce(Response.json({ last_sign_in_at: '2026-11-18T06:55:00Z' }));
+    expect(await lastSignIn()).toBe('2026-11-18T06:55:00Z');
+    user.mockResolvedValueOnce(Response.json({}));
+    expect(await lastSignIn()).toBeNull();
+    user.mockResolvedValueOnce(new Response(null, { status: 401 }));
+    expect(await lastSignIn()).toBeNull();
+    user.mockRejectedValueOnce(new Error('offline'));
+    expect(await lastSignIn()).toBeNull();
+    user.mockRestore();
   });
 });
 

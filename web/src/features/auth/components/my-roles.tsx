@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Button } from '../../../ui/button.tsx';
 import { Dialog } from '../../../ui/dialog.tsx';
 import { dayOf } from '../../../lib/dates.ts';
 import type { ChangeRequest, MyGrant, Unit } from '../api/account.ts';
@@ -54,7 +53,7 @@ function History({
 
 /** "התפקידים שלי": active roles as tags, the request dialog and the requests so far. */
 export function MyRoles({ units, grants, changes }: Props) {
-  // A new form each time the dialog opens, so an old answer is not left in it.
+  // A new form each time the dialog closes, so an old answer is not left in it.
   const [round, setRound] = useState(0);
   const names = new Map(units.map((u) => [u.id, u.name]));
   const busy = new Set((changes ?? []).filter((c) => c.status === 'pending').map((c) => c.kind));
@@ -72,17 +71,14 @@ export function MyRoles({ units, grants, changes }: Props) {
       )}
       {changes && (
         <>
-          <Button
-            variant="secondary"
-            command={{ target: CHANGE_DIALOG, action: 'show-modal' }}
-            onClick={() => {
+          <History changes={changes} names={names} grants={grants} />
+          <Dialog
+            id={CHANGE_DIALOG}
+            title="בקשה לשינוי תפקיד או יחידה"
+            onClose={() => {
               setRound((n) => n + 1);
             }}
           >
-            בקשה לשינוי תפקיד או יחידה
-          </Button>
-          <History changes={changes} names={names} grants={grants} />
-          <Dialog id={CHANGE_DIALOG} title="בקשה לשינוי תפקיד או יחידה">
             <ChangeForm key={round} units={units} grants={grants} busy={busy} done={close} />
           </Dialog>
         </>

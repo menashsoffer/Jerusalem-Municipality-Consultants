@@ -1,5 +1,6 @@
 import { insertProfile, rows, rpc, sessionToken, z, type Identity } from '../../../data/rpc.ts';
 import { tokenEmail } from '../../../data/snapshot.ts';
+import { authUser } from '../../../data/site.ts';
 import { changeSchema, type ChangeRequest } from '../../../data/access-changes.ts';
 import type { AccessInput, ChangeInput } from '../model/account-forms.ts';
 
@@ -27,6 +28,20 @@ export interface Account {
   grants: MyGrant[];
   /** Null until the change-request table exists in this environment. */
   changes: ChangeRequest[] | null;
+  /** When this account last signed in, as Supabase Auth records it; null if unknown. */
+  signedInAt: string | null;
+}
+
+const authSchema = z.object({ last_sign_in_at: z.string().nullish() });
+/** A nicety on the personal area: any failure leaves it out instead of failing the screen. */
+export async function lastSignIn(): Promise<string | null> {
+  try {
+    const response = await authUser(sessionToken());
+    if (!response.ok) return null;
+    return authSchema.parse(await response.json()).last_sign_in_at ?? null;
+  } catch {
+    return null;
+  }
 }
 
 const departments = () =>
@@ -52,16 +67,24 @@ async function myChanges(userId: string): Promise<ChangeRequest[] | null> {
 export async function loadAccount(who: Identity): Promise<Account> {
   const { state } = who.access;
   if (state === 'unregistered')
-    return { profile: null, units: await departments(), grants: [], changes: null };
+    return {
+      profile: null,
+      units: await departments(),
+      grants: [],
+      changes: null,
+      signedInAt: null,
+    };
   const mine = { user_id: `eq.${who.userId}` };
   const profile = (await rows('profiles', mine, z.array(profileSchema)))[0] ?? null;
-  if (state !== 'active') return { profile, units: [], grants: [], changes: null };
-  const [units, grants, changes] = await Promise.all([
+  if (state !== 'active')
+    return { profile, units: [], grants: [], changes: null, signedInAt: null };
+  const [units, grants, changes, signedInAt] = await Promise.all([
     departments(),
     rows('role_grants', { ...mine, revoked_at: 'is.null' }, z.array(grantSchema)),
     myChanges(who.userId),
+    lastSignIn(),
   ]);
-  return { profile, units, grants, changes };
+  return { profile, units, grants, changes, signedInAt };
 }
 
 export async function requestAccess(userId: string, input: AccessInput): Promise<void> {
