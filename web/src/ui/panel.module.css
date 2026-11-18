@@ -127,9 +127,46 @@
       background: var(--color-surface);
     }
   }
-  @container (inline-size < 30rem) {
-    .table :where(th, td) {
-      padding: var(--space-sm);
+  .actionsCell {
+    white-space: nowrap;
+  }
+  /* A narrow table (a phone) becomes one card per row, each value under its column name
+     (responsive-table guidance), so no column is squeezed to one letter per line. */
+  @container (inline-size < 36rem) {
+    .table {
+      &,
+      & :where(caption, tbody, tr, th, td) {
+        display: block;
+      }
+      & thead {
+        display: none;
+      }
+      & tbody tr {
+        padding-block: var(--space-sm);
+        border-block-end: var(--border-width) solid var(--color-border);
+      }
+      & tbody tr:last-child {
+        border-block-end: 0;
+      }
+      & :where(th, td) {
+        padding: var(--space-xs) var(--space-lg);
+        border-block-end: 0;
+      }
+      & tbody th {
+        position: static;
+        font-size: var(--font-lg);
+      }
+      & td[data-label]::before {
+        content: attr(data-label) ': ';
+        color: var(--color-muted);
+        font-size: var(--font-small);
+      }
+      & tbody tr:hover :where(th, td) {
+        background: none;
+      }
+    }
+    .actionsCell {
+      white-space: normal;
     }
   }
   @media (prefers-reduced-motion: no-preference) {

@@ -137,8 +137,11 @@ describe('engagement request page', () => {
       estimated_value: 90000,
       value_includes_vat: true,
       requested_exemption: null,
+      status: 'draft',
       created_at: '2026-11-10T08:00:00Z',
+      updated_at: '2026-11-10T08:00:00Z',
       lastStatus: 'blocked',
+      changedSinceCheck: false,
     };
     Object.defineProperty(HTMLDialogElement.prototype, 'showModal', {
       configurable: true,

@@ -12,6 +12,13 @@ import { dayOf } from '../../../lib/dates.ts';
 import { checkRoute } from '../api/check.ts';
 import type { SavedRequest } from '../api/saved.ts';
 import { money, STATUS_LABELS, type CheckResult } from '../model/result.ts';
+import {
+  CANCEL_REQUEST,
+  CancelRequest,
+  EDIT_REQUEST,
+  EditRequest,
+  editable,
+} from './request-changes.tsx';
 import { ResultPanel } from './result-panel.tsx';
 import styles from './route-check.module.css';
 
@@ -27,7 +34,7 @@ const COLUMNS = [
   { id: 'value', label: 'אומדן' },
   { id: 'date', label: 'תאריך' },
   { id: 'status', label: 'הבדיקה האחרונה' },
-  { id: 'action', label: 'פעולה' },
+  { id: 'action', label: 'פעולות', actions: true },
 ];
 
 function Recheck({ request, unit, today }: { request: SavedRequest; unit: string; today: string }) {
@@ -68,31 +75,95 @@ function Recheck({ request, unit, today }: { request: SavedRequest; unit: string
   );
 }
 
-function statusText(status: SavedRequest['lastStatus']): string {
-  return status ? STATUS_LABELS[status] : 'טרם נבדקה';
+function statusText(request: SavedRequest): string {
+  if (!request.lastStatus) return 'טרם נבדקה';
+  const label = STATUS_LABELS[request.lastStatus];
+  return request.changedSinceCheck ? `${label} (הפרטים שונו מאז, כדאי לבדוק שוב)` : label;
+}
+
+type Mode = 'recheck' | 'edit' | 'cancel';
+const DIALOGS: Record<Mode, { id: string; title: string }> = {
+  recheck: { id: RECHECK, title: 'בדיקה מחדש' },
+  edit: { id: EDIT_REQUEST, title: 'עריכת הבקשה' },
+  cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה' },
+};
+
+function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mode) => void }) {
+  const modes: Mode[] = editable(request) ? ['recheck', 'edit', 'cancel'] : ['recheck', 'cancel'];
+  return (
+    <div className={styles.rowActions}>
+      {modes.map((mode) => (
+        <Button
+          key={mode}
+          variant="quiet"
+          aria-label={`${DIALOGS[mode].title}: ${request.subject}`}
+          command={{ target: DIALOGS[mode].id, action: 'show-modal' }}
+          onClick={() => {
+            choose(mode);
+          }}
+        >
+          {mode === 'cancel' ? 'ביטול' : mode === 'edit' ? 'עריכה' : DIALOGS[mode].title}
+        </Button>
+      ))}
+    </div>
+  );
+}
+
+type Chosen = { request: SavedRequest; mode: Mode } | null;
+
+function titled(mode: Mode, chosen: Chosen): string {
+  return chosen?.mode === mode
+    ? `${DIALOGS[mode].title}: ${chosen.request.subject}`
+    : DIALOGS[mode].title;
+}
+
+function RequestDialogs({
+  chosen,
+  unitName,
+  today,
+}: {
+  chosen: Chosen;
+  unitName: (r: SavedRequest) => string;
+  today: string;
+}) {
+  const request = chosen?.request;
+  return (
+    <>
+      <Dialog id={RECHECK} title={titled('recheck', chosen)}>
+        {request && chosen.mode === 'recheck' && (
+          <Recheck key={request.id} request={request} unit={unitName(request)} today={today} />
+        )}
+      </Dialog>
+      <Dialog id={EDIT_REQUEST} title={titled('edit', chosen)}>
+        {request && chosen.mode === 'edit' && <EditRequest key={request.id} request={request} />}
+      </Dialog>
+      <Dialog id={CANCEL_REQUEST} title={titled('cancel', chosen)}>
+        {request && chosen.mode === 'cancel' && (
+          <CancelRequest key={request.id} request={request} />
+        )}
+      </Dialog>
+    </>
+  );
 }
 
 export function SavedRequests({ requests, units, today }: Props) {
-  const [chosen, setChosen] = useState<SavedRequest | null>(null);
+  const [chosen, setChosen] = useState<Chosen>(null);
+  const unitName = (r: SavedRequest) => units.get(r.unit_id) ?? 'יחידה לא זמינה';
   const rows = requests.map((r) => ({
     id: r.id,
     cells: {
       subject: r.subject,
-      unit: units.get(r.unit_id) ?? 'יחידה לא זמינה',
+      unit: unitName(r),
       value: <bdi>{money(r.estimated_value)}</bdi>,
       date: dayOf(r.created_at),
-      status: statusText(r.lastStatus),
+      status: statusText(r),
       action: (
-        <Button
-          variant="quiet"
-          aria-label={`בדיקה מחדש: ${r.subject}`}
-          command={{ target: RECHECK, action: 'show-modal' }}
-          onClick={() => {
-            setChosen(r);
+        <RowActions
+          request={r}
+          choose={(mode) => {
+            setChosen({ request: r, mode });
           }}
-        >
-          בדיקה מחדש
-        </Button>
+        />
       ),
     },
   }));
@@ -106,16 +177,7 @@ export function SavedRequests({ requests, units, today }: Props) {
           <p>בקשה נשמרת כשבוחרים לה יחידה בשלב פרטי הבקשה.</p>
         </EmptyState>
       )}
-      <Dialog id={RECHECK} title={chosen ? `בדיקה מחדש: ${chosen.subject}` : 'בדיקה מחדש'}>
-        {chosen && (
-          <Recheck
-            key={chosen.id}
-            request={chosen}
-            unit={units.get(chosen.unit_id) ?? 'יחידה לא זמינה'}
-            today={today}
-          />
-        )}
-      </Dialog>
+      <RequestDialogs chosen={chosen} unitName={unitName} today={today} />
     </section>
   );
 }

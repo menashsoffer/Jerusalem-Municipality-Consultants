@@ -376,6 +376,7 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "cancel_note": string | null;
     };
     Insert: {
       "id"?: string;
@@ -393,6 +394,7 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "cancel_note"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -410,6 +412,7 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "cancel_note"?: string | null;
     };
   };
   "identifier_candidates": {

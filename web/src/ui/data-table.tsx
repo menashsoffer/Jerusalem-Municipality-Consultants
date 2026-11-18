@@ -3,6 +3,8 @@ import styles from './panel.module.css';
 export interface TableColumn {
   id: string;
   label: string;
+  /** Row buttons: kept on one line, and shown without a label when the table stacks. */
+  actions?: boolean;
 }
 export interface TableRow {
   id: string;
@@ -22,7 +24,14 @@ function Cells({ row, columns }: Pick<Props, 'columns'> & { row: TableRow }) {
             {row.cells[column.id]}
           </th>
         ) : (
-          <td key={column.id}>{row.cells[column.id]}</td>
+          <td
+            key={column.id}
+            // The label each cell shows when a narrow table stacks into cards.
+            data-label={column.actions ? undefined : column.label}
+            className={column.actions ? styles.actionsCell : undefined}
+          >
+            {row.cells[column.id]}
+          </td>
         ),
       )}
     </tr>

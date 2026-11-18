@@ -47,6 +47,15 @@
   .back {
     justify-self: start;
   }
+  /* The row buttons of a saved request: one line on a wide table, wrapping on a card. */
+  .rowActions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    & button {
+      white-space: nowrap;
+    }
+  }
   .summary {
     margin: 0;
     color: var(--color-muted);
