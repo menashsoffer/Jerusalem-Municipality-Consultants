@@ -94,7 +94,7 @@ export function StatusPanel({ data, today, cancel }: Props) {
         </>
       )}
       <div className={styles.dialogActions}>
-        <Button type="submit" variant={inactive ? 'primary' : 'danger'} disabled={pending}>
+        <Button type="submit" variant={inactive ? 'primary' : 'danger'} pending={pending}>
           {inactive ? 'אישור סימון כפעיל' : 'אישור סימון כלא פעיל'}
         </Button>
         <Button variant="secondary" onClick={cancel}>

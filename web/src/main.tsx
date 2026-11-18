@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 
 import { AppRouter, createAdminRouter } from './app-shell/router.tsx';
 import { prepareAdmin } from './features/auth/api/bootstrap.ts';
-import { Skeleton } from './ui/skeleton.tsx';
+import { PageLoader } from './ui/logo-dots.tsx';
 import { setAdminSession, getAdminSession, installKeeper } from './data/rpc.ts';
 import { browserKeeper, endedStart, watchSession } from './app-shell/session-watch.ts';
 import { getAccess, telemetryRequest } from './data/site.ts';
@@ -46,7 +46,7 @@ const mounted = createRoot(root, {
     reportBoundaryError(error, 'root');
   },
 });
-mounted.render(<Skeleton />);
+mounted.render(<PageLoader label="טוען את האתר…" />);
 try {
   const keeper = browserKeeper();
   installKeeper(keeper);
