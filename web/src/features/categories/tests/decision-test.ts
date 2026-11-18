@@ -10,10 +10,15 @@ function form(decision: string, note = '', category = '') {
 }
 describe('category decision input', () => {
   it('requires a meaningful reason for every decision, and a link destination', () => {
-    assert.deepEqual(parseDecision(form('rejected', ' ')), { error: 'נימוק: שדה חובה.' });
-    assert.deepEqual(parseDecision(form('approved', '')), { error: 'נימוק: שדה חובה.' });
+    assert.deepEqual(parseDecision(form('rejected', ' ')), { field: 'note', error: 'שדה חובה.' });
+    assert.deepEqual(parseDecision(form('approved', '')), { field: 'note', error: 'שדה חובה.' });
+    assert.deepEqual(parseDecision(form('maybe', 'x')), {
+      field: 'decision',
+      error: 'יש לבחור החלטה.',
+    });
     assert.match((parseDecision(form('approved', '!!')) as { error: string }).error, /מילים/);
     assert.deepEqual(parseDecision(form('linked', 'כפילות')), {
+      field: 'category_id',
       error: 'יש לבחור קטגוריה קיימת לקישור.',
     });
   });

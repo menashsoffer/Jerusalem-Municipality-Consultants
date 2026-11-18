@@ -1,5 +1,5 @@
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
-import { requestSchema, parseDecision } from '../model/decision.ts';
+import { requestSchema, parseDecision, type DecisionField } from '../model/decision.ts';
 import { DataError } from '../../../data/client.ts';
 export async function loadRequests() {
   const who = await requireRoles(['admin']);
@@ -13,26 +13,49 @@ export async function loadRequests() {
   ]);
   return { requests, categories, userId: who.userId };
 }
-export async function decideRequest(id: string, form: FormData, refresh: () => Promise<void>) {
+
+export interface DecisionState {
+  /** A problem with the whole decision, shown at the top of the dialog. */
+  error: string;
+  /** A problem with one field, shown under it. */
+  field: Partial<Record<DecisionField, string>>;
+  committed: boolean;
+}
+export const INITIAL_DECISION: DecisionState = { error: '', field: {}, committed: false };
+
+function failure(error: unknown): DecisionState {
+  return {
+    ...INITIAL_DECISION,
+    error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',
+  };
+}
+
+export async function decideRequest(
+  id: string,
+  form: FormData,
+  refresh: () => Promise<void>,
+): Promise<DecisionState> {
   const decision = parseDecision(form);
-  if ('error' in decision) return { error: decision.error, committed: false };
+  if ('error' in decision)
+    return { ...INITIAL_DECISION, field: { [decision.field]: decision.error } };
   try {
     await rpc('decide_category_request', { request_id: id, ...decision }, z.string().nullable());
   } catch (error) {
     // 404: another administrator already decided the request.
     if (error instanceof DataError && error.status === 404) {
       await refresh().catch(() => undefined);
-      return { error: 'הבקשה כבר טופלה. הרשימה רועננה.', committed: false };
+      return { ...INITIAL_DECISION, error: 'הבקשה כבר טופלה. הרשימה רועננה.' };
     }
-    return {
-      error: error instanceof DataError ? error.message : 'לא ניתן לשמור את ההחלטה.',
-      committed: false,
-    };
+    return failure(error);
   }
   try {
     await refresh();
   } catch {
-    return { error: 'ההחלטה נשמרה. יש לרענן את הרשימה לפני פעולה נוספת.', committed: true };
+    return {
+      ...INITIAL_DECISION,
+      error: 'ההחלטה נשמרה. יש לרענן את הרשימה לפני פעולה נוספת.',
+      committed: true,
+    };
   }
-  return { error: '', committed: true };
+  return { ...INITIAL_DECISION, committed: true };
 }
