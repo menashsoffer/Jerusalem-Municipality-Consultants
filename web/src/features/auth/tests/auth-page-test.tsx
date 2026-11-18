@@ -16,7 +16,11 @@ function page(access: Access | null) {
       {
         path: '/',
         Component: AuthPage,
-        loader: () => ({ who: access ? { userId: 'user', access } : null, expired: false }),
+        loader: () => ({
+          who: access ? { userId: 'user', access } : null,
+          account: null,
+          expired: false,
+        }),
       },
     ],
     { initialEntries: ['/'] },
@@ -32,10 +36,8 @@ describe('admin identity screen', () => {
     expect(screen.getByRole('button', { name: 'כניסה באמצעות Google' })).toBeDefined();
   });
   for (const [state, message] of [
-    ['pending', 'ממתינה'],
     ['blocked', 'חסומה'],
     ['rejected', 'נדחתה'],
-    ['unregistered', 'נדרשת'],
   ] as const) {
     it(`explains ${state} without presenting a login form`, async () => {
       page({ state, member: false, admin: false, editor: false, manager: false, grants: [] });
@@ -43,6 +45,18 @@ describe('admin identity screen', () => {
       expect(screen.queryByRole('textbox')).toBeNull();
     });
   }
+  it('tells a pending user that the request waits, without a login form', async () => {
+    page({
+      state: 'pending',
+      member: false,
+      admin: false,
+      editor: false,
+      manager: false,
+      grants: [],
+    });
+    expect(await screen.findByText('הבקשה נשלחה וממתינה לאישור מנהל.')).toBeDefined();
+    expect(screen.queryByRole('textbox')).toBeNull();
+  });
   for (const role of ['viewer', 'editor', 'unit_manager', 'admin', 'auditor'] satisfies Role[]) {
     it(`shows an active ${role} without trusting JWT claims`, async () => {
       page({

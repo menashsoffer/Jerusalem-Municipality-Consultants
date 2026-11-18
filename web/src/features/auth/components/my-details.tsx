@@ -1,0 +1,116 @@
+import { useState } from 'react';
+import { useRevalidator } from 'react-router';
+import { Button } from '../../../ui/button.tsx';
+import { FormActions } from '../../../ui/form-actions.tsx';
+import { FormField } from '../../../ui/form-field.tsx';
+import { RequiredNote } from '../../../ui/field-parts.tsx';
+import { Notice } from '../../../ui/notice.tsx';
+import { dayOf } from '../../../lib/dates.ts';
+import { changedDetails, detailsForm } from '../model/account-forms.ts';
+import { askDetails, type ChangeRequest, type MyProfile } from '../api/account.ts';
+import { CancelChange } from './cancel-change.tsx';
+import { PersonFields } from './person-fields.tsx';
+import { useAccountForm } from './use-account-form.ts';
+import styles from './account.module.css';
+
+interface Props {
+  profile: MyProfile;
+  unit: string;
+  /** Null where change requests are not available yet: then the details are read-only. */
+  changes: ChangeRequest[] | null;
+  startEditing: boolean;
+}
+
+function DetailsForm({ profile, done }: { profile: MyProfile; done: () => void }) {
+  const refresh = useRevalidator();
+  const [state, action, pending] = useAccountForm(detailsForm, async (input) => {
+    const details = changedDetails(input, profile);
+    if (!Object.keys(details).length) throw new Error('לא שונה אף פרט.');
+    await askDetails(details, input.reason);
+    done();
+    await refresh.revalidate();
+  });
+  return (
+    <form action={action} aria-label="עריכת הפרטים שלי" noValidate className={styles.form}>
+      <RequiredNote />
+      {state.failure && (
+        <Notice tone="error" title="השינוי לא נשלח.">
+          {state.failure}
+        </Notice>
+      )}
+      <PersonFields errors={state.errors} typed={state.typed} values={profile} />
+      <FormField
+        field={{ label: 'סיבת השינוי', error: state.errors.reason }}
+        input={{ name: 'reason', required: true, defaultValue: state.typed.reason ?? '' }}
+      />
+      <FormActions>
+        <Button type="submit" pending={pending} pendingLabel="שולח…">
+          שליחת השינוי לאישור
+        </Button>
+        <Button variant="quiet" onClick={done}>
+          ביטול
+        </Button>
+      </FormActions>
+    </form>
+  );
+}
+
+function Facts({ profile, unit }: Pick<Props, 'profile' | 'unit'>) {
+  return (
+    <dl className={styles.facts}>
+      <dt>שם</dt>
+      <dd>
+        {profile.first_name} {profile.last_name}
+      </dd>
+      <dt>דוא״ל</dt>
+      <dd>
+        <bdi>{profile.email}</bdi>
+      </dd>
+      <dt>תפקיד בעירייה</dt>
+      <dd>{profile.job_title}</dd>
+      <dt>טלפון</dt>
+      <dd>{profile.phone ? <bdi>{profile.phone}</bdi> : 'לא נמסר'}</dd>
+      <dt>יחידה</dt>
+      <dd>{unit}</dd>
+    </dl>
+  );
+}
+
+/** "הפרטים שלי": shown as facts; a change goes to a manager for approval (decision 8). */
+export function MyDetails({ profile, unit, changes, startEditing }: Props) {
+  const [editing, setEditing] = useState(startEditing);
+  const waiting = changes?.find((c) => c.kind === 'details' && c.status === 'pending');
+  return (
+    <section aria-labelledby="my-details" className={styles.panel}>
+      <h2 id="my-details">הפרטים שלי</h2>
+      {editing && changes && !waiting ? (
+        <DetailsForm
+          profile={profile}
+          done={() => {
+            setEditing(false);
+          }}
+        />
+      ) : (
+        <Facts profile={profile} unit={unit} />
+      )}
+      {waiting && (
+        <Notice tone="info" title={`השינוי נשלח ב-${dayOf(waiting.created_at)} וממתין לאישור.`}>
+          עד האישור הפרטים הקודמים נשארים. <CancelChange id={waiting.id} />
+        </Notice>
+      )}
+      {changes && !waiting && !editing && (
+        <Button
+          variant="secondary"
+          onClick={() => {
+            setEditing(true);
+          }}
+        >
+          עריכת הפרטים שלי
+        </Button>
+      )}
+      <p className={styles.note}>
+        הדוא״ל הוא כתובת הכניסה ואינו נערך. לכתובת אחרת פונים למנהל המערכת.
+      </p>
+    </section>
+  );
+}

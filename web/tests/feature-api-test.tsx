@@ -11,6 +11,7 @@ import { loadControl } from '../src/features/load-control/api/control.ts';
 import { decideProposal, loadProposals } from '../src/features/thresholds/api/proposals.ts';
 import { decideReview } from '../src/features/users/api/review.ts';
 import { addGrant, loadUsers, removeGrant } from '../src/features/users/api/users.ts';
+import { decideChange } from '../src/features/users/api/changes.ts';
 
 vi.mock('../src/data/rpc.ts', async (original) => ({
   ...(await original<typeof RpcModule>()),
@@ -40,9 +41,30 @@ describe('loaders check the role and read the right rows', () => {
       ['profiles', {}],
       ['role_grants', { revoked_at: 'is.null' }],
       ['org_units', { active: 'eq.true' }],
+      [
+        'access_change_requests',
+        { status: 'eq.pending', user_id: 'neq.admin-1', order: 'created_at.asc' },
+      ],
     ]);
+    expect(value.changes).toEqual([]);
     expect(value.who.userId).toBe('admin-1');
     expect(typeof value.now).toBe('number');
+  });
+
+  it('users without the change-request table', async () => {
+    vi.mocked(rpc.rows).mockImplementation((table) =>
+      table === 'access_change_requests' ? Promise.reject(new Error('404')) : Promise.resolve([]),
+    );
+    expect((await loadUsers()).changes).toBeNull();
+  });
+
+  it('decides a change request, sending an empty note as none', async () => {
+    await decideChange('c1', false, 'אין צורך');
+    await decideChange('c2', true, '');
+    expect(vi.mocked(rpc.rpc).mock.calls.map((call) => call.slice(0, 2))).toEqual([
+      ['decide_access_change', { request_id: 'c1', approve: false, note: 'אין צורך' }],
+      ['decide_access_change', { request_id: 'c2', approve: true, note: null }],
+    ]);
   });
 
   it('category requests', async () => {

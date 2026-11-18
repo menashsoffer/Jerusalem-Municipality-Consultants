@@ -33,6 +33,16 @@ interface AdminRpc {
   load_control: Record<string, never>;
   addresses_to_check: Record<string, never>;
   admin_overview: Record<string, never>;
+  request_access_change: {
+    change_kind: 'add_role' | 'remove_role' | 'move_unit' | 'details';
+    why: string;
+    wanted_role?: Role | null;
+    target_unit?: string | null;
+    target_grant?: string | null;
+    new_details?: Record<string, string> | null;
+  };
+  cancel_access_change: { request_id: string };
+  decide_access_change: { request_id: string; approve: boolean; note: string | null };
   decide_category_request: {
     request_id: string;
     decision: 'approved' | 'rejected' | 'linked';
@@ -61,6 +71,9 @@ declare module '../database.types.ts' {
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     admin_overview: { Args: AdminRpc['admin_overview']; Returns: unknown };
+    request_access_change: { Args: AdminRpc['request_access_change']; Returns: string };
+    cancel_access_change: { Args: AdminRpc['cancel_access_change']; Returns: null };
+    decide_access_change: { Args: AdminRpc['decide_access_change']; Returns: null };
     last_approaches: {
       Args: AdminRpc['last_approaches'];
       Returns: { supplier_id: string; last_on: string }[];
@@ -162,6 +175,10 @@ export async function rpc<K extends keyof AdminRpc, T>(
   schema: ZodType<T>,
 ): Promise<T> {
   return validated((token) => data(token).rpc(name, args), schema);
+}
+/** A signed-in person's own access request (RLS policy profiles_signup). */
+export async function insertProfile(row: PublicSchema['profiles']['Insert']): Promise<void> {
+  await authorized((token) => data(token).insert('profiles', row));
 }
 export async function rows<T>(
   table: keyof PublicSchema,

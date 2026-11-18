@@ -1,4 +1,5 @@
 import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { loadChanges } from './changes.ts';
 const role = z.enum(['viewer', 'editor', 'unit_manager', 'admin', 'auditor']);
 export const profileSchema = z.object({
   user_id: z.string(),
@@ -24,12 +25,13 @@ export type GrantRow = z.infer<typeof grantSchema>;
 export type Unit = z.infer<typeof unitSchema>;
 export async function loadUsers() {
   const who = await requireRoles(['admin', 'unit_manager']);
-  const [profiles, grants, units] = await Promise.all([
+  const [profiles, grants, units, changes] = await Promise.all([
     rows('profiles', {}, z.array(profileSchema)),
     rows('role_grants', { revoked_at: 'is.null' }, z.array(grantSchema)),
     rows('org_units', { active: 'eq.true' }, z.array(unitSchema)),
+    loadChanges(who.userId),
   ]);
-  return { who, profiles, grants, units, now: Date.now() };
+  return { who, profiles, grants, units, changes, now: Date.now() };
 }
 export async function reviewProfile(
   userId: string,

@@ -1,3 +1,4 @@
+import { accessReasonProblem, jobTitleProblem, personNameProblem } from './access.ts';
 import { dateProblem } from './dates.ts';
 import type { RuleKey } from './messages.ts';
 import { amountProblem, exemptionProblem, noteProblem, subjectProblem } from './requests.ts';
@@ -33,6 +34,9 @@ export const RULES: Record<string, (value: string) => RuleKey | null> = {
   amount: amountProblem,
   exemption: exemptionProblem,
   decision_note: noteProblem,
+  person_name: personNameProblem,
+  job_title: jobTitleProblem,
+  access_reason: accessReasonProblem,
   /** Dates are checked against a fixed "today" so the contract does not depend on the clock. */
   date: (value) => dateProblem(value, '2026-11-17'),
 };

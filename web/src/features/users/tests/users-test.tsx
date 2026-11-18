@@ -4,6 +4,7 @@ import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { UsersPage } from '../users-page.tsx';
 import * as api from '../api/users.ts';
+import * as changes from '../api/changes.ts';
 import { DataError } from '../../../data/client.ts';
 const target: api.Profile = {
   user_id: 'target',
@@ -37,6 +38,7 @@ function data(): Awaited<ReturnType<typeof api.loadUsers>> {
       { id: 'own', name: 'יחידה א' },
       { id: 'other', name: 'יחידה ב' },
     ],
+    changes: null,
     now: 0,
   };
 }
@@ -53,6 +55,58 @@ function page(value: ReturnType<typeof data>) {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+});
+const CHANGE: changes.PendingChange = {
+  id: 'c1',
+  user_id: 'target',
+  kind: 'details',
+  role: null,
+  unit_id: null,
+  grant_id: null,
+  details: { job_title: 'יועצת בכירה' },
+  reason: 'קיבלתי קידום',
+  status: 'pending',
+  created_at: '2026-11-18T08:00:00Z',
+  decided_at: null,
+  decision_note: null,
+};
+describe('pending change requests', () => {
+  it('shows what changes and why, and approves it', async () => {
+    const value = { ...data(), changes: [CHANGE] };
+    page(value);
+    const decide = vi.spyOn(changes, 'decideChange').mockImplementation(() => {
+      value.changes = [];
+      return Promise.resolve();
+    });
+    const card = await screen.findByRole('article', { name: /עדכון פרטים: תפקיד בעירייה/ });
+    expect(within(card).getByText('תפקיד בעירייה: יועצת בכירה')).toBeDefined();
+    expect(within(card).getByText(/הסיבה: קיבלתי קידום/)).toBeDefined();
+    await userEvent.click(within(card).getByRole('button', { name: 'אישור' }));
+    expect(decide).toHaveBeenCalledWith('c1', true, '');
+    expect(await screen.findByRole('heading', { name: 'אין בקשות שינוי ממתינות' })).toBeDefined();
+  });
+  it('needs a reason to reject and reports a refusal', async () => {
+    page({ ...data(), changes: [CHANGE] });
+    const decide = vi
+      .spyOn(changes, 'decideChange')
+      .mockRejectedValue(new DataError(403, 'אין הרשאה.'));
+    const card = await screen.findByRole('article', { name: /עדכון פרטים/ });
+    await userEvent.click(within(card).getByRole('button', { name: 'דחייה' }));
+    const note = within(card).getByRole('textbox', { name: /נימוק/ });
+    await waitFor(() => {
+      expect(note.getAttribute('aria-invalid')).toBe('true');
+    });
+    expect(decide).not.toHaveBeenCalled();
+    await userEvent.type(note, 'אין תקן פנוי');
+    await userEvent.click(within(card).getByRole('button', { name: 'דחייה' }));
+    expect(decide).toHaveBeenCalledWith('c1', false, 'אין תקן פנוי');
+    expect(await within(card).findByRole('alert')).toBeDefined();
+  });
+  it('leaves the section out where change requests are not available', async () => {
+    page(data());
+    expect(await screen.findByRole('heading', { name: 'בקשות גישה ממתינות' })).toBeDefined();
+    expect(screen.queryByRole('heading', { name: 'בקשות שינוי ממתינות' })).toBeNull();
+  });
 });
 describe('users and roles', () => {
   it('shows pending context and requires a reason before rejection', async () => {

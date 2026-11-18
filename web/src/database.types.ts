@@ -2,6 +2,59 @@
 export type Json = string | number | boolean | null | Json[] | { [key: string]: Json };
 
 export interface PublicSchema {
+  "access_change_requests": {
+    Row: {
+      "id": string;
+      "user_id": string;
+      "kind": string;
+      "role": string | null;
+      "unit_id": string | null;
+      "grant_id": string | null;
+      "details": Json | null;
+      "reason": string;
+      "status": string;
+      "decided_at": string | null;
+      "decided_by": string | null;
+      "decision_note": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "user_id": string;
+      "kind": string;
+      "role"?: string | null;
+      "unit_id"?: string | null;
+      "grant_id"?: string | null;
+      "details"?: Json | null;
+      "reason": string;
+      "status"?: string;
+      "decided_at"?: string | null;
+      "decided_by"?: string | null;
+      "decision_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "user_id"?: string;
+      "kind"?: string;
+      "role"?: string | null;
+      "unit_id"?: string | null;
+      "grant_id"?: string | null;
+      "details"?: Json | null;
+      "reason"?: string;
+      "status"?: string;
+      "decided_at"?: string | null;
+      "decided_by"?: string | null;
+      "decision_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "activity_events": {
     Row: {
       "id": number;
