@@ -7,6 +7,7 @@ import { israelToday } from '../../../lib/dates.ts';
 import { cleanIds, replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 import { pickedSupplier, type PickedSupplier } from '../model/engagement.ts';
 import type { Draft } from '../model/result.ts';
+import { savedChanged } from './saved.ts';
 
 const lastSchema = z.array(z.object({ supplier_id: z.string(), last_on: z.iso.date() }));
 
@@ -52,8 +53,10 @@ export interface SavedDraft extends Draft {
   subject: string;
 }
 
-export function saveRequest(draft: SavedDraft): Promise<string> {
-  return rpc('create_engagement_request', { draft }, z.string());
+export async function saveRequest(draft: SavedDraft): Promise<string> {
+  const id = await rpc('create_engagement_request', { draft }, z.string());
+  void savedChanged();
+  return id;
 }
 
 export function recordApproaches(request: string, suppliers: string[]): Promise<number> {

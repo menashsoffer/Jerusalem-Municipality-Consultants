@@ -4,9 +4,10 @@ import { PageHeader } from '../../ui/page-header.tsx';
 import { identity } from '../../data/rpc.ts';
 import { getCatalogState } from '../../data/site.ts';
 import { loadEngagementFor } from './api/engagement.ts';
-import { loadSaved } from './api/saved.ts';
+import { loadSaved, SAVED_KEY } from './api/saved.ts';
+import { getScreenData } from '../../data/screen-data.ts';
+import { useScreenData } from '../../data/react-screen-data.ts';
 import { NewRequest } from './components/new-request.tsx';
-import { ReloadSavedProvider, useSavedList } from './components/saved-list.tsx';
 import { SavedRequests } from './components/saved-requests.tsx';
 import styles from './components/route-check.module.css';
 
@@ -14,9 +15,15 @@ import styles from './components/route-check.module.css';
 export async function loader(args: LoaderFunctionArgs) {
   // One identity() for both: two snapshot loads at once would cancel the first.
   const who = await identity();
-  const [engagement, saved] = await Promise.all([loadEngagementFor(args, who), loadSaved(who)]);
+  const [engagement, saved] = await Promise.all([
+    loadEngagementFor(args, who),
+    getScreenData(SAVED_KEY, () => loadSaved(who)),
+  ]);
   return { ...engagement, saved };
 }
+
+/** Loads the saved list for whoever is signed in now. */
+const fetchSaved = async () => loadSaved(await identity());
 
 function unitNames(): Map<string, string> {
   const units = getCatalogState()?.catalog?.units ?? [];
@@ -25,32 +32,32 @@ function unitNames(): Map<string, string> {
 
 export function EngagementPage() {
   const data = useLoaderData<typeof loader>();
-  const saved = useSavedList(data.saved);
+  // Follows every save, edit and cancel without running the loader again, which would re-read
+  // the picked suppliers (a save empties them) and close the new request's result step.
+  const saved = useScreenData(SAVED_KEY, data.saved, fetchSaved);
   return (
-    <ReloadSavedProvider value={saved.reload}>
-      <div className={styles.page}>
-        <PageHeader
-          title="בקשות התקשרות"
-          lead="הכלי מחשב מסלול לפי הנתונים שהוזנו. הוא אינו מאשר התקשרות ואינו קובע שספק זכאי."
+    <div className={styles.page}>
+      <PageHeader
+        title="בקשות התקשרות"
+        lead="הכלי מחשב מסלול לפי הנתונים שהוזנו. הוא אינו מאשר התקשרות ואינו קובע שספק זכאי."
+      />
+      {data.suppliers.length ? (
+        <NewRequest data={data} />
+      ) : (
+        <EmptyState title="לא נבחרו ספקים לבקשה חדשה">
+          <p>
+            בוחרים ספקים ב<Link to="/catalog">איתור ספקים</Link> ולוחצים "הוספה לבקשה".
+          </p>
+        </EmptyState>
+      )}
+      {saved.value && (
+        <SavedRequests
+          requests={saved.value}
+          stale={saved.failed}
+          units={unitNames()}
+          today={data.today}
         />
-        {data.suppliers.length ? (
-          <NewRequest data={data} />
-        ) : (
-          <EmptyState title="לא נבחרו ספקים לבקשה חדשה">
-            <p>
-              בוחרים ספקים ב<Link to="/catalog">איתור ספקים</Link> ולוחצים "הוספה לבקשה".
-            </p>
-          </EmptyState>
-        )}
-        {saved.list && (
-          <SavedRequests
-            requests={saved.list}
-            stale={saved.stale}
-            units={unitNames()}
-            today={data.today}
-          />
-        )}
-      </div>
-    </ReloadSavedProvider>
+      )}
+    </div>
   );
 }

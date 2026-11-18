@@ -10,7 +10,6 @@ import { checkRoute } from '../api/check.ts';
 import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
 import { updateRequest, type RequestDetails } from '../api/saved.ts';
-import { useReloadSaved } from './saved-list.tsx';
 import { readDraft, type DraftFields } from '../model/draft.ts';
 import type { CheckResult } from '../model/result.ts';
 import styles from './route-check.module.css';
@@ -164,7 +163,6 @@ async function saveNew(fields: DraftFields, run: Run) {
  * again; a second copy is never saved. What was typed is kept for a return to this step.
  */
 function useCheck({ entry, keep, ...run }: Run & Pick<Props, 'entry' | 'keep'>) {
-  const reload = useReloadSaved();
   return useActionState(async (_: Outcome | null, form: FormData) => {
     const values = valuesOf(form, entry);
     keep({ ...entry, values });
@@ -173,8 +171,7 @@ function useCheck({ entry, keep, ...run }: Run & Pick<Props, 'entry' | 'keep'>) 
     if (!entry.saved && !fields.unitId) return checkDraft(fields, run);
     const done = entry.saved ? await resave(entry.saved, fields, run) : await saveNew(fields, run);
     keep({ values, saved: done.saved });
-    // After the check, so the row in the saved list shows its result too.
-    if (done.saved) await reload();
+    // The save and the check each mark the saved list changed, so it shows the new row at once.
     return done.outcome;
   }, NONE);
 }

@@ -140,7 +140,8 @@ describe('engagement request page', () => {
     };
     vi.spyOn(rpc, 'identity').mockResolvedValue(who);
     const reload = vi.spyOn(savedApi, 'loadSaved').mockResolvedValue([row]);
-    vi.spyOn(engagement, 'saveRequest').mockResolvedValue(REQUEST);
+    // The real save runs, so the test proves that the save itself marks the list changed.
+    const create = vi.spyOn(rpc, 'rpc').mockResolvedValue(REQUEST);
     vi.spyOn(check, 'checkRoute').mockResolvedValue({ ...result, id: 9 });
     expect(screen.getByRole('heading', { name: 'אין בקשות שמורות' })).toBeDefined();
     await fill();
@@ -150,6 +151,7 @@ describe('engagement request page', () => {
     const table = await screen.findByRole('table', { name: 'בקשות שמורות ביחידות שלך' });
     expect(within(table).getByText('ייעוץ ארגוני')).toBeDefined();
     expect(reload).toHaveBeenCalledWith(who);
+    expect(create.mock.calls[0]?.[0]).toBe('create_engagement_request');
     // The shortlist is empty now, yet the new request's result stays on screen.
     expect(screen.getByRole('heading', { name: 'תוצאה' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'רישום פנייה לספקים' })).toBeDefined();

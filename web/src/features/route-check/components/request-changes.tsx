@@ -10,7 +10,6 @@ import { DataError } from '../../../data/client.ts';
 import { check, decisionNote } from '../../../lib/rules/forms.ts';
 import { cancelRequest, updateRequest, type SavedRequest } from '../api/saved.ts';
 import { readDraft } from '../model/draft.ts';
-import { useReloadSaved } from './saved-list.tsx';
 import styles from './route-check.module.css';
 
 export const EDIT_REQUEST = 'edit-request';
@@ -29,9 +28,8 @@ function failure(cause: unknown): string {
   return cause instanceof DataError ? cause.message : 'השינוי לא נשמר. יש לנסות שוב.';
 }
 
-/** Runs `save`; on success closes the dialog and reloads the list. */
+/** Runs `save`; on success closes the dialog. The write itself marks the list changed. */
 function useSave(dialogId: string) {
-  const reload = useReloadSaved();
   return async (save: () => Promise<void>): Promise<string> => {
     try {
       await save();
@@ -39,7 +37,6 @@ function useSave(dialogId: string) {
       return failure(cause);
     }
     closeDialog(dialogId);
-    await reload();
     return '';
   };
 }
