@@ -154,10 +154,24 @@
     background: var(--color-surface);
     border: var(--border-width) solid var(--color-border);
     border-radius: var(--radius-panel);
+    position: relative;
     overflow-wrap: anywhere;
-    transition: border-color var(--duration-quick);
+    transition:
+      border-color var(--duration-quick),
+      scale var(--duration-quick);
     &:hover {
       border-color: var(--color-brand-line);
+    }
+    &:has(h3 a:hover) h3 a {
+      color: var(--color-brand);
+      text-decoration: underline;
+    }
+    &:has(h3 a:active) {
+      scale: 0.99;
+    }
+    &:has(h3 a:focus-visible) {
+      outline: var(--focus-width) solid var(--color-focus);
+      outline-offset: var(--space-xs);
     }
   }
   .cardHead {
@@ -170,12 +184,18 @@
       font-size: var(--font-lg);
       line-height: var(--line-height-heading);
     }
+    /* The name link covers the whole card, so the card is one click target. */
     & h3 a {
       color: var(--color-text);
       text-decoration: none;
-      &:hover {
-        color: var(--color-brand);
-        text-decoration: underline;
+      &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+      }
+      &:focus-visible {
+        outline: none;
       }
     }
   }
