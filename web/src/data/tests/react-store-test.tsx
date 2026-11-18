@@ -4,11 +4,13 @@ import { act, cleanup, render, screen } from '@testing-library/react';
 import {
   useCatalogSnapshot,
   createSupplierDetailResource,
+  supplierKey,
   useSupplierDetail,
   type SupplierDetailResource,
 } from '../react-catalog.ts';
 import { createMemoryRouter, RouterProvider, useRouteError } from 'react-router';
 import { DataError } from '../client.ts';
+import { invalidate } from '../screen-data.ts';
 import { loadSnapshot, clearCatalog } from '../site.ts';
 import { response, TOKEN, SUPPLIER, requestUrl } from '../../../tests/catalog-fixture.ts';
 function CatalogProbe() {
@@ -39,7 +41,7 @@ describe('React adapters over the existing catalog', () => {
     });
     expect(screen.getByRole('status', { name: 'מצב הקטלוג' }).textContent).toBe('אין מידע');
   });
-  it('suspends on a loader-created promise and fetches fresh detail on a later visit', async () => {
+  it('suspends on a loader-created promise, reuses a fresh card and reloads a changed one', async () => {
     let requests = 0,
       finish: (() => void) | undefined;
     vi.stubGlobal('fetch', (input: RequestInfo | URL) => {
@@ -72,6 +74,11 @@ describe('React adapters over the existing catalog', () => {
     });
     expect(await screen.findByRole('heading', { name: 'שם נוכחי' })).toBeDefined();
     cleanup();
+    // A visit moments later shows the card from memory, without asking the server again.
+    await createSupplierDetailResource(TOKEN, SUPPLIER).promise;
+    expect(requests).toBe(1);
+    // After a save marks the card changed, the next visit loads it again.
+    await invalidate(supplierKey(SUPPLIER));
     const second = createSupplierDetailResource(TOKEN, SUPPLIER);
     expect(second.promise).not.toBe(resource.promise);
     await vi.waitFor(() => {

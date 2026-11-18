@@ -195,7 +195,7 @@ async function submit(previous: Result, form: FormData): Promise<Result> {
       supplierId = await save(token);
       return supplierId;
     },
-    () => Promise.resolve(),
+    null,
     'הספק נוסף וממתין לאימות של משתמש אחר.',
   );
   if (outcome.error) return { ...previous, ...outcome };

@@ -1,5 +1,5 @@
+import { supplierKey } from '../../../data/react-catalog.ts';
 import { useActionState } from 'react';
-import { useRevalidator } from 'react-router';
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { check, statusForm, type FieldErrors } from '../../../lib/rules/forms.ts';
 import { Button } from '../../../ui/button.tsx';
@@ -21,9 +21,8 @@ interface State extends SaveResult {
 const START: State = { ...IDLE, errors: {}, typed: {} };
 
 function useStatusAction({ data, today }: Omit<Props, 'cancel'>) {
-  const revalidator = useRevalidator();
   const { supplier } = data;
-  const refresh = () => revalidator.revalidate();
+  const refresh = supplierKey(supplier.id);
   return useActionState(async (_: State, form: FormData): Promise<State> => {
     if (supplier.status === 'inactive') {
       const result = await saveAndRefresh(
