@@ -17,3 +17,13 @@ export function when(value: string | null): string {
     timeStyle: 'short',
   }).format(new Date(value));
 }
+
+/** The day of a timestamp in Jerusalem, as "17.11.2026". */
+export function dayOf(value: string): string {
+  return new Intl.DateTimeFormat('he-IL', {
+    timeZone: 'Asia/Jerusalem',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  }).format(new Date(value));
+}

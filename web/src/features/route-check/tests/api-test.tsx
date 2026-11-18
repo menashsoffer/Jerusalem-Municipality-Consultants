@@ -6,7 +6,8 @@ import * as rpc from '../../../data/rpc.ts';
 import type * as RpcModule from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
 import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
-import { checkRoute, loadRequests } from '../api/check.ts';
+import { checkRoute } from '../api/check.ts';
+import { loadSaved } from '../api/saved.ts';
 import { loadEngagement, recordApproaches, saveRequest } from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
@@ -177,20 +178,54 @@ describe('engagement writes', () => {
   });
 });
 
-describe('loadRequests', () => {
-  it('requires a writing role and lists open requests with the units', async () => {
+describe('loadSaved', () => {
+  const editor = { userId: 'u', access: access() };
+
+  it('shows nothing to a viewer, and asks the database nothing', async () => {
+    const viewer = access({ editor: false, grants: [{ role: 'viewer', unitId: 'u1' }] });
+    expect(await loadSaved({ userId: 'u', access: viewer })).toBeNull();
+    expect(rpc.rows).not.toHaveBeenCalled();
+  });
+
+  it('lists open requests newest first with the state of their latest check', async () => {
+    const request = (id: string) => ({
+      id,
+      unit_id: 'u1',
+      subject: id,
+      estimated_value: 1,
+      value_includes_vat: false,
+      requested_exemption: null,
+      created_at: '2026-11-17T10:00:00Z',
+    });
     vi.mocked(rpc.rows)
-      .mockResolvedValueOnce([{ id: 'r' }])
-      .mockResolvedValueOnce([]);
-    const value = await loadRequests();
-    expect(rpc.requireRoles).toHaveBeenCalledWith(['editor', 'unit_manager', 'admin']);
-    expect(rpc.rows).toHaveBeenCalledWith(
+      .mockResolvedValueOnce([request('a'), request('b')])
+      .mockResolvedValueOnce([
+        { request_id: 'a', status: 'blocked' },
+        { request_id: 'a', status: 'ok' },
+      ]);
+    const value = await loadSaved(editor);
+    expect(rpc.rows).toHaveBeenNthCalledWith(
+      1,
       'engagement_requests',
-      { status: 'not.in.(cancelled,rejected,contracted)' },
+      { status: 'not.in.(cancelled,rejected,contracted)', order: 'created_at.desc' },
       expect.anything(),
     );
-    expect(value.requests).toEqual([{ id: 'r' }]);
-    expect(value.today).toMatch(/^\d{4}-\d{2}-\d{2}$/u);
+    expect(rpc.rows).toHaveBeenNthCalledWith(
+      2,
+      'route_checks',
+      { request_id: 'in.(a,b)', order: 'created_at.desc' },
+      expect.anything(),
+    );
+    expect(value?.map((r) => [r.id, r.lastStatus])).toEqual([
+      ['a', 'blocked'],
+      ['b', null],
+    ]);
+  });
+
+  it('skips the checks query when there are no requests', async () => {
+    vi.mocked(rpc.rows).mockResolvedValueOnce([]);
+    expect(await loadSaved(editor)).toEqual([]);
+    expect(rpc.rows).toHaveBeenCalledOnce();
   });
 });
 

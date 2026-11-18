@@ -87,18 +87,15 @@ export const routes: RouteObject[] = [
           return { Component: m.HomePage, loader: m.loader };
         },
       },
+      // Checking a saved request moved into the requests screen (screens-spec-he.md 2).
       {
         path: 'route-check',
-        handle: { title: 'בדיקת מסלול ההתקשרות' },
-        errorElement: <ScreenError />,
-        lazy: async () => {
-          const m = await import('../features/route-check/route-check-page.tsx');
-          return { Component: m.RouteCheckPage, loader: m.loader };
-        },
+        handle: { title: 'בקשות התקשרות' },
+        element: <Navigate to="/engagement" replace />,
       },
       {
         path: 'engagement',
-        handle: { title: 'בקשת התקשרות' },
+        handle: { title: 'בקשות התקשרות' },
         errorElement: <ScreenError />,
         lazy: async () => {
           const m = await import('../features/route-check/engagement-page.tsx');

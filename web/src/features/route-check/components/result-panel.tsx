@@ -30,19 +30,33 @@ export function ResultPanel({ result }: Props) {
     >
       <StatusMessage>{STATUS_LABELS[result.status]}</StatusMessage>
       <h3>{routeLabel(result.route)}</h3>
-      <p>
-        אסמכתה משפטית: <bdi>{result.regulation}</bdi>
-      </p>
-      <p>הגורם המוסמך למסלול: {result.approver}</p>
-      {result.comparedValue !== null && (
-        <p>
-          הסכום שנבדק מול הספים: <bdi>{money(result.comparedValue)}</bdi>
-        </p>
-      )}
-      <p>מקור הספים: {result.thresholdsSource ?? 'לא תועד מקור לספים.'}</p>
-      <Messages title="דרישות המסלול" items={result.requirements} />
-      <Messages title="נתונים חסרים" items={result.missing} />
-      <Messages title="הערות לבדיקה" items={result.warnings} />
+      <dl className={styles.facts}>
+        {result.comparedValue !== null && (
+          <div>
+            <dt>הסכום שנבדק מול הספים</dt>
+            <dd>
+              <bdi>{money(result.comparedValue)}</bdi>
+            </dd>
+          </div>
+        )}
+        <div>
+          <dt>הגורם המאשר</dt>
+          <dd>{result.approver}</dd>
+        </div>
+        <div>
+          <dt>התקנה</dt>
+          <dd>
+            <bdi>{result.regulation}</bdi>
+          </dd>
+        </div>
+        <div>
+          <dt>מקור הספים</dt>
+          <dd>{result.thresholdsSource ?? 'לא תועד מקור לספים.'}</dd>
+        </div>
+      </dl>
+      <Messages title="מה נדרש" items={result.requirements} />
+      <Messages title="מה חסר" items={result.missing} />
+      <Messages title="שימו לב" items={result.warnings} />
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import type { LoaderFunctionArgs } from 'react-router';
-import { z, identity, rpc, freshToken } from '../../../data/rpc.ts';
+import { z, identity, rpc, freshToken, type Identity } from '../../../data/rpc.ts';
 import { DataError } from '../../../data/client.ts';
 import { mayWriteUnit } from '../../../data/access.ts';
 import { detail, getCatalogState } from '../../../data/site.ts';
@@ -32,8 +32,12 @@ async function loadSuppliers(ids: string[]): Promise<PickedSupplier[]> {
     .map((d) => pickedSupplier(d, lastOn.get(d.supplier.id) ?? null));
 }
 
-export async function loadEngagement({ request }: LoaderFunctionArgs) {
-  const who = await identity();
+export async function loadEngagement(args: LoaderFunctionArgs) {
+  return loadEngagementFor(args, await identity());
+}
+
+/** For a caller that already knows who is signed in; a second identity() would race the first. */
+export async function loadEngagementFor({ request }: LoaderFunctionArgs, who: Identity) {
   if (who.access.state !== 'active' || !who.access.member) throw new DataError(403);
   const suppliers = await loadSuppliers(pickedIds(new URL(request.url)));
   const units = (getCatalogState()?.catalog?.units ?? []).filter((unit) =>

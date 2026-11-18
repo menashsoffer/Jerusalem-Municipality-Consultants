@@ -73,13 +73,6 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     group: 'tools',
   },
   {
-    to: '/route-check',
-    title: 'בדיקת מסלול ההתקשרות',
-    description: 'חישוב מסלול בלי בקשה',
-    roles: EDITORS,
-    group: 'tools',
-  },
-  {
     to: '/load-control',
     title: 'בקרת טעינה',
     description: 'מה נטען מהמאגרים ומה חסר',

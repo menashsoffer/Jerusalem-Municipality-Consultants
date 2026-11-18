@@ -1,5 +1,7 @@
 import { useState } from 'react';
 import { Button } from '../../../ui/button.tsx';
+import { FormActions } from '../../../ui/form-actions.tsx';
+import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
 import { DataError } from '../../../data/client.ts';
 import { recordApproaches } from '../api/engagement.ts';
@@ -58,18 +60,27 @@ function useTools({ suppliers, today, requestId }: Props) {
   };
 }
 
+/** Step 3 actions: recording the approach is the main one, and only for a saved request. */
 export function ShortlistTools(props: Props) {
   const tools = useTools(props);
   return (
     <section aria-label="פעולות על הבקשה">
-      <Button onClick={() => void tools.bcc()}>העתקת כתובות ל-BCC</Button>{' '}
-      <Button onClick={() => void tools.csv()}>ייצוא CSV</Button>{' '}
-      <Button onClick={() => void tools.share()}>העתקת קישור לרשימה</Button>{' '}
-      {props.requestId && (
-        <Button onClick={() => void tools.approach()}>רישום פנייה לספקים הפעילים</Button>
-      )}
+      {tools.error && <Notice tone="error" title={tools.error} />}
+      <FormActions>
+        {props.requestId && (
+          <Button onClick={() => void tools.approach()}>רישום פנייה לספקים</Button>
+        )}
+        <Button variant="secondary" onClick={() => void tools.bcc()}>
+          העתקת כתובות ל-BCC
+        </Button>
+        <Button variant="secondary" onClick={() => void tools.csv()}>
+          ייצוא לקובץ
+        </Button>
+        <Button variant="secondary" onClick={() => void tools.share()}>
+          העתקת קישור
+        </Button>
+      </FormActions>
       <StatusMessage>{tools.message}</StatusMessage>
-      {tools.error && <p role="alert">{tools.error}</p>}
     </section>
   );
 }
