@@ -1,4 +1,4 @@
-import { useActionState, useRef, useState } from 'react';
+import { useActionState, useState } from 'react';
 import { Link } from 'react-router';
 import type { RegistryOption, WriteContext } from '../../../data/write-context.ts';
 import { Button } from '../../../ui/button.tsx';
@@ -8,6 +8,7 @@ import { StatusMessage } from '../../../ui/status-message.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import controls from '../../../ui/control.module.css';
+import { forgetFormDraft, useFormDraft } from '../../../lib/use-form-draft.ts';
 import { membership, saveAndRefresh } from '../api/write.ts';
 import { parseAddForm, fieldsOf, versionLabel } from '../model/add-form.ts';
 import { duplicates } from '../model/duplicates.ts';
@@ -44,6 +45,8 @@ function poolOptions(versions: RegistryOption[]) {
     );
   });
 }
+/** The tab draft of this form: kept until the supplier is saved or the tab closes. */
+const DRAFT = 'add-supplier';
 const MANUAL_ID_TYPES = Object.entries(ID_TYPES).filter(([key]) => key !== 'personal_id');
 
 function PoolFields({ context }: { context: WriteContext }) {
@@ -196,6 +199,7 @@ async function submit(previous: Result, form: FormData): Promise<Result> {
     'הספק נוסף וממתין לאימות של משתמש אחר.',
   );
   if (outcome.error) return { ...previous, ...outcome };
+  forgetFormDraft(DRAFT);
   return { ...outcome, saved: previous.saved + 1, supplierId };
 }
 
@@ -221,7 +225,7 @@ export function AddForm({ context }: { context: WriteContext }) {
     saved: 0,
     supplierId: null,
   });
-  const form = useRef<HTMLFormElement>(null);
+  const form = useFormDraft(DRAFT);
   return (
     <form ref={form} action={action} aria-label="הוספת ספק למאגר" className={styles.addForm}>
       <Saved

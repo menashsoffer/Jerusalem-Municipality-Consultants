@@ -1,9 +1,11 @@
 // A new request in three steps (screens-spec-he.md 2.א): suppliers, details, result.
 import { useRef, useState } from 'react';
+import { z } from 'zod';
 import { Link, useNavigate } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { toggleShortlist } from '../../../lib/shortlist.ts';
+import { clearDraft, readDraft, writeDraft } from '../../../lib/form-draft.ts';
 import controls from '../../../ui/control.module.css';
 import type { EngagementData } from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
@@ -29,6 +31,39 @@ function useWizard() {
     requestAnimationFrame(() => heading.current?.focus());
   }
   return { step, move, heading };
+}
+
+const DRAFT = 'engagement-request';
+const VALUES = z.object({
+  subject: z.string(),
+  estimated_value: z.string(),
+  vat: z.boolean(),
+  requested_exemption: z.string(),
+  unit_id: z.string(),
+});
+
+/**
+ * The details are kept for the tab until the request is saved (state-management-spec-he.md
+ * 5.2). A saved request is never kept: the next new request must not edit it.
+ */
+function useEntry() {
+  const [entry, setEntry] = useState<Entry>(() => ({
+    values: readDraft(DRAFT, VALUES) ?? EMPTY_ENTRY.values,
+    saved: null,
+  }));
+  /** Clearing remounts the form, whose fields hold what was typed. */
+  const [round, setRound] = useState(0);
+  function keep(next: Entry): void {
+    setEntry(next);
+    if (next.saved) clearDraft(DRAFT);
+    else writeDraft(DRAFT, next.values);
+  }
+  function clear(): void {
+    setEntry(EMPTY_ENTRY);
+    clearDraft(DRAFT);
+    setRound((value) => value + 1);
+  }
+  return { entry, keep, clear, round };
 }
 
 function SupplierStep({ data, next }: { data: EngagementData; next: () => void }) {
@@ -80,7 +115,7 @@ function ResultStep({
 export function NewRequest({ data }: { data: EngagementData }) {
   const { step, move, heading } = useWizard();
   const [checked, setChecked] = useState<Checked>();
-  const [entry, setEntry] = useState<Entry>(EMPTY_ENTRY);
+  const { entry, keep, clear, round } = useEntry();
   return (
     <section aria-labelledby="new-request" className={styles.panel}>
       <h2 id="new-request">בקשה חדשה</h2>
@@ -98,10 +133,12 @@ export function NewRequest({ data }: { data: EngagementData }) {
       )}
       {step === 'details' && (
         <DraftForm
+          key={round}
           units={data.units}
           today={data.today}
           entry={entry}
-          keep={setEntry}
+          keep={keep}
+          clear={clear}
           back={() => {
             move('suppliers');
           }}

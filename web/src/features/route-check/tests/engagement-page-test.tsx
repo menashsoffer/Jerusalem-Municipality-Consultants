@@ -65,6 +65,8 @@ async function fill() {
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
+  // The request details are kept for the tab; each test starts a fresh tab.
+  sessionStorage.clear();
 });
 
 describe('engagement request page', () => {

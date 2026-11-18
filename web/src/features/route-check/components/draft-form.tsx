@@ -5,7 +5,7 @@ import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
-import { errorText } from '../../../data/errors.ts';
+import { NONE, failed, notUpdated, savedButUnchecked, type Outcome } from '../model/outcome.ts';
 import { checkRoute } from '../api/check.ts';
 import { replaceShortlist } from '../../../lib/shortlist.ts';
 import { saveRequest } from '../api/engagement.ts';
@@ -45,6 +45,8 @@ interface Props {
   /** Kept by the wizard, so the details survive moving between steps. */
   entry: Entry;
   keep: (entry: Entry) => void;
+  /** Empties the details and their tab draft. */
+  clear: () => void;
 }
 interface FieldsProps {
   entry: Entry;
@@ -66,31 +68,6 @@ function valuesOf(form: FormData, entry: Entry): Values {
     requested_exemption: raw(form, 'requested_exemption'),
     unit_id: entry.saved ? entry.values.unit_id : raw(form, 'unit_id'),
   };
-}
-
-/** What the form says after a failed attempt (error-handling-spec-he.md sections 3 and 5). */
-interface Outcome {
-  tone: 'error' | 'warning';
-  title: string;
-  text: string;
-}
-const NONE: Outcome | null = null;
-
-/** The request is saved, so the check runs on it again and never saves a second copy. */
-function savedButUnchecked(error: unknown): Outcome {
-  return {
-    tone: 'warning',
-    title: 'הבקשה נשמרה, אבל הבדיקה נכשלה.',
-    text: `${errorText(error)} הבקשה מחכה גם ב"בקשות שמורות", ואפשר לבדוק אותה שוב בלי לשמור מחדש.`,
-  };
-}
-
-function notUpdated(error: unknown): Outcome {
-  return { tone: 'error', title: 'השינויים לא נשמרו.', text: errorText(error) };
-}
-
-function failed(error: unknown): Outcome {
-  return { tone: 'error', title: 'לא ניתן לבדוק את הבקשה.', text: errorText(error) };
 }
 
 function UnitField({
@@ -251,12 +228,20 @@ function label(saved: boolean, unit: string): string {
  * Step 2: the request details, filled with what was typed before. The subject is needed only
  * when the request is saved. After a save the same form edits that request.
  */
-export function DraftForm({ units, today, back, complete, entry, keep }: Props) {
+export function DraftForm({ units, today, back, complete, entry, keep, clear }: Props) {
   const [unit, setUnit] = useState(entry.values.unit_id);
   const form = useRef<HTMLFormElement>(null);
   const [outcome, action, pending] = useCheck({ today, complete, entry, keep });
   return (
-    <form ref={form} action={action} aria-label="פרטי הבקשה" className={styles.form}>
+    <form
+      ref={form}
+      action={action}
+      aria-label="פרטי הבקשה"
+      className={styles.form}
+      onChange={(event) => {
+        keep({ ...entry, values: valuesOf(new FormData(event.currentTarget), entry) });
+      }}
+    >
       {outcome && (
         <Notice tone={outcome.tone} title={outcome.title}>
           {outcome.text}
@@ -280,6 +265,11 @@ export function DraftForm({ units, today, back, complete, entry, keep }: Props) 
         >
           לשלב הקודם
         </Button>
+        {!entry.saved && (
+          <Button variant="quiet" onClick={clear} disabled={pending}>
+            ניקוי הפרטים
+          </Button>
+        )}
       </FormActions>
       <StatusMessage>{pending ? 'בודק את המסלול…' : ''}</StatusMessage>
     </form>
