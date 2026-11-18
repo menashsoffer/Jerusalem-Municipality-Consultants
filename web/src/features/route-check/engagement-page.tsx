@@ -1,61 +1,45 @@
-import { useState } from 'react';
-import { Link, useLoaderData, useNavigate } from 'react-router';
+import { Link, useLoaderData, type LoaderFunctionArgs } from 'react-router';
 import { EmptyState } from '../../ui/empty-state.tsx';
-import { toggleShortlist } from '../../lib/shortlist.ts';
-import { loadEngagement } from './api/engagement.ts';
-import type { CheckResult } from './model/result.ts';
-import { DraftForm } from './components/draft-form.tsx';
-import { PickedList } from './components/picked-list.tsx';
-import { ResultPanel } from './components/result-panel.tsx';
-import { ShortlistTools } from './components/shortlist-tools.tsx';
+import { PageHeader } from '../../ui/page-header.tsx';
+import { identity } from '../../data/rpc.ts';
+import { getCatalogState } from '../../data/site.ts';
+import { loadEngagementFor } from './api/engagement.ts';
+import { loadSaved } from './api/saved.ts';
+import { NewRequest } from './components/new-request.tsx';
+import { SavedRequests } from './components/saved-requests.tsx';
 import styles from './components/route-check.module.css';
 
-export const loader = loadEngagement;
+/** The new request and the saved requests load together (screens-spec-he.md 2). */
+export async function loader(args: LoaderFunctionArgs) {
+  // One identity() for both: two snapshot loads at once would cancel the first.
+  const who = await identity();
+  const [engagement, saved] = await Promise.all([loadEngagementFor(args, who), loadSaved(who)]);
+  return { ...engagement, saved };
+}
+
+function unitNames(): Map<string, string> {
+  const units = getCatalogState()?.catalog?.units ?? [];
+  return new Map(units.map((unit) => [unit.id, unit.name]));
+}
 
 export function EngagementPage() {
   const data = useLoaderData<typeof loader>();
-  const navigate = useNavigate();
-  const [checked, setChecked] = useState<{ result: CheckResult; requestId: string | null }>();
-  if (!data.suppliers.length) {
-    return (
-      <>
-        <h1 tabIndex={-1}>בקשת התקשרות</h1>
-        <EmptyState title="לא נבחרו ספקים">
-          <p>
-            אפשר להוסיף ספקים מ<Link to="/catalog">הקטלוג</Link>.
-          </p>
-        </EmptyState>
-      </>
-    );
-  }
   return (
     <div className={styles.page}>
-      <h1 tabIndex={-1}>בקשת התקשרות</h1>
-      <p className={styles.intro}>
-        הכלי מחשב מסלול לפי הנתונים שהוזנו. הוא אינו מאשר התקשרות ואינו קובע שספק זכאי. כמה הצעות
-        נדרשות ומאיזה מאגר מופיע בתוצאת הבדיקה.
-      </p>
-      <PickedList
-        suppliers={data.suppliers}
-        remove={(id) => {
-          toggleShortlist(id);
-          // Drop a shared list from the address so the loader reads the updated one.
-          void navigate('/engagement', { replace: true });
-        }}
+      <PageHeader
+        title="בקשות התקשרות"
+        lead="הכלי מחשב מסלול לפי הנתונים שהוזנו. הוא אינו מאשר התקשרות ואינו קובע שספק זכאי."
       />
-      <DraftForm
-        units={data.units}
-        today={data.today}
-        complete={(result, requestId) => {
-          setChecked({ result, requestId });
-        }}
-      />
-      {checked && <ResultPanel result={checked.result} />}
-      <ShortlistTools
-        suppliers={data.suppliers}
-        today={data.today}
-        requestId={checked?.requestId ?? null}
-      />
+      {data.suppliers.length ? (
+        <NewRequest data={data} />
+      ) : (
+        <EmptyState title="לא נבחרו ספקים לבקשה חדשה">
+          <p>
+            בוחרים ספקים ב<Link to="/catalog">איתור ספקים</Link> ולוחצים "הוספה לבקשה".
+          </p>
+        </EmptyState>
+      )}
+      {data.saved && <SavedRequests requests={data.saved} units={unitNames()} today={data.today} />}
     </div>
   );
 }

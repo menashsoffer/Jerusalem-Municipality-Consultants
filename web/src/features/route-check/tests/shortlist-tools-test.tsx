@@ -57,14 +57,14 @@ describe('shortlist tools', () => {
     tools([active]);
     await userEvent.click(screen.getByRole('button', { name: 'העתקת כתובות ל-BCC' }));
     expect(await screen.findByText('ההעתקה נכשלה.')).toBeDefined();
-    await userEvent.click(screen.getByRole('button', { name: 'העתקת קישור לרשימה' }));
+    await userEvent.click(screen.getByRole('button', { name: 'העתקת קישור' }));
     expect(await screen.findByText('ההעתקה נכשלה.')).toBeDefined();
   });
 
   it('copies a link that reopens the same list', async () => {
     const writeText = clipboard(() => Promise.resolve());
     tools([active, inactive]);
-    await userEvent.click(screen.getByRole('button', { name: 'העתקת קישור לרשימה' }));
+    await userEvent.click(screen.getByRole('button', { name: 'העתקת קישור' }));
     expect(writeText.mock.calls[0]?.[0]).toContain(`#/engagement?suppliers=${A}%2C${B}`);
     expect(await screen.findByText(/הקישור הועתק/u)).toBeDefined();
   });
@@ -79,7 +79,7 @@ describe('shortlist tools', () => {
       );
     });
     tools([active]);
-    await userEvent.click(screen.getByRole('button', { name: 'ייצוא CSV' }));
+    await userEvent.click(screen.getByRole('button', { name: 'ייצוא לקובץ' }));
     expect(await screen.findByText('הקובץ הורד, בלי מספרי זהות.')).toBeDefined();
     expect(click).toHaveBeenCalledOnce();
     expect(document.querySelector('a[download]')).toBeNull();

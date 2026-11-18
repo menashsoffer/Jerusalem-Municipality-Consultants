@@ -24,7 +24,7 @@ export function PickedList({ suppliers, remove }: Props) {
             </span>
           </span>
           <Button
-            variant="secondary"
+            variant="quiet"
             aria-label={`הסרה מהבקשה: ${supplier.name}`}
             onClick={() => {
               remove(supplier.id);

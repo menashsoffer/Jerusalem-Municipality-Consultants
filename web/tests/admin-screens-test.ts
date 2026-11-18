@@ -23,10 +23,10 @@ describe('admin screens by role', () => {
   });
 
   it('gives each role the screens its own checks allow', () => {
-    assert.deepEqual(paths(access(['editor'])), ['/identifiers', '/supplier/new', '/route-check']);
+    assert.deepEqual(paths(access(['editor'])), ['/identifiers', '/supplier/new']);
     assert.deepEqual(paths(access(['auditor'])), ['/load-control']);
     assert.ok(paths(access(['unit_manager'])).includes('/users'));
-    assert.equal(paths(access(['admin'])).length, 8);
+    assert.equal(paths(access(['admin'])).length, 7);
   });
 
   it('gives nothing to someone whose access is not active', () => {
