@@ -39,3 +39,11 @@ it('formats Hebrew month and ILS, and rejects malformed proposals before renderi
     assert.equal(proposalSchema.safeParse({ ...proposal, no_tender_max }).success, false);
   assert.equal(proposalSchema.safeParse({ ...proposal, valid_from: '2026-02-30' }).success, false);
 });
+it('finds the thresholds in force on a day and labels the change', async () => {
+  const { thresholdOn, changeLabel } = await import('../model/comparison.ts');
+  assert.equal(thresholdOn('2026-11-01', [threshold])?.id, 'oct');
+  assert.equal(thresholdOn('2026-12-01', [threshold]), null);
+  assert.match(changeLabel(100000, 100400), /\+0\.4%/u);
+  assert.match(changeLabel(100, 99), /-1%/u);
+  assert.doesNotMatch(changeLabel(100, 100), /[+-]/u);
+});
