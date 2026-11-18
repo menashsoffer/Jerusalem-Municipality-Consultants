@@ -26,6 +26,8 @@ import styles from './route-check.module.css';
 
 interface Props {
   requests: SavedRequest[];
+  /** A change was saved but the list could not be fetched again. */
+  stale?: boolean;
   units: Map<string, string>;
   today: string;
 }
@@ -148,7 +150,7 @@ function RequestDialogs({
   );
 }
 
-export function SavedRequests({ requests, units, today }: Props) {
+export function SavedRequests({ requests, stale = false, units, today }: Props) {
   const [chosen, setChosen] = useState<Chosen>(null);
   const unitName = (r: SavedRequest) => units.get(r.unit_id) ?? 'יחידה לא זמינה';
   const rows = requests.map((r) => ({
@@ -172,6 +174,11 @@ export function SavedRequests({ requests, units, today }: Props) {
   return (
     <section aria-labelledby="saved-requests" className={styles.panel}>
       <h2 id="saved-requests">בקשות שמורות</h2>
+      {stale && (
+        <Notice tone="warning" title="הרשימה לא התעדכנה.">
+          השינוי נשמר, אבל לא ניתן היה לטעון את הרשימה מחדש. רענון הדף יציג אותה מעודכנת.
+        </Notice>
+      )}
       {requests.length ? (
         <DataTable caption="בקשות שמורות ביחידות שלך" columns={COLUMNS} rows={rows} />
       ) : (
