@@ -56,7 +56,8 @@ describe('supplier details', () => {
     expect(screen.getByText('תחילת התקשרות: 01.02.2024')).toBeDefined();
     expect(screen.queryByText(/לא תועד/)).toBeNull();
     expect(screen.getByText('bad').closest('a')).toBeNull();
-    const links = screen.getAllByRole('link', { name: /מסמך המאגר|מסמך מקור/ });
+    expect(screen.queryByRole('link', { name: /מסמך המאגר/ })).toBeNull();
+    const links = screen.getAllByRole('link', { name: /מסמך מקור/ });
     expect(links.length).toBeGreaterThan(0);
     expect(links.every((link) => link.getAttribute('href') === 'https://example.test/source')).toBe(
       true,

@@ -2,7 +2,10 @@ import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { listings } from '../model/view.ts';
 import styles from './supplier.module.css';
 
-/** Spec section 4.2: the registries and fields, the main thing staff come for. */
+/**
+ * Spec section 4.2: the registries and fields, the main thing staff come for. The source
+ * documents are under "מאיפה המידע", not on each listing (Menash, 18.11).
+ */
 export function Listings({ data, today }: { data: SupplierDetail; today: string }) {
   const items = listings(data, today);
   return (
@@ -27,11 +30,6 @@ export function Listings({ data, today }: { data: SupplierDetail; today: string 
           <p className={styles.meta}>
             <span>{item.validity}</span>
             {item.engagement && <span>{item.engagement}</span>}
-            {item.source && (
-              <a href={item.source.url} target="_blank" rel="noopener noreferrer">
-                {item.source.page ? `מסמך המאגר, עמוד ${String(item.source.page)}` : 'מסמך המאגר'}
-              </a>
-            )}
           </p>
         </article>
       ))}

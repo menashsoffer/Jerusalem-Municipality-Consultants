@@ -93,7 +93,7 @@ describe('registry listings', () => {
     assert.equal(first.registry, 'מאגר יועצי חירום 2020');
     assert.deepEqual(first.fields, ["א'2 מוכנות לחרום", "ב'1 חרום מזרח העיר"]);
     assert.equal(first.validity, 'תוקף הרישום: לא ידוע');
-    assert.deepEqual(first.source, { url: 'https://example.test/doc', page: undefined });
+    assert.equal('source' in first, false);
     assert.deepEqual(second.fields, ['כתיבת תיק אב', 'כתיבת נהלי אבטחה']);
     assert.equal(second.badge.text, 'פג תוקף');
     assert.equal(second.validity, 'תוקף הרישום פג ב-31.12.2020');
