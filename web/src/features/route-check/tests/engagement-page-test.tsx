@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { EngagementPage } from '../engagement-page.tsx';
@@ -8,7 +8,9 @@ import { DataError } from '../../../data/client.ts';
 import * as engagement from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { loader } from '../engagement-page.tsx';
+import * as savedApi from '../api/saved.ts';
 import type { SavedRequest } from '../api/saved.ts';
+import * as rpc from '../../../data/rpc.ts';
 import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 type PageData = Awaited<ReturnType<typeof loader>>;
 
@@ -106,6 +108,51 @@ describe('engagement request page', () => {
     expect(await screen.findByText('נרשמו 1 פניות להיום.')).toBeDefined();
   });
 
+  // 18.11.2026: a saved request reached "בקשות שמורות" only after a page refresh.
+  it('shows a saved request in the saved list at once and keeps the result open', async () => {
+    replaceShortlist([supplier.id]);
+    page([{ id: 'u1', name: 'אגף 1' }], { saved: [] });
+    const row: SavedRequest = {
+      id: REQUEST,
+      unit_id: 'u1',
+      subject: 'ייעוץ ארגוני',
+      estimated_value: 120000,
+      value_includes_vat: false,
+      requested_exemption: null,
+      status: 'draft',
+      created_at: '2026-11-18T10:00:00Z',
+      updated_at: '2026-11-18T10:00:00Z',
+      lastStatus: 'needs_review',
+      changedSinceCheck: false,
+    };
+    const who: rpc.Identity = {
+      userId: 'me',
+      access: {
+        state: 'active',
+        member: true,
+        admin: false,
+        editor: true,
+        manager: false,
+        grants: [{ role: 'editor', unitId: 'u1' }],
+      },
+    };
+    vi.spyOn(rpc, 'identity').mockResolvedValue(who);
+    const reload = vi.spyOn(savedApi, 'loadSaved').mockResolvedValue([row]);
+    vi.spyOn(engagement, 'saveRequest').mockResolvedValue(REQUEST);
+    vi.spyOn(check, 'checkRoute').mockResolvedValue({ ...result, id: 9 });
+    expect(screen.getByRole('heading', { name: 'אין בקשות שמורות' })).toBeDefined();
+    await fill();
+    await userEvent.type(screen.getByLabelText(/^נושא/u), 'ייעוץ ארגוני');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /^יחידה/u }), 'u1');
+    await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול ושמירה ביחידה' }));
+    const table = await screen.findByRole('table', { name: 'בקשות שמורות ביחידות שלך' });
+    expect(within(table).getByText('ייעוץ ארגוני')).toBeDefined();
+    expect(reload).toHaveBeenCalledWith(who);
+    // The shortlist is empty now, yet the new request's result stays on screen.
+    expect(screen.getByRole('heading', { name: 'תוצאה' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'רישום פנייה לספקים' })).toBeDefined();
+  });
+
   // The 18.11.2026 incident: the request was saved, the check failed, and pressing the button
   // again saved a second copy. Now the form says what was saved and only checks it again.
   it('says the request was saved when its check fails, and checks it again without saving', async () => {
@@ -122,13 +169,58 @@ describe('engagement request page', () => {
     expect(await screen.findByText('הבקשה נשמרה, אבל הבדיקה נכשלה.')).toBeDefined();
     expect(screen.getByText(/תקלה במערכת/u)).toBeDefined();
     expect(screen.queryByText(/יש לנסות שוב/u)).toBeNull();
-    await userEvent.click(screen.getByRole('button', { name: 'בדיקה חוזרת של הבקשה השמורה' }));
+    const update = vi.spyOn(savedApi, 'updateRequest');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירת השינויים ובדיקה חוזרת' }));
     await vi.waitFor(() => {
       expect(run).toHaveBeenCalledTimes(2);
     });
     expect(save).toHaveBeenCalledTimes(1);
+    // Nothing changed, so nothing is written before the second check.
+    expect(update).not.toHaveBeenCalled();
     expect(run).toHaveBeenLastCalledWith({ request_id: REQUEST, on: '2026-11-17' });
     expect(await screen.findByRole('button', { name: 'רישום פנייה לספקים' })).toBeDefined();
+  });
+
+  // 18.11.2026: "חזרה לפרטי הבקשה" opened an empty form, and saving it again made a copy.
+  it('returns to the saved details, edits them in place and checks the request again', async () => {
+    page([{ id: 'u1', name: 'אגף 1' }]);
+    const save = vi.spyOn(engagement, 'saveRequest').mockResolvedValue(REQUEST);
+    const run = vi.spyOn(check, 'checkRoute').mockResolvedValue({ ...result, id: 9 });
+    const update = vi.spyOn(savedApi, 'updateRequest').mockResolvedValue();
+    await fill();
+    await userEvent.type(screen.getByLabelText(/^נושא/u), 'ייעוץ ארגוני');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /^יחידה/u }), 'u1');
+    await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול ושמירה ביחידה' }));
+    await userEvent.click(await screen.findByRole('button', { name: 'חזרה לפרטי הבקשה' }));
+    // Focus moves to the step heading on the next frame; typing before it loses keys.
+    await vi.waitFor(() => {
+      expect(document.activeElement?.textContent).toBe('פרטי הבקשה');
+    });
+    const value = screen.getByLabelText<HTMLInputElement>(/^אומדן בש״ח/u);
+    expect(value.value).toBe('120000');
+    expect(screen.getByLabelText<HTMLInputElement>(/^נושא/u).value).toBe('ייעוץ ארגוני');
+    const unit = screen.getByRole<HTMLSelectElement>('combobox', { name: /^יחידה/u });
+    expect([unit.value, unit.disabled]).toEqual(['u1', true]);
+    await userEvent.clear(value);
+    await userEvent.type(value, '90000');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירת השינויים ובדיקה חוזרת' }));
+    expect(await screen.findByRole('heading', { name: 'תוצאה' })).toBeDefined();
+    expect(update).toHaveBeenCalledWith(REQUEST, {
+      subject: 'ייעוץ ארגוני',
+      estimated_value: 90000,
+      value_includes_vat: false,
+      requested_exemption: null,
+    });
+    expect(save).toHaveBeenCalledTimes(1);
+    expect(run).toHaveBeenLastCalledWith({ request_id: REQUEST, on: '2026-11-17' });
+  });
+
+  it('keeps typed details when going back to the suppliers and forward again', async () => {
+    page([]);
+    await fill();
+    await userEvent.click(screen.getByRole('button', { name: 'לשלב הקודם' }));
+    await userEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    expect(screen.getByLabelText<HTMLInputElement>(/^אומדן בש״ח/u).value).toBe('120000');
   });
 
   it('reports a refused clipboard instead of claiming a copy', async () => {

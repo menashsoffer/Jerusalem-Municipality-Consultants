@@ -7,7 +7,7 @@ import { toggleShortlist } from '../../../lib/shortlist.ts';
 import controls from '../../../ui/control.module.css';
 import type { EngagementData } from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
-import { DraftForm } from './draft-form.tsx';
+import { DraftForm, EMPTY_ENTRY, type Entry } from './draft-form.tsx';
 import { PickedList } from './picked-list.tsx';
 import { ResultPanel } from './result-panel.tsx';
 import { ShortlistTools } from './shortlist-tools.tsx';
@@ -80,6 +80,7 @@ function ResultStep({
 export function NewRequest({ data }: { data: EngagementData }) {
   const { step, move, heading } = useWizard();
   const [checked, setChecked] = useState<Checked>();
+  const [entry, setEntry] = useState<Entry>(EMPTY_ENTRY);
   return (
     <section aria-labelledby="new-request" className={styles.panel}>
       <h2 id="new-request">בקשה חדשה</h2>
@@ -99,6 +100,8 @@ export function NewRequest({ data }: { data: EngagementData }) {
         <DraftForm
           units={data.units}
           today={data.today}
+          entry={entry}
+          keep={setEntry}
           back={() => {
             move('suppliers');
           }}

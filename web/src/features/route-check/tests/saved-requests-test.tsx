@@ -7,6 +7,7 @@ import { DataError } from '../../../data/client.ts';
 import { RULE_MESSAGES } from '../../../lib/rules/messages.ts';
 import * as saved from '../api/saved.ts';
 import type { SavedRequest } from '../api/saved.ts';
+import { ReloadSavedProvider } from '../components/saved-list.tsx';
 import { SavedRequests } from '../components/saved-requests.tsx';
 
 const REQUEST: SavedRequest = {
@@ -25,14 +26,17 @@ const REQUEST: SavedRequest = {
 
 function show(requests: SavedRequest[]) {
   const loader = vi.fn(() => null);
+  const reload = vi.fn(() => Promise.resolve());
   const Page = () => (
-    <SavedRequests requests={requests} units={new Map([['u1', 'רכש']])} today="2026-11-18" />
+    <ReloadSavedProvider value={reload}>
+      <SavedRequests requests={requests} units={new Map([['u1', 'רכש']])} today="2026-11-18" />
+    </ReloadSavedProvider>
   );
   const router = createMemoryRouter([{ id: 'saved', path: '/', Component: Page, loader }], {
     hydrationData: { loaderData: { saved: null } },
   });
   render(<RouterProvider router={router} />);
-  return loader;
+  return reload;
 }
 
 beforeAll(() => {
@@ -63,7 +67,7 @@ describe('saved requests', () => {
 
   it('saves edited details and reloads the list', async () => {
     const update = vi.spyOn(saved, 'updateRequest').mockResolvedValue();
-    const loader = show([REQUEST]);
+    const reload = show([REQUEST]);
     await userEvent.click(screen.getByRole('button', { name: 'עריכת הבקשה: ייעוץ ארגוני' }));
     const form = screen.getByRole('form', { name: 'עריכת הבקשה' });
     const value = within(form).getByLabelText<HTMLInputElement>(/^אומדן בש״ח/u);
@@ -79,8 +83,13 @@ describe('saved requests', () => {
       requested_exemption: '3(8)',
     });
     await vi.waitFor(() => {
-      expect(loader).toHaveBeenCalled();
+      expect(reload).toHaveBeenCalled();
     });
+  });
+
+  it('says when the list could not be fetched again after a change', () => {
+    render(<SavedRequests requests={[REQUEST]} stale units={new Map()} today="2026-11-18" />);
+    expect(screen.getByText('הרשימה לא התעדכנה.')).toBeDefined();
   });
 
   it('shows why the database refused an edit', async () => {
@@ -94,7 +103,7 @@ describe('saved requests', () => {
 
   it('cancels a request only with a reason', async () => {
     const cancel = vi.spyOn(saved, 'cancelRequest').mockResolvedValue();
-    show([REQUEST]);
+    const reload = show([REQUEST]);
     await userEvent.click(screen.getByRole('button', { name: 'ביטול הבקשה: ייעוץ ארגוני' }));
     const form = screen.getByRole('form', { name: 'ביטול הבקשה' });
     await userEvent.click(within(form).getByRole('button', { name: 'ביטול הבקשה' }));
@@ -103,6 +112,9 @@ describe('saved requests', () => {
     await userEvent.type(within(form).getByLabelText(/^סיבת הביטול/u), ' הצורך בוטל ');
     await userEvent.click(within(form).getByRole('button', { name: 'ביטול הבקשה' }));
     expect(cancel).toHaveBeenCalledWith(REQUEST.id, 'הצורך בוטל');
+    await vi.waitFor(() => {
+      expect(reload).toHaveBeenCalled();
+    });
   });
 
   it('offers no edit for an approved request, only a check and a cancel', () => {
