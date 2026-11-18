@@ -1,5 +1,5 @@
 // The circle at the end of the top bar (screens-spec-he.md 11): a small menu with who is signed
-// in, their main role, "החשבון שלי" and sign-out. Signed out, it is a link to sign in.
+// in, their main role, links to "החשבון שלי" and sign-out. Signed out, it is a link to sign in.
 import { useId } from 'react';
 import { Link } from 'react-router';
 import { getAdminSession } from '../data/rpc.ts';
@@ -13,6 +13,13 @@ import { mainRole } from './screens.ts';
 function hide(id: string): void {
   document.getElementById(id)?.hidePopover();
 }
+
+/** screens-spec 4.1: all three lead to "החשבון שלי", at the matching part. */
+const MENU_LINKS = [
+  ['/auth', 'החשבון שלי'],
+  ['/auth?part=details', 'עריכת הפרטים שלי'],
+  ['/auth?part=roles', 'בקשה לשינוי תפקיד או יחידה'],
+] as const;
 
 export function AccountMenu() {
   const id = useId();
@@ -44,14 +51,17 @@ export function AccountMenu() {
           <strong dir="ltr">{email ?? 'משתמש מחובר'}</strong>
           {role && <span>{role}</span>}
         </p>
-        <Link
-          to="/auth"
-          onClick={() => {
-            hide(id);
-          }}
-        >
-          החשבון שלי
-        </Link>
+        {MENU_LINKS.map(([to, label]) => (
+          <Link
+            key={to}
+            to={to}
+            onClick={() => {
+              hide(id);
+            }}
+          >
+            {label}
+          </Link>
+        ))}
         <form action={signOut}>
           <Button type="submit" variant="secondary">
             יציאה מהמערכת

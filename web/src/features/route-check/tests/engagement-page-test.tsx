@@ -87,6 +87,9 @@ describe('engagement request page', () => {
     await userEvent.selectOptions(screen.getByRole('combobox', { name: /^יחידה/u }), 'u1');
     expect(screen.getByLabelText<HTMLInputElement>(/^נושא/u).required).toBe(true);
     await userEvent.click(screen.getByRole('button', { name: 'בדיקת מסלול ושמירה ביחידה' }));
+    await vi.waitFor(() => {
+      expect(run).toHaveBeenCalled();
+    });
     expect(run).toHaveBeenCalledWith({ request_id: REQUEST, on: '2026-11-17' });
     await userEvent.click(await screen.findByRole('button', { name: 'רישום פנייה לספקים' }));
     expect(record).toHaveBeenCalledWith(REQUEST, [supplier.id]);

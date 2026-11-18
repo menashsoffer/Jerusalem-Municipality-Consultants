@@ -6,7 +6,16 @@ import { activeGrants, availableUnits } from './model/permissions.ts';
 import { ProfileReview } from './components/profile-review.tsx';
 import { GrantForm } from './components/grant-form.tsx';
 import { GrantsTable } from './components/grants-table.tsx';
+import { ChangeRequests } from './components/change-review.tsx';
 export const loader = loadUsers;
+function Loading() {
+  return (
+    <>
+      <h1 tabIndex={-1}>משתמשים ותפקידים</h1>
+      <Skeleton />
+    </>
+  );
+}
 export function UsersPage() {
   const data = useLoaderData<typeof loader>();
   const navigation = useNavigation();
@@ -14,13 +23,8 @@ export function UsersPage() {
   const active = data.profiles.filter((p) => p.status === 'active');
   const grants = activeGrants(data.grants, data.now);
   const units = availableUnits(data.units, data.who.access);
-  if (navigation.state === 'loading')
-    return (
-      <>
-        <h1 tabIndex={-1}>משתמשים ותפקידים</h1>
-        <Skeleton />
-      </>
-    );
+  const unitNames = new Map(data.units.map((u) => [u.id, u.name]));
+  if (navigation.state === 'loading') return <Loading />;
   return (
     <>
       <h1 tabIndex={-1}>משתמשים ותפקידים</h1>
@@ -36,6 +40,14 @@ export function UsersPage() {
         ))
       ) : (
         <EmptyState title="אין בקשות ממתינות" />
+      )}
+      {data.changes && (
+        <ChangeRequests
+          changes={data.changes}
+          profiles={data.profiles}
+          grants={data.grants}
+          units={unitNames}
+        />
       )}
       <h2>הענקת תפקיד</h2>
       {active.length ? (
