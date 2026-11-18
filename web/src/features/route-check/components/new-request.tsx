@@ -77,7 +77,7 @@ export function NewRequest({ data }: { data: EngagementData }) {
   return (
     <section aria-labelledby="new-request" className={styles.panel}>
       <h2 id="new-request">בקשה חדשה</h2>
-      <Steps current={step} />
+      <Steps current={step} reachable={(key) => key !== 'result' || !!checked} go={move} />
       <h3 tabIndex={-1} ref={heading} className={styles.stepTitle}>
         {STEPS[step]}
       </h3>
