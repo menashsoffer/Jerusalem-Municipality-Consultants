@@ -1,43 +1,43 @@
-import { useEffect } from 'react';
+import { useState } from 'react';
 import { useSearchParams } from 'react-router';
-import { Button } from '../../../ui/button.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { PageHeader } from '../../../ui/page-header.tsx';
 import type { Account } from '../api/account.ts';
-import { signOut } from '../api/session.ts';
+import { AccountActions } from './account-actions.tsx';
 import { MyDetails } from './my-details.tsx';
-import { CHANGE_DIALOG, MyRoles } from './my-roles.tsx';
+import { MyRoles } from './my-roles.tsx';
+import { ProfileCard } from './profile-card.tsx';
 import styles from './account.module.css';
 
-/** The user-menu links land here: `?part=details` opens the form, `?part=roles` the dialog. */
-function usePart(ready: boolean) {
-  const [params] = useSearchParams();
-  const part = params.get('part');
-  useEffect(() => {
-    if (part !== 'roles' || !ready) return;
-    const dialog = document.getElementById(CHANGE_DIALOG);
-    if (dialog instanceof HTMLDialogElement && !dialog.open) dialog.showModal();
-  }, [part, ready]);
-  return part;
+function showDetails() {
+  requestAnimationFrame(() => {
+    const details = document.getElementById('my-details');
+    // jsdom has no scrolling; browsers do.
+    if (details && typeof details.scrollIntoView === 'function') details.scrollIntoView();
+  });
 }
 
-/** An active user's "החשבון שלי" (screens-spec 4 and 4.1). */
+/** An active user's personal area (screens-spec 4 and 4.2): who, actions, details, roles. */
 export function MyAccount({ account }: { account: Account }) {
   const { profile, units, grants, changes } = account;
-  const part = usePart(changes !== null);
+  const [params] = useSearchParams();
+  const [editing, setEditing] = useState(params.get('part') === 'details');
   const unit = units.find((u) => u.id === profile?.unit_id)?.name ?? 'לא נקבעה';
+  const waiting = changes?.some((c) => c.kind === 'details' && c.status === 'pending');
   return (
     <div className={styles.page}>
-      <PageHeader
-        title="החשבון שלי"
-        lead="הפרטים והתפקידים שלך במערכת. שינוי נשלח לאישור מנהל."
-        action={
-          <form action={signOut}>
-            <Button type="submit" variant="secondary">
-              יציאה מהמערכת
-            </Button>
-          </form>
+      <PageHeader title="האזור האישי" lead="הפרטים והתפקידים שלך במערכת. שינוי נשלח לאישור מנהל." />
+      {profile && <ProfileCard profile={profile} unit={unit} account={account} />}
+      <AccountActions
+        edit={
+          changes && profile && !waiting
+            ? () => {
+                setEditing(true);
+                showDetails();
+              }
+            : null
         }
+        askChange={changes !== null}
       />
       {changes === null && (
         <Notice tone="info" title="בקשות שינוי עדיין לא זמינות כאן.">
@@ -49,7 +49,8 @@ export function MyAccount({ account }: { account: Account }) {
           profile={profile}
           unit={unit}
           changes={changes}
-          startEditing={part === 'details'}
+          editing={editing}
+          setEditing={setEditing}
         />
       )}
       <MyRoles units={units} grants={grants} changes={changes} />

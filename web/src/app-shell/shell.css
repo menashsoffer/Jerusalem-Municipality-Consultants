@@ -109,48 +109,10 @@
     border-radius: 50%;
     background: var(--color-brand);
     color: var(--color-on-brand);
+    font-weight: var(--font-weight-strong);
+    text-decoration: none;
     &:hover {
       background: var(--color-brand-hover);
-    }
-  }
-  button.shell-account {
-    border: 0;
-    font: inherit;
-    font-weight: var(--font-weight-strong);
-    cursor: pointer;
-  }
-  /* The account menu opens in the top layer under the circle, at the end of the bar. */
-  .shell-menu {
-    inset: auto;
-    inset-block-start: 4.25rem;
-    inset-inline-end: var(--space-lg);
-    min-inline-size: 15rem;
-    margin: 0;
-    padding: var(--space-lg);
-    border: var(--border-width) solid var(--color-border);
-    border-radius: var(--radius-panel);
-    background: var(--color-surface);
-    color: var(--color-text);
-    box-shadow: var(--shadow-overlay);
-    &:popover-open {
-      display: grid;
-      gap: var(--space-md);
-    }
-    & a {
-      padding-block: var(--space-sm);
-      border-block-start: var(--border-width) solid var(--color-border);
-      font-weight: var(--font-weight-label);
-    }
-    & form button {
-      inline-size: 100%;
-    }
-  }
-  .shell-menu-who {
-    display: grid;
-    margin: 0;
-    & span {
-      color: var(--color-muted);
-      font-size: var(--font-small);
     }
   }
   .shell-main {
@@ -234,46 +196,6 @@
       }
       & .shell-icon {
         display: block;
-      }
-    }
-    button.shell-account {
-      border: 0;
-      font: inherit;
-      font-weight: var(--font-weight-strong);
-      cursor: pointer;
-    }
-    /* The account menu opens in the top layer under the circle, at the end of the bar. */
-    .shell-menu {
-      inset: auto;
-      inset-block-start: 4.25rem;
-      inset-inline-end: var(--space-lg);
-      min-inline-size: 15rem;
-      margin: 0;
-      padding: var(--space-lg);
-      border: var(--border-width) solid var(--color-border);
-      border-radius: var(--radius-panel);
-      background: var(--color-surface);
-      color: var(--color-text);
-      box-shadow: var(--shadow-overlay);
-      &:popover-open {
-        display: grid;
-        gap: var(--space-md);
-      }
-      & a {
-        padding-block: var(--space-sm);
-        border-block-start: var(--border-width) solid var(--color-border);
-        font-weight: var(--font-weight-label);
-      }
-      & form button {
-        inline-size: 100%;
-      }
-    }
-    .shell-menu-who {
-      display: grid;
-      margin: 0;
-      & span {
-        color: var(--color-muted);
-        font-size: var(--font-small);
       }
     }
     .shell-main {

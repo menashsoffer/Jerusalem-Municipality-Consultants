@@ -66,6 +66,14 @@ export function logout(token: string): Promise<Response> {
   });
 }
 
+/** The signed-in account as Supabase Auth keeps it (for its last sign-in time). */
+export function authUser(token: string): Promise<Response> {
+  return fetch(`${BASE}/auth/v1/user`, {
+    headers: authHeaders(token),
+    signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
+  });
+}
+
 export function sendLink(email: string, redirect: string): Promise<Response> {
   return fetch(`${BASE}/auth/v1/otp?redirect_to=${encodeURIComponent(redirect)}`, {
     method: 'POST',

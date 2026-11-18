@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { useRevalidator } from 'react-router';
 import { Button } from '../../../ui/button.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
@@ -18,7 +17,9 @@ interface Props {
   unit: string;
   /** Null where change requests are not available yet: then the details are read-only. */
   changes: ChangeRequest[] | null;
-  startEditing: boolean;
+  /** The edit form is opened from the actions at the top of the personal area. */
+  editing: boolean;
+  setEditing: (editing: boolean) => void;
 }
 
 function DetailsForm({ profile, done }: { profile: MyProfile; done: () => void }) {
@@ -62,10 +63,6 @@ function Facts({ profile, unit }: Pick<Props, 'profile' | 'unit'>) {
       <dd>
         {profile.first_name} {profile.last_name}
       </dd>
-      <dt>דוא״ל</dt>
-      <dd>
-        <bdi>{profile.email}</bdi>
-      </dd>
       <dt>תפקיד בעירייה</dt>
       <dd>{profile.job_title}</dd>
       <dt>טלפון</dt>
@@ -77,8 +74,7 @@ function Facts({ profile, unit }: Pick<Props, 'profile' | 'unit'>) {
 }
 
 /** "הפרטים שלי": shown as facts; a change goes to a manager for approval (decision 8). */
-export function MyDetails({ profile, unit, changes, startEditing }: Props) {
-  const [editing, setEditing] = useState(startEditing);
+export function MyDetails({ profile, unit, changes, editing, setEditing }: Props) {
   const waiting = changes?.find((c) => c.kind === 'details' && c.status === 'pending');
   return (
     <section aria-labelledby="my-details" className={styles.panel}>
@@ -97,16 +93,6 @@ export function MyDetails({ profile, unit, changes, startEditing }: Props) {
         <Notice tone="info" title={`השינוי נשלח ב-${dayOf(waiting.created_at)} וממתין לאישור.`}>
           עד האישור הפרטים הקודמים נשארים. <CancelChange id={waiting.id} />
         </Notice>
-      )}
-      {changes && !waiting && !editing && (
-        <Button
-          variant="secondary"
-          onClick={() => {
-            setEditing(true);
-          }}
-        >
-          עריכת הפרטים שלי
-        </Button>
       )}
       <p className={styles.note}>
         הדוא״ל הוא כתובת הכניסה ואינו נערך. לכתובת אחרת פונים למנהל המערכת.

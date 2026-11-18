@@ -49,7 +49,7 @@ function at(path: string, element: React.ReactNode, loader: () => unknown = () =
 }
 
 describe('top bar', () => {
-  it('hides the admin tab from a viewer and shows the account menu', async () => {
+  it('hides the admin tab from a viewer and links the circle to the personal area', async () => {
     signedIn(['viewer']);
     at('/x', <SiteHeader />);
     const nav = await screen.findByRole('navigation', { name: 'ניווט ראשי' });
@@ -57,10 +57,9 @@ describe('top bar', () => {
       'איתור ספקים',
       'בקשות התקשרות',
     ]);
-    expect(screen.getByRole('button', { name: 'החשבון שלי' }).textContent).toBe('D');
-    expect(screen.getByText('dana@example.test')).toBeDefined();
-    expect(screen.getByText('צופה')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'יציאה מהמערכת', hidden: true })).toBeDefined();
+    const personal = screen.getByRole('link', { name: 'האזור האישי' });
+    expect(personal.textContent).toBe('D');
+    expect(personal.getAttribute('href')).toBe('/auth');
   });
 
   it('shows the admin tab to an editor', async () => {
