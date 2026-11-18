@@ -7,7 +7,7 @@ import type * as RpcModule from '../../../data/rpc.ts';
 import * as site from '../../../data/site.ts';
 import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 import { checkRoute } from '../api/check.ts';
-import { loadSaved } from '../api/saved.ts';
+import { cancelRequest, loadSaved, updateRequest } from '../api/saved.ts';
 import { loadEngagement, recordApproaches, saveRequest } from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
@@ -195,13 +195,16 @@ describe('loadSaved', () => {
       estimated_value: 1,
       value_includes_vat: false,
       requested_exemption: null,
+      status: 'draft',
       created_at: '2026-11-17T10:00:00Z',
+      updated_at: id === 'c' ? '2026-11-17T12:00:00Z' : '2026-11-17T10:00:00Z',
     });
     vi.mocked(rpc.rows)
-      .mockResolvedValueOnce([request('a'), request('b')])
+      .mockResolvedValueOnce([request('a'), request('b'), request('c')])
       .mockResolvedValueOnce([
-        { request_id: 'a', status: 'blocked' },
-        { request_id: 'a', status: 'ok' },
+        { request_id: 'a', status: 'blocked', created_at: '2026-11-17T11:00:00Z' },
+        { request_id: 'c', status: 'ok', created_at: '2026-11-17T11:00:00Z' },
+        { request_id: 'a', status: 'ok', created_at: '2026-11-17T10:30:00Z' },
       ]);
     const value = await loadSaved(editor);
     expect(rpc.rows).toHaveBeenNthCalledWith(
@@ -213,12 +216,13 @@ describe('loadSaved', () => {
     expect(rpc.rows).toHaveBeenNthCalledWith(
       2,
       'route_checks',
-      { request_id: 'in.(a,b)', order: 'created_at.desc' },
+      { request_id: 'in.(a,b,c)', order: 'created_at.desc' },
       expect.anything(),
     );
-    expect(value?.map((r) => [r.id, r.lastStatus])).toEqual([
-      ['a', 'blocked'],
-      ['b', null],
+    expect(value?.map((r) => [r.id, r.lastStatus, r.changedSinceCheck])).toEqual([
+      ['a', 'blocked', false],
+      ['b', null, false],
+      ['c', 'ok', true],
     ]);
   });
 
@@ -226,6 +230,33 @@ describe('loadSaved', () => {
     vi.mocked(rpc.rows).mockResolvedValueOnce([]);
     expect(await loadSaved(editor)).toEqual([]);
     expect(rpc.rows).toHaveBeenCalledOnce();
+  });
+});
+
+describe('changing a saved request', () => {
+  const details = {
+    subject: 'ייעוץ',
+    estimated_value: 5,
+    value_includes_vat: true,
+    requested_exemption: null,
+  };
+
+  it('sends the new details and the cancel reason to their functions', async () => {
+    vi.mocked(rpc.rpc).mockResolvedValue(null);
+    await updateRequest('r1', details);
+    await cancelRequest('r1', 'לא רלוונטי');
+    expect(rpc.rpc).toHaveBeenNthCalledWith(
+      1,
+      'update_engagement_request',
+      { request: 'r1', draft: details },
+      expect.anything(),
+    );
+    expect(rpc.rpc).toHaveBeenNthCalledWith(
+      2,
+      'cancel_engagement_request',
+      { request: 'r1', note: 'לא רלוונטי' },
+      expect.anything(),
+    );
   });
 });
 

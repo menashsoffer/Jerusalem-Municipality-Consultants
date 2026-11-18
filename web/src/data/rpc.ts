@@ -34,6 +34,16 @@ interface AdminRpc {
       requested_exemption: string | null;
     };
   };
+  update_engagement_request: {
+    request: string;
+    draft: {
+      subject: string;
+      estimated_value: number;
+      value_includes_vat: boolean;
+      requested_exemption: string | null;
+    };
+  };
+  cancel_engagement_request: { request: string; note: string };
   record_supplier_approaches: { request: string; suppliers: string[]; channel: 'email' };
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
@@ -74,6 +84,8 @@ declare module '../database.types.ts' {
     decide_category_request: { Args: AdminRpc['decide_category_request']; Returns: string | null };
     set_supplier_status: { Args: AdminRpc['set_supplier_status']; Returns: null };
     create_engagement_request: { Args: AdminRpc['create_engagement_request']; Returns: string };
+    update_engagement_request: { Args: AdminRpc['update_engagement_request']; Returns: null };
+    cancel_engagement_request: { Args: AdminRpc['cancel_engagement_request']; Returns: null };
     record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };

@@ -24,6 +24,7 @@ export const RULE_MESSAGES = {
   bad_choice: 'יש לבחור אחת מהאפשרויות.',
   bad_amount: 'יש לכתוב סכום בש״ח, גדול מאפס, עם עד שתי ספרות אחרי הנקודה.',
   bad_exemption: 'פטור נכתב כמו 3(8) או 3(29א).',
+  request_closed: 'הבקשה כבר אושרה, נדחתה או בוטלה, ולכן אי אפשר לשנות אותה. יש לרענן את הדף.',
 } as const;
 
 export type RuleKey = keyof typeof RULE_MESSAGES;
