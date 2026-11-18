@@ -40,17 +40,32 @@
       border-color: var(--color-brand-line);
     }
   }
-  /* A destructive action, such as marking a supplier inactive: never the primary colour. */
+  /* Cancel, clear filters, links styled as actions: text only (spec 4.1). */
+  .quiet {
+    composes: button;
+    color: var(--color-brand);
+    background: transparent;
+    border-color: transparent;
+    &:hover:not(:disabled) {
+      color: var(--color-brand-hover);
+      background: var(--color-brand-soft);
+      border-color: transparent;
+    }
+  }
+  /* Hard to undo, such as removing a role: only inside a confirm dialog (spec 4.1). */
   .danger {
     composes: button;
-    color: var(--color-badge-danger-text);
-    background: var(--color-surface);
-    border-color: var(--color-badge-danger-border);
+    color: var(--color-on-brand);
+    background: var(--color-error);
+    border-color: var(--color-error);
     &:hover:not(:disabled) {
-      color: var(--color-badge-danger-text);
-      background: var(--color-badge-danger-surface);
-      border-color: var(--color-badge-danger-border);
+      background: var(--color-badge-danger-text);
+      border-color: var(--color-badge-danger-text);
+      filter: brightness(0.9);
     }
+  }
+  .button[aria-disabled='true'] {
+    cursor: progress;
   }
   .field {
     display: grid;
@@ -65,7 +80,63 @@
     font-size: var(--font-small);
   }
   .error {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-start;
     color: var(--color-error);
+    &:empty {
+      display: none;
+    }
+  }
+  .errorIcon {
+    flex: none;
+    margin-block-start: 0.15em;
+  }
+  .required {
+    color: var(--color-error);
+  }
+  .summary {
+    margin-block: var(--space-lg);
+    padding: var(--space-md) var(--space-lg);
+    border: var(--border-width) solid var(--color-badge-danger-border);
+    border-radius: var(--radius-control);
+    background: var(--color-badge-danger-surface);
+    & h2 {
+      margin: 0;
+      font-size: var(--font-body-size);
+      color: var(--color-badge-danger-text);
+    }
+    & ul {
+      margin: var(--space-sm) 0 0;
+    }
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    justify-content: space-between;
+    margin-block-start: var(--space-xl);
+  }
+  .actionGroup {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-md);
+  }
+  /* On a phone the buttons stay in reach at the bottom, the primary one full width. */
+  @media (width < 40rem) {
+    .actions {
+      position: sticky;
+      inset-block-end: 0;
+      padding-block: var(--space-md);
+      background: var(--color-surface);
+      border-block-start: var(--border-width) solid var(--color-border);
+    }
+    .actionGroup {
+      flex: 1 1 100%;
+      & > :first-child {
+        flex: 1 1 100%;
+      }
+    }
   }
   .control:where(:user-invalid, [aria-invalid='true']) {
     border-color: var(--color-error);

@@ -21,17 +21,16 @@ describe('route table', () => {
       const lazy = route.lazy as () => Promise<{ Component?: unknown; loader?: unknown }>;
       const loaded = await lazy();
       expect(typeof loaded.Component).toBe('function');
-      if (route.path !== 'admin' && route.path !== '*')
-        expect(typeof loaded.loader).toBe('function');
+      if (route.path !== '*') expect(typeof loaded.loader).toBe('function');
     },
   );
 });
 
 describe('hash router', () => {
   it('renders the route for the address hash', async () => {
-    window.location.hash = '#/admin';
+    window.location.hash = '#/no-such-screen';
     render(<AppRouter router={createAdminRouter()} />);
-    expect(await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' })).toBeDefined();
+    expect(await screen.findByRole('heading', { level: 1, name: 'הדף לא נמצא' })).toBeDefined();
     window.location.hash = '';
   });
 });

@@ -22,12 +22,26 @@ export interface LoadOptions {
   onRequest?: () => void;
 }
 
+function tokenClaims(token: string): Record<string, unknown> {
+  const payload = token.split('.')[1] ?? '';
+  const raw: unknown = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
+  return object(raw);
+}
+
+/** The signed-in address, only to show in the account menu; never used for access. */
+export function tokenEmail(token: string): string | null {
+  try {
+    const email = tokenClaims(token).email;
+    return typeof email === 'string' && email ? email : null;
+  } catch {
+    return null;
+  }
+}
+
 /** The token subject only partitions the cache; server access remains authoritative. */
 export function tokenUserId(token: string): string | null {
   try {
-    const payload = token.split('.')[1] ?? '';
-    const raw: unknown = JSON.parse(atob(payload.replace(/-/g, '+').replace(/_/g, '/')));
-    const sub = object(raw).sub;
+    const sub = tokenClaims(token).sub;
     return typeof sub === 'string' &&
       /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(sub)
       ? sub

@@ -98,7 +98,7 @@ describe('users and roles', () => {
     const role = screen.getByRole('combobox', { name: 'תפקיד' });
     expect(within(role).queryByRole('option', { name: 'מנהל מערכת' })).toBeNull();
     expect(
-      within(screen.getByRole('combobox', { name: 'יחידה (חובה)' })).queryByRole('option', {
+      within(screen.getByRole('combobox', { name: 'יחידה' })).queryByRole('option', {
         name: 'יחידה ב',
       }),
     ).toBeNull();
@@ -107,11 +107,8 @@ describe('users and roles', () => {
     const value = data();
     page(value);
     vi.spyOn(api, 'addGrant').mockRejectedValue(new DataError(403));
-    await userEvent.selectOptions(
-      await screen.findByRole('combobox', { name: 'משתמש (חובה)' }),
-      'admin',
-    );
-    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'יחידה (חובה)' }), 'own');
+    await userEvent.selectOptions(await screen.findByRole('combobox', { name: 'משתמש' }), 'admin');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'יחידה' }), 'own');
     await userEvent.click(screen.getByRole('button', { name: 'הענקת התפקיד' }));
     expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
   });

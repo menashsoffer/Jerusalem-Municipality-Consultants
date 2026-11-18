@@ -27,7 +27,7 @@ describe('admin identity screen', () => {
   it('offers labelled native sign-in controls when signed out', async () => {
     page(null);
     expect(await screen.findByRole('heading', { name: 'כניסה והרשאות', level: 1 })).toBeDefined();
-    expect(screen.getByRole('textbox', { name: 'דוא״ל (חובה)' })).toBeDefined();
+    expect(screen.getByRole('textbox', { name: 'דוא״ל' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'שליחת קישור כניסה' })).toBeDefined();
     expect(screen.getByRole('button', { name: 'כניסה באמצעות Google' })).toBeDefined();
   });

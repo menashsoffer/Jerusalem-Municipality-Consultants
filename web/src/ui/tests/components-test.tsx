@@ -42,7 +42,7 @@ describe('shared accessible controls', () => {
         <FormField field={{ label: 'שם' }} input={{ name: 'name' }} />
       </>,
     );
-    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'דוא״ל (חובה)' });
+    const input = screen.getByRole<HTMLInputElement>('textbox', { name: 'דוא״ל' });
     expect(input.getAttribute('aria-invalid')).toBe('false');
     expect(input.id).not.toBe(screen.getByRole('textbox', { name: 'שם' }).id);
     await userEvent.type(input, 'incorrect');

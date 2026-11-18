@@ -1,6 +1,11 @@
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { createMemoryRouter, RouterProvider } from 'react-router';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import * as catalog from '../../data/react-catalog.ts';
+import * as rpc from '../../data/rpc.ts';
+import type { CatalogState } from '../../data/snapshot.ts';
+import type { Access } from '../../data/access.ts';
 
 import { Layout } from '../layout.tsx';
 import { RouteError } from '../route-error.tsx';
@@ -10,7 +15,24 @@ function renderAt(path: string, table = routes) {
   render(<RouterProvider router={createMemoryRouter(table, { initialEntries: [path] })} />);
 }
 
-afterEach(cleanup);
+const ACCESS: Access = {
+  state: 'active',
+  member: true,
+  admin: true,
+  editor: false,
+  manager: false,
+  grants: [],
+};
+const ADMIN = { access: ACCESS } as unknown as CatalogState;
+
+beforeEach(() => {
+  vi.spyOn(catalog, 'useCatalogSnapshot').mockReturnValue(ADMIN);
+  vi.spyOn(rpc, 'identity').mockResolvedValue({ userId: 'u', access: ACCESS });
+});
+afterEach(() => {
+  cleanup();
+  vi.restoreAllMocks();
+});
 
 describe('admin routes', () => {
   it('opens the catalog at the site root', async () => {
@@ -23,7 +45,7 @@ describe('admin routes', () => {
 
   it('shows the admin home with its title', async () => {
     renderAt('/admin');
-    expect(await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' })).toBeDefined();
+    expect(await screen.findByRole('heading', { level: 1, name: 'ניהול' })).toBeDefined();
     await waitFor(() => {
       expect(document.title).toBe('ניהול | איתור ספקים');
     });
@@ -31,7 +53,7 @@ describe('admin routes', () => {
 
   it('marks the admin tab as the current page on admin screens', async () => {
     renderAt('/admin');
-    await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' });
+    await screen.findByRole('heading', { level: 1, name: 'ניהול' });
     const nav = screen.getByRole('navigation', { name: 'ניווט ראשי' });
     const current = nav.querySelectorAll('[aria-current="page"]');
     expect(current).toHaveLength(1);
@@ -40,7 +62,7 @@ describe('admin routes', () => {
 
   it('focuses the current heading without changing the hash route when skipping navigation', async () => {
     renderAt('/admin');
-    const heading = await screen.findByRole('heading', { level: 1, name: 'מסכי הניהול' });
+    const heading = await screen.findByRole('heading', { level: 1, name: 'ניהול' });
     fireEvent.click(screen.getByRole('link', { name: 'דילוג לתוכן' }));
     expect(document.activeElement).toBe(heading);
   });

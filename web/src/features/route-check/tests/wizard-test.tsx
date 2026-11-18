@@ -39,7 +39,7 @@ function page(requests = [request]) {
 }
 async function review() {
   await userEvent.selectOptions(
-    await screen.findByRole('combobox', { name: 'בקשת התקשרות (חובה)' }),
+    await screen.findByRole('combobox', { name: 'בקשת התקשרות' }),
     request.id,
   );
   await userEvent.click(screen.getByRole('button', { name: 'המשך לבדיקת הנתונים' }));
@@ -52,13 +52,13 @@ describe('route-check wizard', () => {
   it('keeps the selected request and date when returning to the first step', async () => {
     page();
     await review();
-    const date = screen.getByLabelText('תאריך לבדיקה (חובה)');
+    const date = screen.getByLabelText(/^תאריך לבדיקה/u);
     await userEvent.clear(date);
     await userEvent.type(date, '2026-11-17');
     await userEvent.click(screen.getByRole('button', { name: 'חזרה לבחירת בקשה' }));
     expect(screen.getByRole<HTMLSelectElement>('combobox').value).toBe(request.id);
     await userEvent.click(screen.getByRole('button', { name: 'המשך לבדיקת הנתונים' }));
-    expect(screen.getByLabelText<HTMLInputElement>('תאריך לבדיקה (חובה)').value).toBe('2026-11-17');
+    expect(screen.getByLabelText<HTMLInputElement>(/^תאריך לבדיקה/u).value).toBe('2026-11-17');
   });
   it('waits for the server and renders the citation, requirements and review warning', async () => {
     page();
@@ -88,7 +88,7 @@ describe('route-check wizard', () => {
     vi.spyOn(api, 'checkRoute').mockRejectedValue(new DataError(403));
     await userEvent.click(screen.getByRole('button', { name: 'בדיקת המסלול' }));
     expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
-    expect(screen.getByLabelText('תאריך לבדיקה (חובה)')).toBeDefined();
+    expect(screen.getByLabelText(/^תאריך לבדיקה/u)).toBeDefined();
   });
   it('shows the empty state without a selection form', async () => {
     page([]);

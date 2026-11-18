@@ -32,7 +32,7 @@ function failing(status: number) {
 }
 it('gives HTTP 403 a distinct explanation inside the existing main', async () => {
   failing(403);
-  expect(await screen.findByRole('heading', { name: 'אין הרשאה למסך' })).toBeDefined();
+  expect(await screen.findByRole('heading', { name: 'אין לך הרשאה למסך הזה' })).toBeDefined();
   expect(screen.getAllByRole('main')).toHaveLength(1);
 });
 it('sends a signed-out user to the sign-in screen instead of an empty page', async () => {
