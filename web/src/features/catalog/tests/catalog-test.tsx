@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, waitFor } from '@testing-library/react';
+import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { MemoryRouter } from 'react-router';
 import { CatalogBrowser } from '../components/catalog-browser.tsx';
@@ -7,7 +7,6 @@ import { Results } from '../components/results.tsx';
 import { filterCatalog, type Filters } from '../../../catalog-filter.ts';
 import { state, suppliers } from './fixture.ts';
 import { emptyFilters } from '../model/filters.ts';
-import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 const TODAY = '2026-11-16';
 function page() {
   const value = state();
@@ -120,33 +119,24 @@ describe('React catalog parity', () => {
       '/supplier/249',
     );
   });
-  it('adds a supplier to the request and never an inactive one', async () => {
+  it('keeps the card to the name and services, and marks an inactive supplier', () => {
     const [first] = suppliers();
     if (!first) throw Error('missing fixture');
-    const active = { ...first, id: '10000000-0000-4000-8000-0000000000a1', name: 'פעיל' };
     const inactive = {
       ...first,
-      id: '10000000-0000-4000-8000-0000000000a2',
       name: 'לא פעיל',
       inactive: { reason: 'מונתה לשופטת', source: null, changedOn: '2026-09-01' },
     };
-    replaceShortlist([]);
     render(
       <MemoryRouter>
-        <Results suppliers={[active, inactive]} today={TODAY} />
+        <Results suppliers={[inactive]} today={TODAY} />
       </MemoryRouter>,
     );
-    const add = screen.getByRole('button', { name: 'בקשת התקשרות: פעיל' });
-    expect(add.getAttribute('aria-pressed')).toBe('false');
-    await userEvent.click(add);
-    expect(add.getAttribute('aria-pressed')).toBe('true');
-    expect(add.textContent).toBe('בבקשה ✓');
-    expect(shortlistIds()).toEqual([active.id]);
-    const blocked = screen.getByRole<HTMLButtonElement>('button', {
-      name: 'הוספה לבקשה',
-    });
-    expect(blocked.disabled).toBe(true);
-    replaceShortlist([]);
+    const card = screen.getByRole('article');
+    expect(within(card).queryByRole('button')).toBeNull();
+    expect(card.textContent).not.toMatch(/ח\.פ\.|במאגר/u);
+    expect(within(card).getByText('לא פעיל', { selector: 'span' })).toBeDefined();
+    expect(within(card).getByRole('note').textContent).toContain('מונתה לשופטת');
   });
 });
 

@@ -179,15 +179,6 @@
       }
     }
   }
-  .badges {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: end;
-    gap: var(--space-xs);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-  }
   .badge {
     padding-inline: var(--space-sm);
     border: var(--border-width) solid var(--badge-border);
@@ -197,21 +188,6 @@
     font-size: var(--font-xs);
     font-weight: var(--font-weight-label);
     white-space: nowrap;
-  }
-  .success {
-    --badge-text: var(--color-badge-success-text);
-    --badge-surface: var(--color-badge-success-surface);
-    --badge-border: var(--color-badge-success-border);
-  }
-  .warning {
-    --badge-text: var(--color-badge-warning-text);
-    --badge-surface: var(--color-badge-warning-surface);
-    --badge-border: var(--color-badge-warning-border);
-  }
-  .neutral {
-    --badge-text: var(--color-muted);
-    --badge-surface: var(--color-subtle);
-    --badge-border: var(--color-border);
   }
   .danger {
     --badge-text: var(--color-badge-danger-text);
@@ -243,20 +219,6 @@
       color: var(--color-muted);
     }
   }
-  .cardFoot {
-    margin-block-start: auto;
-    padding-block-start: var(--space-md);
-    border-block-start: var(--border-width) solid var(--color-border);
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: var(--space-sm) var(--space-md);
-  }
-  .contact {
-    color: var(--color-muted);
-    font-size: var(--font-small);
-  }
   .venue {
     display: flex;
     flex-wrap: wrap;
@@ -282,10 +244,6 @@
     stroke-width: 1.75;
     stroke-linecap: round;
     stroke-linejoin: round;
-  }
-  /* In the request: light purple, a second press removes it (spec 1.6). */
-  .picked {
-    background: var(--color-brand-soft);
   }
   /* Pinned to the bottom of the screen, above the phone tab bar (spec 1.7). */
   .shortlist {
