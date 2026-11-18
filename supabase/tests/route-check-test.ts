@@ -123,4 +123,19 @@ describe('route check input', () => {
     await db.exec('reset role');
     assert.equal(await count(db, 'select 1 from public.route_checks'), 1);
   });
+
+  // The Edge Function inserts with `Prefer: return=representation` (insert ... returning),
+  // which needs SELECT as well as INSERT. Without it every saved check failed with 42501.
+  it('lets the service role read back the row it inserted', async () => {
+    const write = `insert into public.route_checks (request_id, checked_on, input, route,
+      status, allowed, engine_version) values ('${REQUEST}', current_date, '{}', 'r',
+      'ok', true, 'test') returning id`;
+    await db.exec('set role service_role');
+    try {
+      const result = await db.query<{ id: number }>(write);
+      assert.equal(typeof result.rows[0]?.id, 'number');
+    } finally {
+      await db.exec('reset role');
+    }
+  });
 });
