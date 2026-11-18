@@ -10,7 +10,16 @@ export interface AdminScreen {
   description: string;
   roles: readonly Role[];
   group: 'work' | 'tools';
+  /** The admin_overview counter for this card, with its singular and plural wording. */
+  waiting?: { key: OverviewKey; one: string; many: string };
 }
+
+export type OverviewKey =
+  | 'users_pending'
+  | 'identifiers_pending'
+  | 'categories_pending'
+  | 'thresholds_pending'
+  | 'addresses_not_found';
 
 const EDITORS: readonly Role[] = ['editor', 'unit_manager'];
 
@@ -22,6 +31,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     description: 'מי נכנס לאתר ובאיזו הרשאה',
     roles: ['unit_manager'],
     group: 'work',
+    waiting: { key: 'users_pending', one: 'בקשה ממתינה אחת', many: 'בקשות ממתינות' },
   },
   {
     to: '/identifiers',
@@ -29,6 +39,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     description: 'אישור ח.פ. שנמצא לספק',
     roles: EDITORS,
     group: 'work',
+    waiting: { key: 'identifiers_pending', one: 'מועמד ממתין אחד', many: 'מועמדים ממתינים' },
   },
   {
     to: '/categories',
@@ -36,6 +47,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     description: 'אישור תחומים ששויכו לספקים',
     roles: [],
     group: 'work',
+    waiting: { key: 'categories_pending', one: 'בקשה ממתינה אחת', many: 'בקשות ממתינות' },
   },
   {
     to: '/thresholds',
@@ -43,6 +55,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     description: 'ספי ההתקשרות לפי מדד החודש',
     roles: [],
     group: 'work',
+    waiting: { key: 'thresholds_pending', one: 'הצעה ממתינה אחת', many: 'הצעות ממתינות' },
   },
   {
     to: '/addresses',
@@ -50,6 +63,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     description: 'כתובות שלא אותרו במפה',
     roles: [],
     group: 'work',
+    waiting: { key: 'addresses_not_found', one: 'כתובת אחת לבדיקה', many: 'כתובות לבדיקה' },
   },
   {
     to: '/supplier/new',
@@ -97,4 +111,16 @@ export function mainRole(access: Access | null | undefined): string | null {
   const order: readonly Role[] = ['unit_manager', 'editor', 'auditor', 'viewer'];
   const role = order.find((r) => access.grants.some((g) => g.role === r));
   return role ? ROLE_LABELS[role] : null;
+}
+
+/** "2 בקשות ממתינות", "בקשה ממתינה אחת" or "אין ממתינים"; null when the count is unknown. */
+export function waitingText(
+  screen: AdminScreen,
+  counts: Partial<Record<OverviewKey, number | undefined>>,
+) {
+  const waiting = screen.waiting;
+  const count = waiting ? counts[waiting.key] : undefined;
+  if (!waiting || count === undefined) return null;
+  if (count === 0) return 'אין ממתינים';
+  return count === 1 ? waiting.one : `${count.toLocaleString('he-IL')} ${waiting.many}`;
 }

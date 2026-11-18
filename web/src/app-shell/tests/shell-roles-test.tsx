@@ -36,10 +36,10 @@ function signedIn(roles: Role[]): Access {
   return access;
 }
 
-function at(path: string, element: React.ReactNode) {
+function at(path: string, element: React.ReactNode, loader: () => unknown = () => null) {
   const router = createMemoryRouter(
     [
-      { path, element, loader: () => null, errorElement: <ScreenError /> },
+      { path, element, loader, errorElement: <ScreenError /> },
       { path: '/catalog', element: <h1>איתור ספקים</h1> },
     ],
     { initialEntries: [path] },
@@ -84,6 +84,16 @@ describe('admin home', () => {
     expect(screen.getAllByRole('link')).toHaveLength(1);
     expect(screen.getByRole('region', { name: 'כלים' })).toBeDefined();
     expect(screen.queryByRole('region', { name: 'ממתין לטיפול' })).toBeNull();
+  });
+
+  it('shows the waiting count on each work card, and "none waiting" at zero', async () => {
+    signedIn(['admin']);
+    const counts = { users_pending: 2, identifiers_pending: 1, categories_pending: 0 };
+    at('/admin', <HomePage />, () => ({ counts }));
+    expect(await screen.findByText('2 בקשות ממתינות')).toBeDefined();
+    expect(screen.getByText('מועמד ממתין אחד')).toBeDefined();
+    expect(screen.getByText('אין ממתינים')).toBeDefined();
+    expect(screen.queryByText(/ממתינ(ה|ות) אחת$|לבדיקה$/, { selector: 'span' })).toBeNull();
   });
 
   it('explains when there is no admin screen for this user', async () => {
