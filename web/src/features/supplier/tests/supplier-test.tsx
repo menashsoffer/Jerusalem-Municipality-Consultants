@@ -79,7 +79,11 @@ describe('supplier details', () => {
     expect(tip.hidden).toBe(false);
     await userEvent.keyboard('{Escape}');
     expect(tip.hidden).toBe(true);
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('ממתין לאימות');
+    // The mark sits beside the status badge, above the name (Menash, 18.11).
+    expect(screen.getByRole('heading', { level: 1 }).textContent).not.toContain('ממתין לאימות');
+    expect(
+      mark.parentElement?.parentElement?.querySelector('ul[aria-label="מצב הספק"]'),
+    ).not.toBeNull();
   });
 
   it('shows the history as sentences with field names only, when the server sends it', async () => {

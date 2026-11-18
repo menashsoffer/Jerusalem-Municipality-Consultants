@@ -30,11 +30,11 @@
   }
   .header {
     display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-lg) var(--space-xl);
-    align-items: flex-start;
-    justify-content: space-between;
+    flex-direction: column;
+    gap: var(--space-lg);
+    align-items: stretch;
     margin-block-start: var(--space-lg);
+    text-align: center;
     & h1 {
       margin: 0;
       font-size: var(--font-title);
@@ -42,8 +42,17 @@
     }
   }
   .identity {
-    flex: 999 1 26rem;
     min-inline-size: 0;
+  }
+  .statusRow {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: center;
+    justify-content: center;
+    margin-block-end: var(--space-sm);
+    & .badges {
+      margin: 0;
+    }
   }
   .summary,
   .aka {
@@ -57,6 +66,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: var(--space-sm);
+    justify-content: center;
     & svg {
       margin-inline-end: var(--space-xs);
       vertical-align: middle;
@@ -66,6 +76,7 @@
   .alert {
     flex: 1 1 100%;
     margin: 0;
+    text-align: start;
     padding: var(--space-md) var(--space-lg);
     border-radius: var(--radius-control);
     background: var(--color-badge-info-surface);

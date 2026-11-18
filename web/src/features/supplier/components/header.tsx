@@ -55,22 +55,29 @@ function Notice({ supplier, note }: { supplier: SupplierDetail['supplier']; note
   ) : null;
 }
 
-/** Spec section 4.1: who the supplier is, its state, and the actions, in one card. */
+/**
+ * Spec section 4.1: who the supplier is, its state, and the actions, in one card. Layout
+ * (Menash, 18.11): status and verification mark on one line, the name centered below,
+ * then the two actions side by side.
+ */
 export function SupplierHeader({ data, editor }: Props) {
   const { supplier } = data;
   const others = alsoKnownAs(supplier.display_name, data.names);
   return (
     <section className={[styles.card, styles.header].join(' ')} aria-labelledby="supplier-name">
       <div className={styles.identity}>
-        <ul className={styles.badges} aria-label="מצב הספק">
-          {headerBadges(supplier).map((badge) => (
-            <li key={badge.text} className={[styles.badge, styles[badge.tone]].join(' ')}>
-              {badge.text}
-            </li>
-          ))}
-        </ul>
+        <div className={styles.statusRow}>
+          <ul className={styles.badges} aria-label="מצב הספק">
+            {headerBadges(supplier).map((badge) => (
+              <li key={badge.text} className={[styles.badge, styles[badge.tone]].join(' ')}>
+                {badge.text}
+              </li>
+            ))}
+          </ul>
+          <VerificationMark mark={verificationMark(supplier)} />
+        </div>
         <h1 id="supplier-name" tabIndex={-1}>
-          {supplier.display_name} <VerificationMark mark={verificationMark(supplier)} />
+          {supplier.display_name}
         </h1>
         <p className={styles.summary}>{summaryParts(data).join(' · ')}</p>
         {others.length > 0 && <p className={styles.aka}>ידוע גם בשם: {others.join(', ')}</p>}
