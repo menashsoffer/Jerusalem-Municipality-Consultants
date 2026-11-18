@@ -4,6 +4,12 @@ import { Layout } from './layout.tsx';
 import { ScreenError } from './screen-error.tsx';
 import { Skeleton } from '../ui/skeleton.tsx';
 import { RouteError } from './route-error.tsx';
+import { getAdminSession, identity } from '../data/rpc.ts';
+
+function prefetchAccess(): null {
+  if (getAdminSession()) void identity().catch(() => undefined);
+  return null;
+}
 
 /** Page title shown in the tab; every route sets one so screen readers announce the change. */
 export interface RouteHandle {
@@ -19,6 +25,9 @@ export const routes: RouteObject[] = [
     path: '/',
     element: <Layout />,
     errorElement: <RouteError />,
+    // Starts loading who the user is on any first screen, so the top bar shows the right tabs.
+    loader: prefetchAccess,
+    shouldRevalidate: () => false,
     // Shown while the first lazily loaded screen arrives.
     hydrateFallbackElement: <Skeleton />,
     children: [
@@ -72,7 +81,11 @@ export const routes: RouteObject[] = [
       {
         path: 'admin',
         handle: { title: 'ניהול' } satisfies RouteHandle,
-        lazy: async () => ({ Component: (await import('./home-page.tsx')).HomePage }),
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('./home-page.tsx');
+          return { Component: m.HomePage, loader: m.loader };
+        },
       },
       {
         path: 'route-check',

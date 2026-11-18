@@ -1,5 +1,8 @@
 import { Link, useLocation } from 'react-router';
 
+import { useCatalogSnapshot } from '../data/react-catalog.ts';
+import { AccountMenu } from './account-menu.tsx';
+import { allowedScreens } from './screens.ts';
 import { SECTIONS, sectionOf, type Section } from './sections.ts';
 
 // Icon outlines follow Lucide (ISC license): search, clipboard-check, settings-2, user.
@@ -8,7 +11,6 @@ const ICONS: Record<Section['key'], string> = {
   requests: 'M9 4h6v3H9zM7 5H5v15h14V5h-2M9 13l2 2 4-4',
   admin: 'M14 17H5M19 7h-9M17 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
 };
-const USER_ICON = 'M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8z';
 
 function Icon({ path }: { path: string }) {
   return (
@@ -37,17 +39,21 @@ function Brand() {
 }
 
 /**
- * Top bar with the brand, the three section tabs and the account link, then the logo color
- * stripe. Below 48rem the tabs move to a bar fixed at the bottom of the screen (shell.css).
+ * Top bar with the brand, the section tabs the user may open and the account menu, then the
+ * logo color stripe. Below 48rem the tabs move to a bar fixed at the bottom of the screen
+ * (shell.css).
  */
 export function SiteHeader() {
   const current = sectionOf(useLocation().pathname);
+  // The admin tab appears only for someone who may open at least one admin screen (spec 8.1).
+  const admin = allowedScreens(useCatalogSnapshot()?.access).length > 0;
+  const sections = SECTIONS.filter((section) => section.key !== 'admin' || admin);
   return (
     <header className="shell-header">
       <div className="shell-header-inner">
         <Brand />
         <nav aria-label="ניווט ראשי" className="shell-nav">
-          {SECTIONS.map((section) => (
+          {sections.map((section) => (
             <Link
               key={section.key}
               to={section.to}
@@ -58,9 +64,7 @@ export function SiteHeader() {
             </Link>
           ))}
         </nav>
-        <Link to="/auth" className="shell-account" aria-label="כניסה והרשאות" title="כניסה והרשאות">
-          <Icon path={USER_ICON} />
-        </Link>
+        <AccountMenu />
       </div>
       <div className="shell-stripe" aria-hidden="true" />
     </header>

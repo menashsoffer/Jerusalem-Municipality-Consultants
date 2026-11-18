@@ -1,34 +1,19 @@
 import { Link } from 'react-router';
 
+import { useCatalogSnapshot } from '../data/react-catalog.ts';
+import { identity } from '../data/rpc.ts';
+import { Notice } from '../ui/notice.tsx';
+import { PageHeader } from '../ui/page-header.tsx';
+import { allowedScreens, type AdminScreen } from './screens.ts';
 import styles from './home-page.module.css';
 
-interface Screen {
-  to: string;
-  title: string;
-  description: string;
-}
-
-/** Admin screens, most used first. A new admin screen adds its card here. */
-const SCREENS: readonly Screen[] = [
-  { to: '/supplier/new', title: 'הוספת ספק למאגר', description: 'רישום ספק חדש באחד המאגרים' },
-  { to: '/categories', title: 'בקשות קטגוריה', description: 'אישור תחומים ששויכו לספקים' },
-  { to: '/identifiers', title: 'מועמדי מזהה ספק', description: 'אישור ח.פ. שנמצא לספק' },
-  { to: '/thresholds', title: 'אישור הסף החודשי', description: 'ספי ההתקשרות לפי מדד החודש' },
-  { to: '/addresses', title: 'כתובות לבדיקה', description: 'כתובות שלא אותרו במפה' },
-  { to: '/load-control', title: 'בקרת טעינה', description: 'מה נטען מהמאגרים ומה חסר' },
-  { to: '/users', title: 'משתמשים ותפקידים', description: 'מי נכנס לאתר ובאיזו הרשאה' },
-  { to: '/route-check', title: 'בדיקת מסלול ההתקשרות', description: 'חישוב מסלול בלי בקשה' },
-  { to: '/auth', title: 'כניסה והרשאות', description: 'החשבון שלך והתנתקות' },
-];
-
-/** Landing screen of the admin section: one card per admin screen. */
-export function HomePage() {
+function Cards({ title, screens }: { title: string; screens: AdminScreen[] }) {
+  if (!screens.length) return null;
   return (
-    <>
-      <h1 tabIndex={-1}>מסכי הניהול</h1>
-      <p className={styles.lead}>בחרו את המסך המתאים לפעולה שברצונכם לבצע.</p>
+    <section aria-label={title}>
+      <h2>{title}</h2>
       <ul className={styles.grid}>
-        {SCREENS.map((screen) => (
+        {screens.map((screen) => (
           <li key={screen.to} className={styles.card}>
             <Link to={screen.to} className={styles.link}>
               {screen.title}
@@ -37,6 +22,30 @@ export function HomePage() {
           </li>
         ))}
       </ul>
+    </section>
+  );
+}
+
+/** The cards depend on the user's roles, so they wait for server access. */
+export async function loader() {
+  await identity();
+  return null;
+}
+
+/** Landing screen of the admin section: only the screens this user may open (spec 8.1). */
+export function HomePage() {
+  const access = useCatalogSnapshot()?.access;
+  const screens = allowedScreens(access);
+  return (
+    <>
+      <PageHeader title="ניהול" lead="המסכים שמותרים לך, ועבודה שממתינה לטיפול." />
+      {access && !screens.length && (
+        <Notice tone="info" title="אין לך מסכי ניהול.">
+          המסכים כאן מיועדים לעורכים, למנהלי יחידות, למבקרים ולמנהל המערכת.
+        </Notice>
+      )}
+      <Cards title="ממתין לטיפול" screens={screens.filter((s) => s.group === 'work')} />
+      <Cards title="כלים" screens={screens.filter((s) => s.group === 'tools')} />
     </>
   );
 }

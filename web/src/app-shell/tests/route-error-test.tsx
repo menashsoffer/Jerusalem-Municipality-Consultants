@@ -28,7 +28,7 @@ describe('root error screen', () => {
   it('says the page does not exist for a 404 response', async () => {
     failWith(data(null, { status: 404 }));
     expect(await screen.findByRole('heading', { name: 'הדף לא נמצא' })).toBeDefined();
-    expect(screen.getByText('הכתובת אינה קיימת במסכי הניהול.')).toBeDefined();
+    expect(screen.getByText('הכתובת לא קיימת באתר. אולי הקישור ישן.')).toBeDefined();
   });
 
   it('offers to reload after any other failure', async () => {

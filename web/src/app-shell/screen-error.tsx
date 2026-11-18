@@ -1,5 +1,6 @@
 import { useErrorReport } from './use-error-report.ts';
 import {
+  Link,
   Navigate,
   isRouteErrorResponse,
   useLocation,
@@ -7,9 +8,37 @@ import {
   useRevalidator,
 } from 'react-router';
 import { getAdminSession } from '../data/rpc.ts';
+import { getAccess } from '../data/site.ts';
 import { signInPath } from './session-watch.ts';
+import { audienceOf, mainRole } from './screens.ts';
 import { DataError } from '../data/client.ts';
 import { Button } from '../ui/button.tsx';
+import controls from '../ui/control.module.css';
+
+function CatalogLink({ quiet = false }: { quiet?: boolean }) {
+  return (
+    <Link to="/catalog" className={quiet ? controls.quiet : controls.button}>
+      לאיתור ספקים
+    </Link>
+  );
+}
+
+/** screens-spec-he.md 12: says who the screen is for and what the user's role is. */
+function Forbidden({ pathname }: { pathname: string }) {
+  const audience = audienceOf(pathname);
+  const role = mainRole(getAccess());
+  return (
+    <section role="alert" className="shell-notice">
+      <h1 tabIndex={-1}>אין לך הרשאה למסך הזה</h1>
+      <p>
+        {audience ? `המסך מיועד ל${audience}.` : 'המסך זמין רק למשתמשים עם תפקיד מתאים.'}
+        {role && ` התפקיד שלך: ${role}.`}
+      </p>
+      <CatalogLink />
+    </section>
+  );
+}
+
 export function ScreenError() {
   const error = useRouteError();
   useErrorReport(error, 'route');
@@ -18,31 +47,26 @@ export function ScreenError() {
   const status = error instanceof DataError || isRouteErrorResponse(error) ? error.status : 0;
   // Signed out or never signed in: show the sign-in screen, never an empty page.
   if (status === 401 && !getAdminSession()) return <Navigate to={signInPath(location)} replace />;
-  const title =
-    status === 401
-      ? 'החיבור חודש'
-      : status === 403
-        ? 'אין הרשאה למסך'
-        : status === 404
-          ? 'הדף לא נמצא'
-          : 'משהו השתבש';
-  const message =
-    status === 401
-      ? 'יש לנסות שוב כדי לטעון את המסך.'
-      : status === 403
-        ? 'המסך זמין רק למשתמשים עם תפקיד מתאים.'
-        : 'לא ניתן להציג את המסך. אפשר לנסות שוב.';
+  if (status === 403) return <Forbidden pathname={location.pathname} />;
+  const renewed = status === 401;
   return (
     <section role="alert" className="shell-notice">
-      <h1 tabIndex={-1}>{title}</h1>
-      <p>{message}</p>
-      <Button
-        onClick={() => {
-          void revalidator.revalidate();
-        }}
-      >
-        נסו שוב
-      </Button>
+      <h1 tabIndex={-1}>{renewed ? 'החיבור חודש' : 'משהו השתבש'}</h1>
+      <p>
+        {renewed
+          ? 'יש לנסות שוב כדי לטעון את המסך.'
+          : 'לא הצלחנו להציג את המסך. אם זה חוזר, בדקו את החיבור לאינטרנט.'}
+      </p>
+      <div className="shell-notice-actions">
+        <Button
+          onClick={() => {
+            void revalidator.revalidate();
+          }}
+        >
+          נסו שוב
+        </Button>
+        <CatalogLink quiet />
+      </div>
     </section>
   );
 }
