@@ -20,9 +20,19 @@ interface Props {
   /** The edit form is opened from the actions at the top of the personal area. */
   editing: boolean;
   setEditing: (editing: boolean) => void;
+  /** An admin's change is saved at once instead of waiting for approval. */
+  admin: boolean;
 }
 
-function DetailsForm({ profile, done }: { profile: MyProfile; done: () => void }) {
+function DetailsForm({
+  profile,
+  admin,
+  done,
+}: {
+  profile: MyProfile;
+  admin: boolean;
+  done: () => void;
+}) {
   const refresh = useRevalidator();
   const [state, action, pending] = useAccountForm(detailsForm, async (input) => {
     const details = changedDetails(input, profile);
@@ -35,7 +45,7 @@ function DetailsForm({ profile, done }: { profile: MyProfile; done: () => void }
     <form action={action} aria-label="עריכת הפרטים שלי" noValidate className={styles.form}>
       <RequiredNote />
       {state.failure && (
-        <Notice tone="error" title="השינוי לא נשלח.">
+        <Notice tone="error" title={admin ? 'השינוי לא נשמר.' : 'השינוי לא נשלח.'}>
           {state.failure}
         </Notice>
       )}
@@ -45,8 +55,8 @@ function DetailsForm({ profile, done }: { profile: MyProfile; done: () => void }
         input={{ name: 'reason', required: true, defaultValue: state.typed.reason ?? '' }}
       />
       <FormActions>
-        <Button type="submit" pending={pending} pendingLabel="שולח…">
-          שליחת השינוי לאישור
+        <Button type="submit" pending={pending} pendingLabel={admin ? 'שומר…' : 'שולח…'}>
+          {admin ? 'שמירת השינוי' : 'שליחת השינוי לאישור'}
         </Button>
         <Button variant="quiet" onClick={done}>
           ביטול
@@ -74,7 +84,7 @@ function Facts({ profile, unit }: Pick<Props, 'profile' | 'unit'>) {
 }
 
 /** "הפרטים שלי": shown as facts; a change goes to a manager for approval (decision 8). */
-export function MyDetails({ profile, unit, changes, editing, setEditing }: Props) {
+export function MyDetails({ profile, unit, changes, editing, setEditing, admin }: Props) {
   const waiting = changes?.find((c) => c.kind === 'details' && c.status === 'pending');
   return (
     <section aria-labelledby="my-details" className={styles.panel}>
@@ -82,6 +92,7 @@ export function MyDetails({ profile, unit, changes, editing, setEditing }: Props
       {editing && changes && !waiting ? (
         <DetailsForm
           profile={profile}
+          admin={admin}
           done={() => {
             setEditing(false);
           }}

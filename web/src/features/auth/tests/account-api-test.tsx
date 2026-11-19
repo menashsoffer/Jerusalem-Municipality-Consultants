@@ -47,6 +47,7 @@ describe('account loader', () => {
       grants: [],
       changes: null,
       signedInAt: null,
+      admin: false,
     });
   });
   it('reads only the profile while the request waits', async () => {
