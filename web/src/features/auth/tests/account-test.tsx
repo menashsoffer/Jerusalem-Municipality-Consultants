@@ -55,6 +55,7 @@ function page(account: Partial<Account>, access: Access = ACTIVE, entry = '/auth
     grants: [GRANT],
     changes: [],
     signedInAt: null,
+    admin: false,
     ...account,
   };
   const router = createMemoryRouter(
