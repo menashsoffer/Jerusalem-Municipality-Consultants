@@ -79,9 +79,8 @@ export function CatalogBrowser({ state, today }: Props) {
           change={(key, value) => {
             setFilters(changeFilter(current, { key, value }, state.suppliers));
           }}
-          toggle={(key, value) => {
-            setFilters({ ...current, [key]: value });
-          }}
+          replace={setFilters}
+          count={matches.length}
         />
         <ActiveFilters
           filters={current}

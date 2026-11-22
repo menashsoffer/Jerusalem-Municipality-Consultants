@@ -8,8 +8,10 @@ import { StatusMessage } from '../../../ui/status-message.tsx';
 import { runEdit, START, type EditState } from '../api/edit-flow.ts';
 import { reasonNeeded, waitsForDecision } from '../model/change-checks.ts';
 import { CONTACT_KINDS, ENTITY_KINDS } from '../model/labels.ts';
+import { contactLabel, sortContacts } from '../model/contact-order.ts';
 import { contactField, KIND, NAME, NEW_KIND, NEW_VALUE, REASON } from '../model/edit-form.ts';
 import { ChangeResults } from './change-results.tsx';
+import { KindIcon } from './kind-icon.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -26,23 +28,27 @@ interface ContactsProps {
   typed: Record<string, string>;
 }
 function Contacts({ data, errors, typed }: ContactsProps) {
-  const current = data.contacts.filter((item) => item.status === 'current');
+  // Same order as the card: email, address, phones, mobiles (Menash, 22.11).
+  const current = sortContacts(data.contacts.filter((item) => item.status === 'current'));
   return (
     <fieldset className={styles.fieldset}>
       <legend>פרטי קשר</legend>
       {current.map((item) => (
-        <FormField
-          key={item.id}
-          field={{
-            label: CONTACT_KINDS[item.kind] ?? 'פרט קשר',
-            error: errors[contactField(item.id)],
-          }}
-          input={{
-            name: contactField(item.id),
-            defaultValue: typed[contactField(item.id)] ?? item.value,
-            maxLength: 500,
-          }}
-        />
+        // The icon sits beside the label: a phone, a mobile, an envelope (Menash, 22.11).
+        <div key={item.id} className={styles.contactField}>
+          <KindIcon kind={item.kind} value={item.value} />
+          <FormField
+            field={{
+              label: contactLabel(item.kind, item.value),
+              error: errors[contactField(item.id)],
+            }}
+            input={{
+              name: contactField(item.id),
+              defaultValue: typed[contactField(item.id)] ?? item.value,
+              maxLength: 500,
+            }}
+          />
+        </div>
       ))}
       <div className={styles.newContact}>
         {/* A select keeps its choice through a form reset; a new key restores the typed one. */}

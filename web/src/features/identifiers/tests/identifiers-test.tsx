@@ -20,6 +20,7 @@ function data(): Awaited<ReturnType<typeof api.loadCandidates>> {
         found_at: '2026-11-16',
       },
     ],
+    kinds: [],
     suppliers: [{ id: 'supplier', display_name: 'יועצי העיר' }],
   };
 }
@@ -119,5 +120,21 @@ describe('manual identifier candidates', () => {
     await userEvent.click(await screen.findByRole('button', { name: 'דחיית המועמד' }));
     expect((await screen.findByRole('alert')).textContent).toContain('אין לך הרשאה');
     expect(screen.getByText('מצב במרשם')).toBeDefined();
+  });
+  it('lists kind suggestions under the candidates, by supplier name', async () => {
+    const value = data();
+    value.candidates = [];
+    value.kinds = [
+      {
+        id: 'kind',
+        supplier_id: 'supplier',
+        suggested_kind: 'company',
+        strength: 'medium',
+        reasons: [{ source: 'name', kind: 'company' }],
+      },
+    ];
+    page(value);
+    expect(await screen.findByRole('heading', { name: 'הצעות סוג ישות (1)' })).toBeDefined();
+    expect(screen.getByText('יועצי העיר')).toBeDefined();
   });
 });

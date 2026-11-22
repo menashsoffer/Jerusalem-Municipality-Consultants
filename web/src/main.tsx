@@ -14,6 +14,7 @@ import type { TelemetryEvent } from './lib/vitals-model.ts';
 import './styles/fonts.css';
 import './styles/tokens.css';
 import './styles/base.css';
+import './styles/select.css';
 import './app-shell/shell.css';
 
 const root = document.getElementById('root');

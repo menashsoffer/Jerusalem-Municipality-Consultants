@@ -169,7 +169,7 @@ function SupplierFields({ setName, setIdentifier }: SupplierFieldsProps) {
           }}
         />
         <FormField
-          field={{ label: 'מזהה רשמי', hint: '5 עד 9 ספרות, בלי מקפים. ממלאים יחד עם סוג המזהה.' }}
+          field={{ label: 'מזהה רשמי', info: '5 עד 9 ספרות, בלי מקפים. ממלאים יחד עם סוג המזהה.' }}
           input={{
             name: 'identifier',
             inputMode: 'numeric',
@@ -228,17 +228,21 @@ export function AddForm({ context }: { context: WriteContext }) {
   const form = useFormDraft(DRAFT);
   return (
     <form ref={form} action={action} aria-label="הוספת ספק למאגר" className={styles.addForm}>
-      <Saved
-        result={result}
-        again={() => {
-          form.current?.querySelector<HTMLInputElement>('input[name="display_name"]')?.focus();
-        }}
-      />
-      {result.error && (
-        <Notice tone="error" title="הספק לא נוסף.">
-          {result.error}
-        </Notice>
-      )}
+      {/* Floats at the top of the screen while the form scrolls, so the outcome of a save is in
+          view from the submit button at the bottom too. */}
+      <div className={styles.feedback} data-floating="">
+        <Saved
+          result={result}
+          again={() => {
+            form.current?.querySelector<HTMLInputElement>('input[name="display_name"]')?.focus();
+          }}
+        />
+        {result.error && (
+          <Notice tone="error" title="הספק לא נוסף.">
+            {result.error}
+          </Notice>
+        )}
+      </div>
       <Fields key={result.saved} context={context} />
       <FormActions>
         <Button type="submit" pending={pending} pendingLabel="שומר…" data-usage="supplier.add">
@@ -248,7 +252,10 @@ export function AddForm({ context }: { context: WriteContext }) {
           ביטול
         </Link>
       </FormActions>
-      <StatusMessage>{pending ? 'שומר…' : ''}</StatusMessage>
+      {/* The button already shows "שומר…"; this copy is only for a screen reader. */}
+      <div className={styles.visuallyHidden}>
+        <StatusMessage>{pending ? 'שומר…' : ''}</StatusMessage>
+      </div>
     </form>
   );
 }

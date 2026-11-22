@@ -9,6 +9,7 @@ import type { Supplier } from '../../../catalog-model.ts';
 import { optionsFor, type FilterKey, type ToggleKey } from '../model/filters.ts';
 import {
   choicesFor,
+  clearKeys,
   countSet,
   LABELS,
   MORE,
@@ -23,7 +24,10 @@ interface Props {
   filters: Filters;
   suppliers: Supplier[];
   change: (key: FilterKey, value: string) => void;
-  toggle: (key: ToggleKey, value: boolean) => void;
+  /** Replaces all filters at once (a display toggle, "ניקוי" in the dialog). */
+  replace: (filters: Filters) => void;
+  /** How many suppliers match now, for the dialog's main button. */
+  count: number;
 }
 const SHEET = 'catalog-filters';
 
@@ -43,7 +47,7 @@ function Control({ name, options, ...props }: Props & { name: FilterKey; options
         },
         children: (
           <>
-            <option value="">הכול</option>
+            <option value="">{disabled ? 'קודם בוחרים קטגוריה' : 'הכול'}</option>
             {choices.map((c) => (
               <option key={c.value} value={c.value}>
                 {c.label}
@@ -61,20 +65,56 @@ function Controls({ keys, ...props }: Props & { keys: readonly FilterKey[] }) {
   return keys.map((key) => <Control key={key} name={key} options={options} {...props} />);
 }
 
-function Toggles({ filters, toggle }: Pick<Props, 'filters' | 'toggle'>) {
-  return TOGGLES.map(({ key, label }) => (
-    <label key={key} className={styles.toggle}>
-      <input
-        data-usage={`catalog.toggle.${key}`}
-        type="checkbox"
-        checked={filters[key]}
-        onChange={(e) => {
-          toggle(key, e.currentTarget.checked);
-        }}
-      />
-      {label}
-    </label>
-  ));
+function Toggles({ filters, replace }: Pick<Props, 'filters' | 'replace'>) {
+  const toggle = (key: ToggleKey, value: boolean) => {
+    replace({ ...filters, [key]: value });
+  };
+  return (
+    <fieldset className={styles.sheetToggles}>
+      <legend>מה עוד להציג</legend>
+      {TOGGLES.map(({ key, label }) => (
+        <label key={key} className={styles.toggle}>
+          <input
+            data-usage={`catalog.toggle.${key}`}
+            type="checkbox"
+            checked={filters[key]}
+            onChange={(e) => {
+              toggle(key, e.currentTarget.checked);
+            }}
+          />
+          {label}
+        </label>
+      ))}
+    </fieldset>
+  );
+}
+
+function showLabel(count: number): string {
+  if (count === 0) return 'אין תוצאות, חזרה לרשימה';
+  return count === 1 ? 'הצגת ספק אחד' : `הצגת ${count.toLocaleString('he-IL')} ספקים`;
+}
+
+/** The dialog's footer: clear what it holds, and close to the list with the live count. */
+function SheetActions({ keys, ...props }: Props & { keys: readonly FilterKey[] }) {
+  const set = countSet(props.filters, keys, true);
+  return (
+    <div className={styles.sheetActions}>
+      <Button data-usage="catalog.filters-apply" command={{ target: SHEET, action: 'close' }}>
+        {showLabel(props.count)}
+      </Button>
+      {set > 0 && (
+        <Button
+          variant="quiet"
+          data-usage="catalog.filters-clear"
+          onClick={() => {
+            props.replace(clearKeys(props.filters, keys));
+          }}
+        >
+          ניקוי המסננים כאן
+        </Button>
+      )}
+    </div>
+  );
 }
 
 function Sheet({ title, keys, ...props }: Props & { title: string; keys: readonly FilterKey[] }) {
@@ -82,13 +122,9 @@ function Sheet({ title, keys, ...props }: Props & { title: string; keys: readonl
     <Dialog id={SHEET} title={title}>
       <div className={styles.sheetFilters}>
         <Controls keys={keys} {...props} />
-        <Toggles filters={props.filters} toggle={props.toggle} />
       </div>
-      <div className={styles.sheetActions}>
-        <Button data-usage="catalog.filters-apply" command={{ target: SHEET, action: 'close' }}>
-          הצגת התוצאות
-        </Button>
-      </div>
+      <Toggles filters={props.filters} replace={props.replace} />
+      <SheetActions keys={keys} {...props} />
     </Dialog>
   );
 }

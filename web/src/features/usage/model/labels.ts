@@ -37,6 +37,7 @@ const ACTIONS: Record<string, string> = {
   'catalog.filters-open': 'פתיחת מסננים',
   'catalog.filters-apply': 'הצגת תוצאות מסננים',
   'catalog.reset': 'ניקוי החיפוש והמסננים',
+  'catalog.filters-clear': 'ניקוי המסננים בחלון',
   'catalog.clear-filters': 'ניקוי כל המסננים',
   'shortlist.clear': 'ניקוי רשימת הספקים לבקשה',
   'request.next': 'המשך לפרטי הבקשה',

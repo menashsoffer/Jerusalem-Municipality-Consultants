@@ -103,7 +103,7 @@ describe('loaders check the role and read the right rows', () => {
   });
 
   it('identifier candidates', async () => {
-    expect(await loadCandidates()).toEqual({ candidates: [], suppliers: [] });
+    expect(await loadCandidates()).toEqual({ candidates: [], kinds: [], suppliers: [] });
     expect(rpc.requireRoles).toHaveBeenCalledWith(['admin']);
   });
 

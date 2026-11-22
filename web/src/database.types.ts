@@ -576,6 +576,47 @@ export interface PublicSchema {
       "detail"?: Json;
     };
   };
+  "kind_suggestions": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "suggested_kind": string;
+      "strength": string;
+      "reasons": Json;
+      "status": string;
+      "request_id": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "decided_by": string | null;
+      "decided_at": string | null;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "suggested_kind": string;
+      "strength": string;
+      "reasons": Json;
+      "status"?: string;
+      "request_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "suggested_kind"?: string;
+      "strength"?: string;
+      "reasons"?: Json;
+      "status"?: string;
+      "request_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
+    };
+  };
   "legacy_suppliers": {
     Row: {
       "id": number;

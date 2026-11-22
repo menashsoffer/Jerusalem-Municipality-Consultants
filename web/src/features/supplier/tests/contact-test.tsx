@@ -29,7 +29,32 @@ afterEach(() => {
 });
 
 describe('contact card', () => {
-  it('links each kind, phone before email, and warns about an invalid value', () => {
+  it('orders email, address, phones, mobiles and splits a value with two numbers', () => {
+    render(
+      <ContactCard
+        contacts={[
+          contact('1', 'phone', '054-1111111'),
+          { ...contact('2', 'phone', '054-2244973 054-5990250'), is_valid: false },
+          contact('3', 'address', 'יפו 1'),
+          contact('4', 'phone', '03-6872787'),
+          contact('5', 'email', 'a@b.test'),
+        ]}
+      />,
+    );
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    const at = (text: string) => items.findIndex((item) => item.includes(text));
+    expect(at('a@b.test')).toBe(0);
+    expect(at('יפו 1')).toBe(1);
+    expect(at('03-6872787')).toBe(2);
+    expect([at('054-1111111'), at('054-2244973'), at('054-5990250')]).toEqual([3, 4, 5]);
+    expect(items[3]).toContain('טלפון נייד');
+    expect(items[2]).not.toContain('נייד');
+    expect(link('054-5990250').href).toBe('tel:0545990250');
+    expect(screen.queryByText('ייתכן שאינו תקין')).toBeNull();
+    expect(screen.getAllByRole('button', { name: 'העתקת טלפון נייד' })).toHaveLength(3);
+  });
+
+  it('links each kind, email before phone, and warns about an invalid value', () => {
     render(
       <ContactCard
         contacts={[
@@ -51,11 +76,11 @@ describe('contact card', () => {
     expect(screen.queryByText('פתיחה ב-Google Maps')).toBeNull();
     expect(screen.getByText('ייתכן שאינו תקין')).toBeDefined();
     expect(screen.getByText('not an email')).toBeDefined();
-    expect(screen.getByRole('button', { name: 'העתקת פרט הקשר' })).toBeDefined();
+    expect(screen.getByRole('button', { name: 'העתקת פרט קשר' })).toBeDefined();
     expect(screen.queryByText('אין טלפון במאגר')).toBeNull();
     const items = screen.getAllByRole('listitem').map((item) => item.textContent);
     const at = (text: string) => items.findIndex((item) => item.includes(text));
-    expect(at('02-123-4567')).toBeLessThan(at('a@b.test'));
+    expect(at('a@b.test')).toBeLessThan(at('02-123-4567'));
   });
 });
 

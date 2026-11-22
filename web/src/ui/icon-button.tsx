@@ -14,6 +14,8 @@ interface Props extends Omit<ButtonProps, 'children' | 'icon' | 'variant' | 'ari
   variant?: 'quiet' | 'secondary';
   /** `small` only inside a dense element such as a filter tag; it keeps a 44px touch area. */
   size?: 'regular' | 'small';
+  /** A sentence rather than a name: the bubble wraps instead of staying on one line. */
+  long?: boolean;
 }
 
 function focusVisible(element: Element): boolean {
@@ -58,12 +60,16 @@ function spokenName(
   return pending ? (pendingLabel ?? 'שומר…') : label;
 }
 
+function tipClass(long: boolean | undefined): string {
+  return long ? `${styles.tip ?? ''} ${styles.long ?? ''}` : (styles.tip ?? '');
+}
+
 /**
  * An action shown only as an icon (DESIGN.md 6.2). The name is the button's aria-label, and a
  * bubble shows it on hover, keyboard focus and tap. The pointer can move onto the bubble and
  * Escape hides it (WCAG 1.4.13). The bubble repeats the name, so it is hidden from screen readers.
  */
-export function IconButton({ label, tip = label, note, size = 'regular', ...rest }: Props) {
+export function IconButton({ label, tip = label, note, size = 'regular', long, ...rest }: Props) {
   const { onClick, variant = 'quiet', className = '', ...props } = rest;
   const bubble = useBubble();
   return (
@@ -80,7 +86,7 @@ export function IconButton({ label, tip = label, note, size = 'regular', ...rest
           onClick?.(event);
         }}
       />
-      <span className={styles.tip} aria-hidden="true" hidden={!note && !bubble.open}>
+      <span className={tipClass(long)} aria-hidden="true" hidden={!note && !bubble.open}>
         {note ?? tip}
       </span>
     </span>
