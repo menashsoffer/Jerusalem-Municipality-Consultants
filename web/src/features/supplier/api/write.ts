@@ -23,12 +23,13 @@ export const IDLE: SaveResult = { message: '', error: '' };
 export async function saveAndRefresh(
   request: (token: string) => Promise<string>,
   changed: Key | null,
-  saved: string,
+  saved: string | ((answer: string) => string),
 ): Promise<SaveResult> {
   let token: string;
+  let answer: string;
   try {
     token = await freshToken();
-    await request(token);
+    answer = await request(token);
   } catch (error) {
     return { message: '', error: error instanceof Error ? error.message : 'השמירה נכשלה.' };
   }
@@ -41,7 +42,7 @@ export async function saveAndRefresh(
       error: '',
     };
   }
-  return { message: saved, error: '' };
+  return { message: typeof saved === 'string' ? saved : saved(answer), error: '' };
 }
 
 /** Name and contacts in one transaction; the database checks the same rules again. */

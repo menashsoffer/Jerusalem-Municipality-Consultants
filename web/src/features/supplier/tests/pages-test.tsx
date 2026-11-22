@@ -113,10 +113,24 @@ describe('supplier page', () => {
     vi.spyOn(rpc, 'sessionToken').mockReturnValue('token');
     const create = vi.spyOn(reactCatalog, 'createSupplierDetailResource').mockReturnValue(resource);
     const args = { params: { id: ID }, request: new Request('https://x.test') } as never;
-    expect(await supplierLoader(args)).toEqual({ resource });
+    const loaded = await supplierLoader(args);
+    expect(loaded.resource).toBe(resource);
+    // A viewer sees no waiting changes, so none are requested.
+    expect(loaded.changes).toEqual([]);
     expect(create).toHaveBeenCalledWith('token', ID, expect.any(Function));
     await supplierLoader({ params: {}, request: new Request('https://x.test') } as never);
     expect(create).toHaveBeenLastCalledWith('token', '', expect.any(Function));
+  });
+
+  it('loads the waiting changes for an editor, and none when the list cannot load', async () => {
+    const resource = { supplierId: ID, userId: 'u', promise: Promise.resolve(sparse()) };
+    vi.spyOn(rpc, 'identity').mockResolvedValue({ userId: 'u', access: access({ admin: true }) });
+    vi.spyOn(rpc, 'sessionToken').mockReturnValue('token');
+    vi.spyOn(reactCatalog, 'createSupplierDetailResource').mockReturnValue(resource);
+    const rows = vi.spyOn(rpc, 'rows').mockRejectedValue(new Error('no table'));
+    const args = { params: { id: 'other-supplier' }, request: new Request('https://x.test') };
+    expect((await supplierLoader(args as never)).changes).toEqual([]);
+    expect(rows.mock.calls[0]?.[0]).toBe('supplier_change_requests');
   });
 
   it.each([
@@ -127,7 +141,7 @@ describe('supplier page', () => {
     const resource = { supplierId: ID, userId: 'u', promise: Promise.resolve(sparse()) };
     vi.spyOn(reactCatalog, 'useSupplierDetail').mockReturnValue(sparse({ status: 'active' }));
     vi.spyOn(reactCatalog, 'useCatalogSnapshot').mockReturnValue({ access: who } as never);
-    page(SupplierPage, { resource });
+    page(SupplierPage, { resource, changes: [] });
     expect(await screen.findByRole('heading', { level: 1, name: 'ספק דליל' })).toBeDefined();
     const hidden = { hidden: true };
     expect(screen.queryAllByRole('button', { name: 'עריכה' })).toHaveLength(forms > 0 ? 1 : 0);

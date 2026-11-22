@@ -1,16 +1,21 @@
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
-import type { SupplierUpdate } from '../../../data/site.ts';
+import type { SupplierChange } from '../../../data/supplier-changes.ts';
 import { check, supplierEditForm, type FieldErrors } from '../../../lib/rules/forms.ts';
+import { RULE_MESSAGES } from '../../../lib/rules/messages.ts';
 import { formText } from './add-form.ts';
+import { ENTITY_KINDS } from './labels.ts';
 
 /** Form field names: the name, one input per current contact, and one new contact. */
 export const NAME = 'display_name';
+export const KIND = 'entity_kind';
+export const REASON = 'change_reason';
 export const NEW_KIND = 'new_kind';
 export const NEW_VALUE = 'new_value';
 export const contactField = (id: string) => `contact:${id}`;
 
 type Contact = SupplierDetail['contacts'][number];
-export type EditResult = { update: SupplierUpdate } | { errors: FieldErrors } | { unchanged: true };
+export type EditResult =
+  { changes: SupplierChange[] } | { errors: FieldErrors } | { unchanged: true };
 
 /** Which inputs the contacts in the request came from, so an error lands on its field. */
 function contactRows(form: FormData, current: readonly Contact[]) {
@@ -40,9 +45,22 @@ function fieldErrors(errors: FieldErrors, rows: Row[]): FieldErrors {
   return result;
 }
 
+/** The changed contacts as change requests; a new contact has no contact_id. */
+function contactChanges(supplierId: string, contacts: Row['contact'][], rows: Row[]) {
+  return contacts
+    .filter((contact, index) => contact.value !== rows[index]?.before)
+    .map((contact): SupplierChange => ({
+      supplier_id: supplierId,
+      kind: 'contact',
+      contact_kind: contact.kind,
+      value: contact.value,
+      ...(contact.contact_id ? { contact_id: contact.contact_id } : {}),
+    }));
+}
+
 /**
- * Checks the whole dialog with the shared rules and sends only what changed: the name when it
- * differs, and each contact whose value differs. Nothing changed means no request at all.
+ * Checks the whole dialog with the shared rules and lists only what changed: the name, the
+ * kind and each contact whose value differs. Nothing changed means no request at all.
  */
 export function parseEditForm(form: FormData, data: SupplierDetail): EditResult {
   const current = data.contacts.filter((item) => item.status === 'current');
@@ -51,16 +69,17 @@ export function parseEditForm(form: FormData, data: SupplierDetail): EditResult 
     display_name: formText(form, NAME),
     contacts: rows.map((row) => row.contact),
   });
+  const kind = formText(form, KIND) || data.supplier.entity_kind;
   if (!checked.ok) return { errors: fieldErrors(checked.errors, rows) };
-  const { display_name: name, contacts } = checked.value;
-  const changed = contacts.filter((contact, index) => contact.value !== rows[index]?.before);
-  const renamed = name !== data.supplier.display_name;
-  if (!renamed && changed.length === 0) return { unchanged: true };
-  return {
-    update: {
-      supplier_id: data.supplier.id,
-      ...(renamed ? { display_name: name } : {}),
-      contacts: changed,
-    },
-  };
+  if (!Object.hasOwn(ENTITY_KINDS, kind)) return { errors: { [KIND]: RULE_MESSAGES.bad_choice } };
+  const id = data.supplier.id;
+  const changes: SupplierChange[] = [];
+  if (checked.value.display_name !== data.supplier.display_name) {
+    changes.push({ supplier_id: id, kind: 'rename', value: checked.value.display_name });
+  }
+  if (kind !== data.supplier.entity_kind) {
+    changes.push({ supplier_id: id, kind: 'entity_kind', value: kind });
+  }
+  changes.push(...contactChanges(id, checked.value.contacts, rows));
+  return changes.length === 0 ? { unchanged: true } : { changes };
 }

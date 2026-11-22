@@ -42,7 +42,7 @@ export function EditDialog({ data, editor, admin, today }: Props) {
       }}
     >
       {editor ? (
-        <EditForm data={data} aside={statusButton} />
+        <EditForm data={data} admin={admin} aside={statusButton} />
       ) : (
         <div className={styles.dialogActions}>{statusButton}</div>
       )}

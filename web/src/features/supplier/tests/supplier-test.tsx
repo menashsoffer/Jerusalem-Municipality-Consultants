@@ -113,32 +113,110 @@ async function openDialog(data: SupplierDetail, admin = false) {
   dialog.setAttribute('open', '');
 }
 
+type Outcome = 'green' | 'yellow' | 'red';
+/** The database's answers: each change kind gets the outcome given, green by default. */
+function mockChanges(outcomes: Partial<Record<string, Outcome>> = {}, admin = false) {
+  return vi.spyOn(rpc, 'rpc').mockImplementation((name: string, args: unknown) => {
+    const { change } = args as { change: { kind: string } };
+    const outcome = outcomes[change.kind] ?? 'green';
+    const checks = [{ check: 'change_size', outcome }];
+    if (name === 'check_supplier_change') return Promise.resolve({ outcome, checks });
+    const status = outcome === 'yellow' && !admin ? 'pending' : 'applied';
+    return Promise.resolve({ request_id: 'r1', status, outcome, checks });
+  });
+}
+const calls = (spy: ReturnType<typeof mockChanges>, name: string) =>
+  spy.mock.calls.filter((call) => call[0] === name).map((call) => call[1]);
+
 describe('supplier edit dialog', () => {
-  it('saves the name and a changed contact together with one button', async () => {
+  it('saves a green contact change at once with one button', async () => {
     mockWrites();
-    const save = vi.spyOn(site, 'updateSupplier').mockResolvedValue('ok');
+    const spy = mockChanges();
     const data = await detail();
     data.contacts = data.contacts.map((c) => ({ ...c, status: 'current', value: 'a@b.co.il' }));
     await openDialog(data);
-    const name = await screen.findByRole('textbox', { name: /שם הספק/ });
-    await userEvent.clear(name);
-    await userEvent.type(name, '  שם   חדש ');
-    const email = screen.getByRole('textbox', { name: 'דוא״ל' });
+    const email = await screen.findByRole('textbox', { name: 'דוא״ל' });
     await userEvent.clear(email);
     await userEvent.type(email, 'office@example.co.il');
     await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
     expect(await screen.findByText('השינויים נשמרו.')).toBeDefined();
-    expect(save).toHaveBeenCalledWith('token', {
+    const change = {
       supplier_id: SUPPLIER,
-      display_name: 'שם חדש',
-      contacts: [{ contact_id: 'contact1', kind: 'email', value: 'office@example.co.il' }],
-    });
+      kind: 'contact',
+      contact_kind: 'email',
+      value: 'office@example.co.il',
+      contact_id: 'contact1',
+    };
+    expect(calls(spy, 'check_supplier_change')).toEqual([{ change }]);
+    expect(calls(spy, 'submit_supplier_change')).toEqual([{ change }]);
     expect(site.loadSnapshot).toHaveBeenCalledWith('token');
+  });
+
+  it('shows the checks of a rename and saves it only with a reason', async () => {
+    mockWrites();
+    const spy = mockChanges();
+    const data = await detail();
+    data.contacts = [];
+    await openDialog(data);
+    const name = await screen.findByRole('textbox', { name: /שם הספק/ });
+    await userEvent.clear(name);
+    await userEvent.type(name, '  שם   חדש ');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText(/שם הספק \(שם חדש\): יישמר מיד/)).toBeDefined();
+    expect(screen.getByText('שינוי כתיב קטן.')).toBeDefined();
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText(/צריך לכתוב סיבה לשינוי/)).toBeDefined();
+    expect(calls(spy, 'submit_supplier_change')).toEqual([]);
+    await userEvent.type(screen.getByRole('textbox', { name: /סיבת השינוי/ }), 'לפי חשבונית');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText('השינויים נשמרו.')).toBeDefined();
+    expect(calls(spy, 'submit_supplier_change')).toEqual([
+      { change: { supplier_id: SUPPLIER, kind: 'rename', value: 'שם חדש', reason: 'לפי חשבונית' } },
+    ]);
+    expect(calls(spy, 'check_supplier_change')).toHaveLength(1);
+  });
+
+  it('sends a yellow kind change for a decision and refuses a red one', async () => {
+    mockWrites();
+    const spy = mockChanges({ entity_kind: 'yellow', rename: 'red' });
+    const data = await detail();
+    data.contacts = [];
+    await openDialog(data);
+    const kind = await screen.findByRole('combobox', { name: 'סוג ישות' });
+    await userEvent.selectOptions(kind, 'cooperative');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText(/סוג ישות \(אגודה שיתופית\): יישלח לאישור/)).toBeDefined();
+    await userEvent.type(screen.getByRole('textbox', { name: /סיבת השינוי/ }), 'לפי תקנון');
+    await userEvent.click(screen.getByRole('button', { name: 'שליחה לאישור' }));
+    expect(await screen.findByText(/נשלחו לאישור/)).toBeDefined();
+    await userEvent.type(await screen.findByRole('textbox', { name: /שם הספק/ }), ' כפול');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText(/לא עבר את הבדיקה ולא יישמר/)).toBeDefined();
+    expect(screen.getByText(/: לא יישמר$/)).toBeDefined();
+    expect(calls(spy, 'submit_supplier_change')).toHaveLength(1);
+  });
+
+  it('saves a yellow change of an admin at once', async () => {
+    mockWrites();
+    mockChanges({ contact: 'yellow' }, true);
+    const data = await detail();
+    data.contacts = [];
+    await openDialog(data, true);
+    await userEvent.selectOptions(
+      await screen.findByRole('combobox', { name: 'פרט קשר חדש' }),
+      'phone',
+    );
+    await userEvent.type(screen.getByRole('textbox', { name: 'ערך' }), '026291111');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText(/טלפון \(026291111\): יישמר מיד/)).toBeDefined();
+    await userEvent.type(screen.getByRole('textbox', { name: /סיבת השינוי/ }), 'טלפון חדש');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    expect(await screen.findByText('השינויים נשמרו.')).toBeDefined();
   });
 
   it('marks each broken rule beside its field and sends nothing', async () => {
     mockWrites();
-    const save = vi.spyOn(site, 'updateSupplier').mockResolvedValue('ok');
+    const spy = mockChanges();
     await openDialog(await detail());
     const name = await screen.findByRole('textbox', { name: /שם הספק/ });
     await userEvent.clear(name);
@@ -149,14 +227,12 @@ describe('supplier edit dialog', () => {
     expect((await screen.findByRole('alert')).textContent).toBe('יש לתקן את השדות המסומנים.');
     expect(screen.getByText(/יש לכתוב מילים/)).toBeDefined();
     expect(screen.getByText(/מספר טלפון לא תקין/)).toBeDefined();
-    expect(save).not.toHaveBeenCalled();
+    expect(spy).not.toHaveBeenCalled();
   });
 
-  it('shows a rule the database refused in plain Hebrew', async () => {
+  it('shows a refusal of the database in plain Hebrew', async () => {
     mockWrites();
-    vi.spyOn(site, 'updateSupplier').mockRejectedValue(
-      new DataError(400, RULE_MESSAGES.bad_check_digit),
-    );
+    vi.spyOn(rpc, 'rpc').mockRejectedValue(new DataError(400, RULE_MESSAGES.bad_check_digit));
     const data = await detail();
     data.contacts = [];
     await openDialog(data);
@@ -228,7 +304,7 @@ describe('status panel and verification mark', () => {
 
   it('says when nothing changed and keeps the typed values after a refused save', async () => {
     mockWrites();
-    vi.spyOn(site, 'updateSupplier').mockRejectedValue(new Error('נדחה.'));
+    vi.spyOn(rpc, 'rpc').mockRejectedValue(new Error('נדחה.'));
     const data = await detail();
     data.contacts = [];
     await openDialog(data);
