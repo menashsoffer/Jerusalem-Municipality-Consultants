@@ -68,6 +68,8 @@ const REJECT = new Set([
   'request_access_change(text,text,text,uuid,uuid,jsonb)',
   'revoke_role(uuid)',
   'registry_check_input(uuid)',
+  'suggest_supplier_kinds()',
+  'decide_kind_suggestion(uuid,boolean)',
   'route_check_preview_input(jsonb,date)',
   'set_supplier_status(uuid,jsonb)',
   'submit_supplier_change(jsonb)',
