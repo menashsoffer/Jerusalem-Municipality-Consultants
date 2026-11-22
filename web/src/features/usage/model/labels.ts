@@ -1,0 +1,80 @@
+// Hebrew names for the slugs the tracker sends. An unknown slug is shown as it is.
+import type { UsageRole } from './range.ts';
+
+export const ROLE_NAMES: Record<UsageRole, string> = {
+  admin: 'מנהל מערכת',
+  auditor: 'מבקר',
+  unit_manager: 'מנהל יחידה',
+  editor: 'עורך',
+  viewer: 'צופה',
+  supplier: 'ספק',
+  other: 'ללא הרשאה',
+};
+
+const SCREENS: Record<string, string> = {
+  catalog: 'איתור ספקים',
+  supplier: 'כרטיס ספק',
+  'supplier-new': 'הוספת ספק',
+  engagement: 'בקשות התקשרות',
+  admin: 'ניהול',
+  categories: 'בקשות קטגוריה',
+  identifiers: 'מזהי ספקים',
+  addresses: 'כתובות לבדיקה',
+  'load-control': 'בקרת טעינה',
+  users: 'משתמשים ותפקידים',
+  'supplier-links': 'שיוכים ומסמכים',
+  thresholds: 'הסף החודשי',
+  auth: 'כניסה והרשאות',
+  usage: 'שימוש באתר',
+  'supplier-area': 'אזור אישי לספקים',
+  'not-found': 'דף לא נמצא',
+  home: 'דף הבית',
+  other: 'אחר',
+};
+
+const ACTIONS: Record<string, string> = {
+  'catalog.search': 'חיפוש ספקים',
+  'catalog.filters-open': 'פתיחת מסננים',
+  'catalog.filters-apply': 'הצגת תוצאות מסננים',
+  'catalog.reset': 'ניקוי החיפוש והמסננים',
+  'catalog.clear-filters': 'ניקוי כל המסננים',
+  'shortlist.clear': 'ניקוי רשימת הספקים לבקשה',
+  'request.next': 'המשך לפרטי הבקשה',
+  'request.check': 'בדיקת מסלול התקשרות',
+  'request.clear': 'ניקוי פרטי הבקשה',
+  'request.approach': 'רישום פנייה לספקים',
+  'request.bcc': 'העתקת כתובות ל-BCC',
+  'request.export': 'ייצוא לקובץ',
+  'request.share': 'העתקת קישור לבקשה',
+  'supplier.copy': 'העתקת פרט ספק',
+  'supplier.add': 'הוספת ספק',
+  'supplier.save': 'שמירת שינוי בספק',
+  'login.email': 'כניסה בקישור למייל',
+  'login.google': 'כניסה עם Google',
+  'portal.link': 'שיוך לספק באזור האישי',
+  'portal.person': 'שמירת פרטים אישיים',
+  'portal.upload': 'העלאת מסמך',
+  'portal.propose': 'הצעת תיקון',
+};
+
+const FILTER = /^catalog\.(filter|toggle)\.(.+)$/;
+
+export function screenLabel(screen: string): string {
+  const known = SCREENS[screen];
+  if (known) return known;
+  // The longest known prefix: "supplier-area-login" belongs to "supplier-area", not "supplier".
+  const parent = Object.keys(SCREENS)
+    .filter((key) => screen.startsWith(`${key}-`))
+    .sort((a, b) => b.length - a.length)[0];
+  return parent ? `${SCREENS[parent] ?? parent} (${screen.slice(parent.length + 1)})` : screen;
+}
+
+export function actionLabel(action: string): string {
+  const filter = FILTER.exec(action);
+  if (filter) return `${filter[1] === 'filter' ? 'סינון' : 'מתג'}: ${filter[2] ?? ''}`;
+  return ACTIONS[action] ?? action;
+}
+
+export function roleLabel(role: string): string {
+  return Object.entries(ROLE_NAMES).find(([key]) => key === role)?.[1] ?? role;
+}
