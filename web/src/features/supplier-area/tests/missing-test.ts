@@ -2,7 +2,8 @@ import { describe, it } from 'node:test';
 import assert from 'node:assert/strict';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
 import { dayOf } from '../../../lib/dates.ts';
-import { missingTasks, orderedMemberships, plusDays } from '../model/missing.ts';
+import { missingTasks, orderedMemberships } from '../model/missing.ts';
+import { plusDays } from '../model/portal-model.ts';
 
 const TODAY = '2026-11-22';
 type Membership = SupplierFile['memberships'][number];
@@ -42,15 +43,17 @@ const proposal = (over: Partial<Proposal>): Proposal => ({
   mine: true,
   ...over,
 });
-const keys = (f: SupplierFile, p: Proposal[] = []) => missingTasks(f, p, TODAY).map((t) => t.key);
+const tasksOf = (f: SupplierFile, p: Proposal[], today: string) =>
+  missingTasks({ file: f, proposals: p, documents: [] }, today);
+const keys = (f: SupplierFile, p: Proposal[] = []) => tasksOf(f, p, TODAY).map((t) => t.key);
 
 describe('what the supplier is missing', () => {
   it('shows nothing when every detail is in place', () => {
-    assert.deepEqual(missingTasks(file(), [], TODAY), []);
+    assert.deepEqual(tasksOf(file(), [], TODAY), []);
   });
 
   it('counts registrations that end within 60 days, with the first end date', () => {
-    const one = missingTasks(file({ memberships: [membership('א', '2026-12-31')] }), [], TODAY);
+    const one = tasksOf(file({ memberships: [membership('א', '2026-12-31')] }), [], TODAY);
     assert.deepEqual(one, [
       {
         key: 'ending',
@@ -64,13 +67,13 @@ describe('what the supplier is missing', () => {
       membership('ג', '2028-01-01'),
       membership('ד', '2025-01-01'),
     ];
-    const [two] = missingTasks(file({ memberships }), [], TODAY);
+    const [two] = tasksOf(file({ memberships }), [], TODAY);
     assert.equal(two?.text, `2 רישומים מסתיימים בחודשיים הקרובים, הראשון ב-${dayOf('2026-12-01')}`);
   });
 
   it('names a missing phone, a missing email, or both', () => {
     const text = (kinds: string[]) =>
-      missingTasks(
+      tasksOf(
         file({ contacts: kinds.map((kind, i) => ({ id: `c${String(i)}`, kind, value: 'x' })) }),
         [],
         TODAY,
@@ -85,13 +88,10 @@ describe('what the supplier is missing', () => {
       proposal({ status: 'rejected', decided_at: `${day}T09:00:00Z` });
     assert.deepEqual(keys(file(), [rejected('2026-10-23')]), ['rejected']);
     assert.deepEqual(keys(file(), [rejected('2026-10-22')]), []);
-    const tasks = missingTasks(file(), [rejected('2026-11-01'), rejected('2026-11-02')], TODAY);
+    const tasks = tasksOf(file(), [rejected('2026-11-01'), rejected('2026-11-02')], TODAY);
     assert.equal(tasks[0]?.text, '2 בקשות נדחו');
-    assert.equal(
-      missingTasks(file(), [proposal({})], TODAY)[0]?.text,
-      'תיקון אחד ממתין לבדיקת העירייה',
-    );
-    const two = missingTasks(file(), [proposal({}), proposal({ id: 'q' })], TODAY);
+    assert.equal(tasksOf(file(), [proposal({})], TODAY)[0]?.text, 'תיקון אחד ממתין לבדיקת העירייה');
+    const two = tasksOf(file(), [proposal({}), proposal({ id: 'q' })], TODAY);
     assert.deepEqual(two, [
       { key: 'pending', text: '2 תיקונים ממתינים לבדיקת העירייה', target: 'requests-title' },
     ]);

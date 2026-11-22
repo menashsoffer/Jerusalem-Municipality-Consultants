@@ -1,10 +1,12 @@
 // "מה חסר לי" and the order of "המאגרים שלי" (supplier-portal-spec-he.md 6.3), without the network.
 import { dayOf } from '../../../lib/dates.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
-import { validity } from './portal-model.ts';
+import { documentsTaskText, type KindRow } from './documents.ts';
+import { plusDays, validity } from './portal-model.ts';
 
 /** The section a task card moves to; each is the id of that section's heading. */
-export type TaskTarget = 'details-title' | 'requests-title' | 'registries-title';
+export type TaskTarget =
+  'details-title' | 'requests-title' | 'registries-title' | 'documents-title';
 
 export interface Task {
   key: string;
@@ -16,13 +18,6 @@ type Membership = SupplierFile['memberships'][number];
 
 const MAX_TASKS = 3;
 const REJECTED_DAYS = 30;
-
-/** The calendar day `days` after `day` (both YYYY-MM-DD). */
-export function plusDays(day: string, days: number): string {
-  const date = new Date(`${day}T00:00:00Z`);
-  date.setUTCDate(date.getUTCDate() + days);
-  return date.toISOString().slice(0, 10);
-}
 
 const count = (n: number, one: string, many: string) => (n === 1 ? one : `${String(n)} ${many}`);
 
@@ -74,10 +69,22 @@ function pendingTask(proposals: Proposal[]): Task | null {
   return { key: 'pending', text, target: 'requests-title' };
 }
 
+function documentsTask(rows: KindRow[]): Task | null {
+  const text = documentsTaskText(rows);
+  return text ? { key: 'documents', text, target: 'documents-title' } : null;
+}
+
+export interface FileState {
+  file: SupplierFile;
+  proposals: Proposal[];
+  documents: KindRow[];
+}
+
 /** Up to three things the supplier should look at, most urgent first; empty when all is well. */
-export function missingTasks(file: SupplierFile, proposals: Proposal[], today: string): Task[] {
+export function missingTasks({ file, proposals, documents }: FileState, today: string): Task[] {
   const tasks = [
     endingTask(file.memberships, today),
+    documentsTask(documents),
     rejectedTask(proposals, today),
     contactTask(file),
     pendingTask(proposals),

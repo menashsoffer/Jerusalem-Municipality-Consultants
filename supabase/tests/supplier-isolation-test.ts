@@ -36,6 +36,8 @@ const READABLE: Record<string, (rows: Json[]) => void> = {
 const REJECT = new Set([
   'supplier_link_queue()',
   'supplier_area_accounts(uuid)',
+  'supplier_document_queue()',
+  'decide_supplier_document(uuid,boolean,text,text)',
   'revoke_supplier_account(uuid,text)',
   'portal_request_link(jsonb)',
   'portal_find_supplier(text,text)',
@@ -69,8 +71,9 @@ const REJECT = new Set([
   'route_check_preview_input(jsonb,date)',
   'set_supplier_status(uuid,jsonb)',
   'submit_supplier_change(jsonb)',
-  // A linked supplier may propose; null input fails on its shape first.
+  // A linked supplier may propose or record a file; null input fails on its shape first.
   'portal_propose_change(jsonb)',
+  'portal_save_document(jsonb)',
 ]);
 
 // Calls that need real arguments: with nulls they would fail on input before the access check.
@@ -109,6 +112,12 @@ const CALLS: Record<string, [string, Expect]> = {
     `'${SUPPLIER}'`,
     (v) => {
       assert.deepEqual(v, []);
+    },
+  ],
+  'portal_documents(uuid)': [
+    `'${SUPPLIER}'`,
+    (v) => {
+      assert.deepEqual((v as Json).documents, []);
     },
   ],
   'portal_supplier(uuid)': [

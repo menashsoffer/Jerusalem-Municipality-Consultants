@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import * as rpc from '../../../data/rpc.ts';
 import { refusal } from '../../../data/client.ts';
 import { SupplierAreaPage, loader } from '../supplier-area-page.tsx';
 import type { PortalMe, Proposal, SupplierFile } from '../api/portal.ts';
+import { documentRows, type KindRow } from '../model/documents.ts';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const TOKEN = `x.${btoa(JSON.stringify({ sub: USER }))}.y`;
@@ -51,8 +52,9 @@ function page(value: {
   step: string;
   file: SupplierFile | null;
   proposals?: Proposal[];
+  documents?: KindRow[];
 }) {
-  const data = { proposals: [], ...value, today: '2026-11-22' };
+  const data = { proposals: [], documents: [], ...value, today: '2026-11-22' };
   const router = createMemoryRouter(
     [{ id: 'area', path: '/', Component: SupplierAreaPage, loader: () => data }],
     { hydrationData: { loaderData: { area: data } } },
@@ -97,10 +99,15 @@ describe('the supplier area', () => {
     };
     answer((name) => {
       if (name === 'portal_me') return me({ accounts: [account] as never });
+      if (name === 'portal_documents') return { kinds: ['insurance'], documents: [] };
       return name === 'portal_changes' ? [] : FILE;
     });
     const result = await loader();
-    expect(result).toMatchObject({ step: 'file', file: { name: 'ספק בע"מ' } });
+    expect(result).toMatchObject({
+      step: 'file',
+      file: { name: 'ספק בע"מ' },
+      documents: [{ kind: 'insurance', state: 'missing' }],
+    });
   });
 
   it('asks a new person for their details and saves them', async () => {
@@ -358,5 +365,90 @@ describe('proposing a fix', () => {
       { request_id: 'p1' },
       expect.anything(),
     );
+  });
+});
+
+describe('my documents', () => {
+  const openDialogs = () => {
+    for (const dialog of document.querySelectorAll('dialog')) dialog.setAttribute('open', '');
+  };
+  beforeEach(() => {
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      configurable: true,
+      value: function (this: HTMLDialogElement) {
+        this.open = false;
+      },
+    });
+  });
+  const rows = documentRows(
+    {
+      kinds: ['bookkeeping', 'insurance'],
+      documents: [
+        {
+          id: 'd1',
+          kind: 'bookkeeping',
+          status: 'approved',
+          valid_until: '2027-06-30',
+          review_note: null,
+          created_at: '2026-11-01T08:00:00Z',
+          reviewed_at: '2026-11-02T08:00:00Z',
+          storage_path: 's1/d1.pdf',
+        },
+      ],
+    },
+    '2026-11-22',
+  );
+
+  it('shows each kind with its state, and asks for a file before sending', async () => {
+    page({ me: me(), step: 'file', file: FILE, documents: rows });
+    const list = screen.getByRole('region', { name: 'המסמכים שלי' });
+    expect(within(list).getByText('בתוקף עד 30.06.2027')).toBeDefined();
+    expect(within(list).getByText('חסר')).toBeDefined();
+    expect(within(list).getByRole('button', { name: 'החלפה' })).toBeDefined();
+    expect(within(list).getByRole('button', { name: 'העלאה' })).toBeDefined();
+    openDialogs();
+    const dialog = screen.getByRole('form', { name: 'העלאה: אישור קיום ביטוחים' });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(await within(dialog).findByText('יש לצרף קובץ.')).toBeDefined();
+  });
+
+  it('uploads under the supplier folder and records the file with its date', async () => {
+    vi.spyOn(rpc, 'freshToken').mockResolvedValue(TOKEN);
+    const upload = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}'));
+    const calls: unknown[] = [];
+    answer((name, args) => {
+      calls.push([name, args]);
+      return {
+        id: 'n',
+        kind: 'insurance',
+        status: 'pending',
+        valid_until: '2027-03-31',
+        review_note: null,
+        created_at: '2026-11-22T10:00:00Z',
+        reviewed_at: null,
+        storage_path: 's1/n.pdf',
+      };
+    });
+    page({ me: me(), step: 'file', file: FILE, documents: rows });
+    openDialogs();
+    const dialog = screen.getByRole('form', { name: 'העלאה: אישור קיום ביטוחים' });
+    await userEvent.upload(
+      within(dialog).getByLabelText(/הקובץ/),
+      new File(['x'], 'a.pdf', { type: 'application/pdf' }),
+    );
+    const until = within(dialog).getByLabelText(/בתוקף עד/);
+    fireEvent.change(until, { target: { value: '2020-01-01' } });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(await within(dialog).findByText(/מהיום ועד עשר שנים/)).toBeDefined();
+    fireEvent.change(until, { target: { value: '2027-03-31' } });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'שליחה לבדיקה' }));
+    await vi.waitFor(() => {
+      expect(calls).toHaveLength(1);
+    });
+    expect(upload.mock.calls[0]?.[0]).toMatch(/\/supplier-documents\/s1\/.+\.pdf$/);
+    expect(calls[0]).toMatchObject([
+      'portal_save_document',
+      { document: { supplier_id: 's1', kind: 'insurance', valid_until: '2027-03-31' } },
+    ]);
   });
 });

@@ -1,8 +1,10 @@
 import { dayOf } from '../../../lib/dates.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
+import type { KindRow } from '../model/documents.ts';
 import { missingTasks, orderedMemberships } from '../model/missing.ts';
 import { CONTACT_LABELS, SCHEME_LABELS, validity } from '../model/portal-model.ts';
 import { MissingTasks } from './missing-tasks.tsx';
+import { MyDocuments } from './my-documents.tsx';
 import { MyRequests } from './my-requests.tsx';
 import { ProposeFix } from './propose-fix.tsx';
 import styles from './area.module.css';
@@ -119,20 +121,22 @@ function Memberships({ file, today }: { file: SupplierFile; today: string }) {
 interface Props {
   file: SupplierFile;
   proposals: Proposal[];
+  documents: KindRow[];
   today: string;
 }
 
 /** "התיק שלי" (spec 6.3): how the municipality sees the supplier, and fixes to propose. */
-export function MyFile({ file, proposals, today }: Props) {
+export function MyFile({ file, proposals, documents, today }: Props) {
   return (
     <>
       <header className={styles.title}>
         <h1 tabIndex={-1}>{file.name}</h1>
         <p className={styles.muted}>{file.role === 'owner' ? 'מורשה ספק' : 'עובד ספק'}</p>
       </header>
-      <MissingTasks tasks={missingTasks(file, proposals, today)} />
+      <MissingTasks tasks={missingTasks({ file, proposals, documents }, today)} />
       <Details file={file} proposals={proposals} />
       <Memberships file={file} today={today} />
+      <MyDocuments supplierId={file.id} rows={documents} today={today} />
     </>
   );
 }
