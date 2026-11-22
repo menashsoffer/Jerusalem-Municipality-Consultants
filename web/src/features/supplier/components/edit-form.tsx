@@ -4,7 +4,6 @@ import type { FieldErrors } from '../../../lib/rules/forms.ts';
 import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { SelectField } from '../../../ui/select-field.tsx';
-import { StatusMessage } from '../../../ui/status-message.tsx';
 import { runEdit, START, type EditState } from '../api/edit-flow.ts';
 import { reasonNeeded, waitsForDecision } from '../model/change-checks.ts';
 import { CONTACT_KINDS, ENTITY_KINDS } from '../model/labels.ts';
@@ -12,6 +11,7 @@ import { sortContacts } from '../model/contact-order.ts';
 import { contactField, KIND, NAME, NEW_KIND, NEW_VALUE, REASON } from '../model/edit-form.ts';
 import { ChangeResults } from './change-results.tsx';
 import { ContactRow } from './contact-row.tsx';
+import { SaveStatus } from './save-status.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -130,7 +130,7 @@ export function EditForm({ data, admin = false, aside }: Props) {
         </Button>
         {aside}
       </div>
-      <StatusMessage>{pending ? 'בודק ושומר…' : state.message}</StatusMessage>
+      <SaveStatus pending={pending} saving="בודק ושומר…" message={state.message} />
       {state.error && <p role="alert">{state.error}</p>}
     </form>
   );
