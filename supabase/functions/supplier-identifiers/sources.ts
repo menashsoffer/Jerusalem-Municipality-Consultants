@@ -16,6 +16,13 @@ export interface Credentials {
   readonly password: string;
 }
 
+/** The GuideStar account, kept as function secrets; null when it is not set. */
+export function guidestarCredentials(read: (name: string) => string | undefined) {
+  const username = read('GUIDESTAR_USERNAME');
+  const password = read('GUIDESTAR_PASSWORD');
+  return username && password ? { username, password } : null;
+}
+
 /** 'failed' keeps partial results usable when one source is down. */
 export type SourceState = 'ok' | 'failed' | 'not_configured';
 
@@ -26,9 +33,9 @@ export interface Search {
 
 const TIMEOUT_MS = 10000;
 const PER_NAME = 5;
-const REGISTRAR =
+export const REGISTRAR =
   'https://data.gov.il/api/3/action/datastore_search?resource_id=f004176c-b85f-4542-8901-7b3176f9a054';
-const GUIDESTAR = 'https://www.guidestar.org.il/services/apexrest/api';
+export const GUIDESTAR = 'https://www.guidestar.org.il/services/apexrest/api';
 const NUMBER = /^[0-9]{5,9}$/u;
 
 type Row = Record<string, unknown>;
@@ -38,11 +45,11 @@ function rows(value: unknown): Row[] {
   return value.filter((row): row is Row => row !== null && typeof row === 'object');
 }
 
-function text(value: unknown): string | null {
+export function text(value: unknown): string | null {
   return typeof value === 'string' && value.trim() !== '' ? value.trim() : null;
 }
 
-async function getJson(fetcher: typeof fetch, url: string, init: RequestInit = {}) {
+export async function getJson(fetcher: typeof fetch, url: string, init: RequestInit = {}) {
   const response = await fetcher(url, {
     ...init,
     redirect: 'error',
@@ -53,7 +60,7 @@ async function getJson(fetcher: typeof fetch, url: string, init: RequestInit = {
 }
 
 /** A registrar number arrives as a JSON number, a GuideStar one as a string. */
-function digits(value: unknown): string {
+export function digits(value: unknown): string {
   return typeof value === 'number' || typeof value === 'string' ? String(value) : '';
 }
 
@@ -105,7 +112,7 @@ function guidestarRow(row: Row, searched: string): Found | null {
   };
 }
 
-async function guidestarSession(credentials: Credentials, fetcher: typeof fetch) {
+export async function guidestarSession(credentials: Credentials, fetcher: typeof fetch) {
   const body = (await getJson(fetcher, `${GUIDESTAR}/login`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },

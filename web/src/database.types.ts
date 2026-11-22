@@ -1284,6 +1284,7 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "registry_details": Json | null;
     };
     Insert: {
       "id"?: string;
@@ -1300,6 +1301,7 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "registry_details"?: Json | null;
     };
     Update: {
       "id"?: string;
@@ -1316,6 +1318,7 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "registry_details"?: Json | null;
     };
   };
   "supplier_invites": {

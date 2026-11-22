@@ -6,6 +6,7 @@ import { formText } from '../model/add-form.ts';
 import { overall, reasonNeeded, sameChanges, type CheckedChange } from '../model/change-checks.ts';
 import { parseEditForm, REASON } from '../model/edit-form.ts';
 import { checkChanges, submitChanges } from './changes.ts';
+import { refreshRegistry } from './registry-check.ts';
 import { IDLE, saveAndRefresh, type SaveResult } from './write.ts';
 
 export interface EditState extends SaveResult {
@@ -52,6 +53,9 @@ async function checksFor(previous: EditState, changes: SupplierChange[]) {
   const known = previous.checked;
   const same = known?.map((item) => item.change) ?? [];
   if (known && sameChanges(same, changes)) return { checked: known, fresh: true };
+  // A name or kind is compared with the registry, so its answer is brought up to date first.
+  const registry = changes.find((c) => c.kind === 'rename' || c.kind === 'entity_kind');
+  if (registry) await refreshRegistry(registry.supplier_id);
   return { checked: await checkChanges(changes), fresh: false };
 }
 
