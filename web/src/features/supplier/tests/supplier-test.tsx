@@ -19,6 +19,7 @@ import {
 import { SupplierDetails } from '../components/supplier-details.tsx';
 import { EditDialog } from '../components/edit-dialog.tsx';
 import { AddForm } from '../components/add-form.tsx';
+import styles from '../components/supplier.module.css';
 
 afterEach(() => {
   cleanup();
@@ -365,6 +366,29 @@ describe('adding a supplier', () => {
       expect(screen.getByRole<HTMLInputElement>('textbox', { name: /שם הספק/ }).value).toBe('');
     });
     expect(screen.queryByRole('radio')).toBeNull();
+  });
+
+  it('shows one saving indicator, the button, while the supplier is saved', async () => {
+    mockWrites();
+    let finish: (id: string) => void = () => undefined;
+    vi.spyOn(site, 'saveMembership').mockReturnValue(
+      new Promise((resolve) => {
+        finish = resolve;
+      }),
+    );
+    show(<AddForm context={context()} />);
+    await userEvent.type(await screen.findByRole('textbox', { name: /שם הספק/ }), 'ספק חדש');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /מאגר וגרסה/ }), 'v1');
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: /תחום/ }), 'f1');
+    await userEvent.click(screen.getByRole('button', { name: 'הוספת הספק' }));
+    const button = await screen.findByRole('button', { name: 'שומר…' });
+    // The live region still tells a screen reader, but is not drawn as a second "שומר…".
+    const status = screen.getByRole('status');
+    expect(status.textContent).toBe('שומר…');
+    expect(status.closest(`.${styles.visuallyHidden ?? 'missing'}`)).not.toBeNull();
+    expect(button.closest(`.${styles.visuallyHidden ?? 'missing'}`)).toBeNull();
+    finish('ok');
+    expect(await screen.findByText('הספק נוסף וממתין לאימות של משתמש אחר.')).toBeDefined();
   });
 
   it('offers only the pools the editor may write to', async () => {
