@@ -33,7 +33,12 @@ function answer(handler: (name: string) => unknown) {
   });
 }
 
+let invites: unknown[] = [];
 beforeEach(() => {
+  invites = [];
+  vi.spyOn(rpc, 'rows').mockImplementation((_table, _filters, schema) =>
+    Promise.resolve(schema.parse(invites)),
+  );
   // jsdom has no native dialog close; the real one is checked in Chromium.
   Object.defineProperty(HTMLDialogElement.prototype, 'close', {
     configurable: true,
@@ -122,5 +127,38 @@ describe('the supplier area invite', () => {
     render(<AreaInvite data={await detail(['office@example.co.il'])} />);
     await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
     expect(await screen.findByRole('alert')).toBeDefined();
+  });
+
+  it('shows the link to copy and how long each invite has been out', async () => {
+    vi.useFakeTimers({ now: new Date('2026-11-22T10:00:00Z'), toFake: ['Date'] });
+    invites = [
+      {
+        id: 'i1',
+        email: 'office@example.co.il',
+        created_at: '2026-11-19T09:00:00Z',
+        expires_at: '2026-12-03T09:00:00Z',
+        accepted_at: null,
+      },
+    ];
+    answer(() => []);
+    render(<AreaInvite data={await detail(['office@example.co.il'])} />);
+    expect(await screen.findByText(/לפני 3 ימים/)).toBeDefined();
+    expect(screen.getByText(/נשארו עוד 10 ימים/)).toBeDefined();
+    const bar = screen.getByRole('progressbar');
+    expect(bar.getAttribute('value')).toBe('3');
+    expect(bar.getAttribute('max')).toBe('14');
+    expect(screen.getByRole('button', { name: 'העתקת הקישור לאזור האישי' })).toBeDefined();
+    expect(
+      screen.getByRole('button', { name: 'העתקת ההודעה ל-office@example.co.il' }),
+    ).toBeDefined();
+    vi.useRealTimers();
+  });
+
+  it('copies the link to the clipboard', async () => {
+    const user = userEvent.setup();
+    answer(() => []);
+    render(<AreaInvite data={await detail([])} />);
+    await user.click(screen.getByRole('button', { name: 'העתקת הקישור לאזור האישי' }));
+    expect(await navigator.clipboard.readText()).toBe(areaLink());
   });
 });
