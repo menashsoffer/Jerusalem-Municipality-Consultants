@@ -1,7 +1,14 @@
-import { serverEnv, type ReadEnv, type ServerEnv } from '../_shared/http/env.ts';
+import { serverEnv, type ServerEnv } from '../_shared/http/env.ts';
 import { bearerToken, failure, json, preflight, readObject } from '../_shared/http/respond.ts';
 import { failedStatus, rest } from '../_shared/http/rest.ts';
-import { searchGuidestar, searchRegistrar, type Credentials } from './sources.ts';
+import {
+  guidestarCredentials,
+  searchGuidestar,
+  searchRegistrar,
+  type Credentials,
+} from './sources.ts';
+
+export { guidestarCredentials };
 
 // POST { supplier_id } with the caller's token. Searches the Companies Registrar
 // and GuideStar by the supplier's names and stores what they find as candidates.
@@ -85,12 +92,6 @@ async function lookup(job: Accepted, ctx: Context): Promise<Response> {
 export async function handle(request: Request, ctx: Context): Promise<Response> {
   const job = await accept(request, ctx);
   return job instanceof Response ? job : lookup(job, ctx);
-}
-
-export function guidestarCredentials(read: ReadEnv): Credentials | null {
-  const username = read('GUIDESTAR_USERNAME');
-  const password = read('GUIDESTAR_PASSWORD');
-  return username && password ? { username, password } : null;
 }
 
 if (typeof Deno !== 'undefined') {

@@ -441,3 +441,8 @@ verify_jwt = false
 # Checks the caller's token itself through public.identifier_lookup_input.
 [functions.supplier-identifiers]
 verify_jwt = false
+
+# Checks the caller's token itself through public.registry_check_input. The gateway check
+# would also refuse the browser's CORS preflight, which carries no token.
+[functions.supplier-change-check]
+verify_jwt = false

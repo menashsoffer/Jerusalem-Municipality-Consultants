@@ -171,11 +171,19 @@
 4. שומרת את התוצאות **כמועמדים בלבד** (`identifier_candidates`). מזהה נכנס ל-`supplier_identifiers`
    רק אחרי שעורך מאשר ואדם שני מאמת.
 
-### שימושים מתוכננים (שלב 2 בבדיקות עריכת ספק)
+### בדיקה לפי מספר (שלב 2 בבדיקות עריכת ספק)
 
-- `GET /organizations/{regNum}?fullObject=true` לספק שכבר יש לו מספר עמותה או חל"צ: לבדוק `isActive`,
-  `malkarStatus`, `hasNihulTakin`, `hasNihulTakinForNextYear` ו-`approval46`, ולשמור את התאריך ואת
-  הקישור לאישור הניהול התקין כמקור.
+הפונקציה `supplier-change-check` (`supabase/functions/supplier-change-check/`) רצה לפני בדיקה של
+שינוי שם או סוג ישות בחלון העריכה:
+
+- לכל מספר עמותה של הספק: `GET /organizations/{regNum}?fullObject=true`. נשמרים השם,
+  `malkarStatus`, ו-`isActive`, `hasNihulTakin`, `hasNihulTakinForNextYear`, `approval46`,
+  `malkarType` ו-`urlGuidestar` בעמודה `registry_details` של המזהה. `isActive` שקר נשמר כסטטוס
+  "לא פעיל" גם כש-`malkarStatus` לא אומר זאת. תשובה 404 נשמרת כ"לא נמצא במרשם".
+- מספר חברה (כולל חל"צ) נבדק ברשם החברות ב-data.gov.il, לפי `filters` על "מספר חברה".
+- מספר שנבדק ב-24 השעות האחרונות לא נשאל שוב. כל קריאה נספרת במכסה של 30 בשעה, כמו החיפוש.
+- התשובה נשמרת במסד עם מפתח השירות, ובדיקות העריכה קוראות אותה משם. גוף שנמחק או לא פעיל מסמן
+  את הספק "לבדיקה", ובחלון העריכה מופיעה אזהרה צהובה.
 - לא לשמור מגיידסטאר את פרטי הקשר כאמת. הם נכנסים, אם בכלל, כהצעה שאדם מאשר.
 
 ## לפני שמשתמשים
