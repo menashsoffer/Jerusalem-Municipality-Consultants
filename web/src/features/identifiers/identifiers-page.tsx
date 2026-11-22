@@ -13,6 +13,7 @@ import { useScreenData } from '../../data/react-screen-data.ts';
 import { SOURCES, type Candidate } from './model/candidate.ts';
 import { listCandidates, matchLevel, type ListFilter, type Listed } from './model/match.ts';
 import { CandidateRow } from './components/candidate-row.tsx';
+import { KindSuggestions, type KindRow } from './components/kind-suggestions.tsx';
 import styles from './components/candidate.module.css';
 
 export const loader = () => getScreenData(CANDIDATES_KEY, loadCandidates);
@@ -57,10 +58,16 @@ function Filters({ filter, change }: { filter: ListFilter; change: (next: ListFi
 function useList() {
   const data = useScreenData(CANDIDATES_KEY, useLoaderData<typeof loader>(), loadCandidates).value;
   const names = new Map(data.suppliers.map((s) => [s.id, s.display_name]));
-  return data.candidates.map((candidate) => {
-    const supplier = names.get(candidate.supplier_id) ?? 'שם הספק אינו זמין';
+  const nameOf = (id: string) => names.get(id) ?? 'שם הספק אינו זמין';
+  const kinds: KindRow[] = data.kinds.map((suggestion) => ({
+    suggestion,
+    supplier: nameOf(suggestion.supplier_id),
+  }));
+  const candidates = data.candidates.map((candidate) => {
+    const supplier = nameOf(candidate.supplier_id);
     return { candidate, supplier, level: matchLevel(supplier, candidate.registrar_name) };
   });
+  return { candidates, kinds };
 }
 
 function Results({ shown, pages, more }: { shown: Listed[]; pages: number; more: () => void }) {
@@ -95,7 +102,7 @@ function Results({ shown, pages, more }: { shown: Listed[]; pages: number; more:
 
 /** Supplier ID candidates (screens-spec 7): filter, closest names first, 25 at a time. */
 export function IdentifiersPage() {
-  const all = useList();
+  const { candidates: all, kinds } = useList();
   const navigation = useNavigation();
   const [filter, setFilter] = useState<ListFilter>({ source: '', query: '' });
   const [pages, setPages] = useState(1);
@@ -131,6 +138,7 @@ export function IdentifiersPage() {
           />
         </>
       )}
+      {navigation.state !== 'loading' && <KindSuggestions rows={kinds} />}
     </div>
   );
 }

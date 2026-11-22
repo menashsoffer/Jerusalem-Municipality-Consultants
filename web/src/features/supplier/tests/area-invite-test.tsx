@@ -33,7 +33,12 @@ function answer(handler: (name: string) => unknown) {
   });
 }
 
+let invites: unknown[] = [];
 beforeEach(() => {
+  invites = [];
+  vi.spyOn(rpc, 'rows').mockImplementation((_table, _filters, schema) =>
+    Promise.resolve(schema.parse(invites)),
+  );
   // jsdom has no native dialog close; the real one is checked in Chromium.
   Object.defineProperty(HTMLDialogElement.prototype, 'close', {
     configurable: true,
@@ -102,9 +107,11 @@ describe('the supplier area invite', () => {
     expect(await screen.findByRole('alert')).toBeDefined();
   });
 
-  it('invites a chosen email and says that no email is sent', async () => {
+  it('shows the only email without a list, and invites it', async () => {
     const call = answer((name) => (name === 'supplier_area_accounts' ? [] : 'i1'));
     render(<AreaInvite data={await detail(['office@example.co.il'])} />);
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.getByText(/ההזמנה תישמר לדוא"ל/).textContent).toContain('office@example.co.il');
     await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
     expect(call).toHaveBeenCalledWith(
       'invite_supplier_account',
@@ -112,6 +119,19 @@ describe('the supplier area invite', () => {
       expect.anything(),
     );
     expect(await screen.findByText(/המערכת לא שולחת דוא"ל/)).toBeDefined();
+  });
+
+  it('lets the user choose when the supplier has several emails', async () => {
+    const call = answer((name) => (name === 'supplier_area_accounts' ? [] : 'i1'));
+    render(<AreaInvite data={await detail(['a@example.co.il', 'b@example.co.il'])} />);
+    const list = screen.getByRole('combobox', { name: /דוא"ל להזמנה/ });
+    await userEvent.selectOptions(list, 'b@example.co.il');
+    await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
+    expect(call).toHaveBeenCalledWith(
+      'invite_supplier_account',
+      { supplier_id: SUPPLIER, email: 'b@example.co.il' },
+      expect.anything(),
+    );
   });
 
   it('shows the refusal when the invite fails', async () => {
@@ -122,5 +142,38 @@ describe('the supplier area invite', () => {
     render(<AreaInvite data={await detail(['office@example.co.il'])} />);
     await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
     expect(await screen.findByRole('alert')).toBeDefined();
+  });
+
+  it('shows the link to copy and how long each invite has been out', async () => {
+    vi.useFakeTimers({ now: new Date('2026-11-22T10:00:00Z'), toFake: ['Date'] });
+    invites = [
+      {
+        id: 'i1',
+        email: 'office@example.co.il',
+        created_at: '2026-11-19T09:00:00Z',
+        expires_at: '2026-12-03T09:00:00Z',
+        accepted_at: null,
+      },
+    ];
+    answer(() => []);
+    render(<AreaInvite data={await detail(['office@example.co.il'])} />);
+    expect(await screen.findByText(/לפני 3 ימים/)).toBeDefined();
+    expect(screen.getByText(/נשארו עוד 10 ימים/)).toBeDefined();
+    const bar = screen.getByRole('progressbar');
+    expect(bar.getAttribute('value')).toBe('3');
+    expect(bar.getAttribute('max')).toBe('14');
+    expect(screen.getByRole('button', { name: 'העתקת הקישור לאזור האישי' })).toBeDefined();
+    expect(
+      screen.getByRole('button', { name: 'העתקת ההודעה ל-office@example.co.il' }),
+    ).toBeDefined();
+    vi.useRealTimers();
+  });
+
+  it('copies the link to the clipboard', async () => {
+    const user = userEvent.setup();
+    answer(() => []);
+    render(<AreaInvite data={await detail([])} />);
+    await user.click(screen.getByRole('button', { name: 'העתקת הקישור לאזור האישי' }));
+    expect(await navigator.clipboard.readText()).toBe(areaLink());
   });
 });

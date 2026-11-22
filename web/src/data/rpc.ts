@@ -22,6 +22,8 @@ interface AdminRpc {
   grant_role: { target_user: string; wanted_role: Role; target_unit: string | null };
   revoke_role: { grant_id: string };
   decide_identifier_candidate: { candidate: string; accept: boolean };
+  decide_kind_suggestion: { target: string; accept: boolean };
+  suggest_supplier_kinds: Record<string, never>;
   set_supplier_status: {
     target: string;
     change: { active: boolean; reason?: string; source?: string; changedOn?: string };
@@ -116,6 +118,8 @@ declare module '../database.types.ts' {
       Returns: string | null;
     };
     decide_category_request: { Args: AdminRpc['decide_category_request']; Returns: string | null };
+    decide_kind_suggestion: { Args: AdminRpc['decide_kind_suggestion']; Returns: string };
+    suggest_supplier_kinds: { Args: AdminRpc['suggest_supplier_kinds']; Returns: unknown };
     set_supplier_status: { Args: AdminRpc['set_supplier_status']; Returns: null };
     create_engagement_request: { Args: AdminRpc['create_engagement_request']; Returns: string };
     update_engagement_request: { Args: AdminRpc['update_engagement_request']; Returns: null };
