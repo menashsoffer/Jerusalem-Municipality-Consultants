@@ -19,7 +19,8 @@ export type OverviewKey =
   | 'identifiers_pending'
   | 'categories_pending'
   | 'thresholds_pending'
-  | 'addresses_not_found';
+  | 'addresses_not_found'
+  | 'supplier_links_pending';
 
 const EDITORS: readonly Role[] = ['editor', 'unit_manager'];
 
@@ -71,6 +72,7 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     description: 'ספקים שביקשו להיכנס לאזור האישי',
     roles: [],
     group: 'work',
+    waiting: { key: 'supplier_links_pending', one: 'שיוך אחד לבדיקה', many: 'שיוכים לבדיקה' },
   },
   {
     to: '/supplier/new',

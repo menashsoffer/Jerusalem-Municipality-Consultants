@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
@@ -50,6 +50,15 @@ function answer(handler: (name: string, args: unknown) => unknown) {
     }
   });
 }
+beforeEach(() => {
+  // jsdom has no native dialog close; the real one is checked in Chromium.
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.open = false;
+    },
+  });
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();

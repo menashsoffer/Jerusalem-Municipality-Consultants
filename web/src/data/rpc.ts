@@ -76,6 +76,7 @@ interface AdminRpc {
   decide_supplier_account: { account_id: string; approve: boolean; note: string | null };
   revoke_supplier_account: { account_id: string; note: string };
   invite_supplier_account: { supplier_id: string; email: string };
+  supplier_area_accounts: { target: string };
 }
 // Existing SQL RPCs not yet covered by the snapshot-only generator.
 declare module '../database.types.ts' {
@@ -118,6 +119,7 @@ declare module '../database.types.ts' {
     invite_supplier_account: { Args: AdminRpc['invite_supplier_account']; Returns: string };
     decide_supplier_account: { Args: AdminRpc['decide_supplier_account']; Returns: null };
     revoke_supplier_account: { Args: AdminRpc['revoke_supplier_account']; Returns: null };
+    supplier_area_accounts: { Args: AdminRpc['supplier_area_accounts']; Returns: unknown };
   }
 }
 const accessSchema = z.object({

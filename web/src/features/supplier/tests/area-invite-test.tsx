@@ -1,14 +1,47 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { compactCatalog } from '../../../data/compact-catalog.ts';
 import { supplierDetail, type SupplierDetail } from '../../../data/supplier-detail.ts';
 import * as rpc from '../../../data/rpc.ts';
-import { refusal } from '../../../data/client.ts';
+import { DataError, refusal } from '../../../data/client.ts';
 import { client, SUPPLIER, wireCatalog, wireDetail } from '../../../../tests/catalog-fixture.ts';
 import { AreaInvite } from '../components/area-invite.tsx';
 import { areaLink } from '../api/invite.ts';
 
+const ACCOUNT = {
+  id: 'a1',
+  role: 'owner',
+  status: 'active',
+  method: 'email_match',
+  created_at: '2026-11-22T08:00:00Z',
+  decided_at: null,
+  decision_note: null,
+  email: 'dana@example.co.il',
+  first_name: 'דנה',
+  last_name: 'כהן',
+  job_title: null,
+};
+
+function answer(handler: (name: string) => unknown) {
+  return vi.spyOn(rpc, 'rpc').mockImplementation((name, _args, schema) => {
+    try {
+      return Promise.resolve(schema.parse(handler(name)));
+    } catch (error) {
+      return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+    }
+  });
+}
+
+beforeEach(() => {
+  // jsdom has no native dialog close; the real one is checked in Chromium.
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value: function (this: HTMLDialogElement) {
+      this.open = false;
+    },
+  });
+});
 afterEach(() => {
   cleanup();
   vi.restoreAllMocks();
@@ -30,13 +63,47 @@ describe('the supplier area invite', () => {
     );
   });
 
-  it('is hidden when the supplier has no valid email', async () => {
+  it('says why there is no invite when the supplier has no valid email', async () => {
+    answer(() => []);
     render(<AreaInvite data={await detail([])} />);
     expect(screen.queryByRole('form')).toBeNull();
+    expect(await screen.findByText(/אין לספק דוא"ל תקין/)).toBeDefined();
+    expect(await screen.findByText(/אף אחד עוד לא משויך/)).toBeDefined();
+  });
+
+  it('lists who is linked, and lets an admin end a link with a reason', async () => {
+    const call = answer((name) => (name === 'supplier_area_accounts' ? [ACCOUNT] : null));
+    render(<AreaInvite data={await detail([])} admin />);
+    expect(await screen.findByText('דנה כהן')).toBeDefined();
+    expect(screen.getByText(/פעיל · בעלים · התאמת דוא"ל/)).toBeDefined();
+    const dialog = document.querySelector('dialog');
+    dialog?.setAttribute('open', '');
+    const form = screen.getByRole('form', { name: 'ביטול השיוך לאזור האישי' });
+    await userEvent.click(within(form).getByRole('button', { name: 'ביטול השיוך' }));
+    expect(await within(form).findByText(/צריך לכתוב סיבה/)).toBeDefined();
+    await userEvent.type(within(form).getByLabelText(/סיבה/), 'עזב את הספק');
+    await userEvent.click(within(form).getByRole('button', { name: 'ביטול השיוך' }));
+    expect(call).toHaveBeenCalledWith(
+      'revoke_supplier_account',
+      { account_id: 'a1', note: 'עזב את הספק' },
+      expect.anything(),
+    );
+  });
+
+  it('shows an editor the list without a revoke button, and a load failure', async () => {
+    answer(() => [{ ...ACCOUNT, status: 'revoked', decision_note: 'עזב', first_name: null }]);
+    render(<AreaInvite data={await detail([])} />);
+    expect(await screen.findByText(/בוטל · בעלים/)).toBeDefined();
+    expect(screen.getByText(/הסיבה: עזב/)).toBeDefined();
+    expect(screen.queryByRole('button', { name: 'ביטול השיוך' })).toBeNull();
+    cleanup();
+    vi.spyOn(rpc, 'rpc').mockRejectedValue(new DataError(500));
+    render(<AreaInvite data={await detail([])} />);
+    expect(await screen.findByRole('alert')).toBeDefined();
   });
 
   it('invites a chosen email and says that no email is sent', async () => {
-    const call = vi.spyOn(rpc, 'rpc').mockResolvedValue('i1');
+    const call = answer((name) => (name === 'supplier_area_accounts' ? [] : 'i1'));
     render(<AreaInvite data={await detail(['office@example.co.il'])} />);
     await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
     expect(call).toHaveBeenCalledWith(
@@ -48,7 +115,10 @@ describe('the supplier area invite', () => {
   });
 
   it('shows the refusal when the invite fails', async () => {
-    vi.spyOn(rpc, 'rpc').mockRejectedValue(refusal(400, 'reason:invite_email_unknown', 'rule'));
+    answer((name) => {
+      if (name === 'supplier_area_accounts') return [];
+      throw refusal(400, 'reason:invite_email_unknown', 'rule');
+    });
     render(<AreaInvite data={await detail(['office@example.co.il'])} />);
     await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
     expect(await screen.findByRole('alert')).toBeDefined();

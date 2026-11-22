@@ -15,6 +15,7 @@ const overviewSchema = z.object({
   categories_pending: count,
   thresholds_pending: count,
   addresses_not_found: count,
+  supplier_links_pending: count,
 });
 
 interface CardsProps {

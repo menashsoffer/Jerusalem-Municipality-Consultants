@@ -26,7 +26,9 @@ export function SupplierDetails({ data, today, editor = false, admin = false }: 
           <ContactCard contacts={data.contacts} />
           <IdentityCard data={data} />
           <Sources data={data} />
-          {(editor || admin) && data.supplier.status === 'active' && <AreaInvite data={data} />}
+          {(editor || admin) && data.supplier.status === 'active' && (
+            <AreaInvite data={data} admin={admin} />
+          )}
         </div>
       </div>
       <History audit={data.audit} />

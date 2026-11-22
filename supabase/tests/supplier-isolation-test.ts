@@ -35,6 +35,7 @@ const READABLE: Record<string, (rows: Json[]) => void> = {
 
 const REJECT = new Set([
   'supplier_link_queue()',
+  'supplier_area_accounts(uuid)',
   'revoke_supplier_account(uuid,text)',
   'portal_request_link(jsonb)',
   'portal_find_supplier(text,text)',
