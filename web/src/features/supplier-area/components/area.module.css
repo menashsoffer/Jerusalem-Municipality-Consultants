@@ -44,6 +44,10 @@
       color: var(--color-badge-warning-text);
       font-weight: 700;
     }
+    & li:is([data-state='expired'], [data-state='rejected'], [data-state='missing']) .until {
+      color: var(--color-error);
+      font-weight: 700;
+    }
     & li[data-state='ended'] {
       color: var(--color-muted);
     }

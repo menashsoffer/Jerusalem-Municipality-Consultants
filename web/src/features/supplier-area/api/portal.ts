@@ -126,16 +126,17 @@ const EXTENSION: Record<string, string> = {
   'image/png': 'png',
 };
 
+/** The file name in the bucket: a fresh id and the extension of its type. */
+export const fileName = (file: Pick<File, 'type'>, id: string) =>
+  `${id}.${EXTENSION[file.type] ?? 'bin'}`;
+
 /** Where a person's proof goes: only their own folder accepts it (storage policy). */
 export function proofPath(userId: string, file: Pick<File, 'type'>, id: string): string {
-  return `link-proofs/${userId}/${id}.${EXTENSION[file.type] ?? 'bin'}`;
+  return `link-proofs/${userId}/${fileName(file, id)}`;
 }
 
-/** Uploads a proof file to the private bucket and returns its path. */
-export async function uploadProof(file: File, upload: typeof fetch = fetch): Promise<string> {
-  const userId = tokenUserId(sessionToken());
-  if (!userId) throw new DataError(401);
-  const path = proofPath(userId, file, crypto.randomUUID());
+/** Uploads a file to the private bucket at `path`; the storage policy decides who may. */
+export async function uploadFile(path: string, file: File, upload: typeof fetch = fetch) {
   const response = await upload(`${SUPABASE_URL}/storage/v1/object/supplier-documents/${path}`, {
     method: 'POST',
     headers: {
@@ -146,6 +147,14 @@ export async function uploadProof(file: File, upload: typeof fetch = fetch): Pro
     body: file,
   });
   if (!response.ok) throw await failedResponse(response);
+}
+
+/** Uploads a proof file to the private bucket and returns its path. */
+export async function uploadProof(file: File, upload: typeof fetch = fetch): Promise<string> {
+  const userId = tokenUserId(sessionToken());
+  if (!userId) throw new DataError(401);
+  const path = proofPath(userId, file, crypto.randomUUID());
+  await uploadFile(path, file, upload);
   return path;
 }
 

@@ -68,11 +68,11 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
   },
   {
     to: '/supplier-links',
-    title: 'שיוכים לאזור האישי',
-    description: 'ספקים שביקשו להיכנס לאזור האישי',
+    title: 'שיוכים ומסמכים',
+    description: 'ספקים שביקשו להיכנס, ומסמכים שהעלו',
     roles: [],
     group: 'work',
-    waiting: { key: 'supplier_links_pending', one: 'שיוך אחד לבדיקה', many: 'שיוכים לבדיקה' },
+    waiting: { key: 'supplier_links_pending', one: 'פריט אחד לבדיקה', many: 'פריטים לבדיקה' },
   },
   {
     to: '/supplier/new',

@@ -1268,6 +1268,53 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "supplier_documents": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "kind": string;
+      "storage_path": string;
+      "valid_until": string;
+      "status": string;
+      "account_id": string | null;
+      "reviewed_by": string | null;
+      "reviewed_at": string | null;
+      "review_note": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "kind": string;
+      "storage_path": string;
+      "valid_until": string;
+      "status"?: string;
+      "account_id"?: string | null;
+      "reviewed_by"?: string | null;
+      "reviewed_at"?: string | null;
+      "review_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "kind"?: string;
+      "storage_path"?: string;
+      "valid_until"?: string;
+      "status"?: string;
+      "account_id"?: string | null;
+      "reviewed_by"?: string | null;
+      "reviewed_at"?: string | null;
+      "review_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "supplier_identifiers": {
     Row: {
       "id": string;

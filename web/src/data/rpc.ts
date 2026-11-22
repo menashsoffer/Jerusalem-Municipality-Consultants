@@ -80,6 +80,17 @@ interface AdminRpc {
   supplier_area_accounts: { target: string };
   portal_propose_change: { change: SupplierChange };
   portal_changes: { supplier_id: string };
+  portal_documents: { supplier_id: string };
+  portal_save_document: {
+    document: { supplier_id: string; kind: string; storage_path: string; valid_until: string };
+  };
+  supplier_document_queue: Record<string, never>;
+  decide_supplier_document: {
+    document_id: string;
+    approve: boolean;
+    note: string | null;
+    corrected_until: string | null;
+  };
   check_supplier_change: { change: SupplierChange };
   submit_supplier_change: { change: SupplierChange };
   decide_supplier_change: { request_id: string; approve: boolean; note: string | null };
@@ -133,6 +144,10 @@ declare module '../database.types.ts' {
     supplier_area_accounts: { Args: AdminRpc['supplier_area_accounts']; Returns: unknown };
     portal_propose_change: { Args: AdminRpc['portal_propose_change']; Returns: unknown };
     portal_changes: { Args: AdminRpc['portal_changes']; Returns: unknown };
+    portal_documents: { Args: AdminRpc['portal_documents']; Returns: unknown };
+    portal_save_document: { Args: AdminRpc['portal_save_document']; Returns: unknown };
+    supplier_document_queue: { Args: AdminRpc['supplier_document_queue']; Returns: unknown };
+    decide_supplier_document: { Args: AdminRpc['decide_supplier_document']; Returns: null };
   }
 }
 const accessSchema = z.object({

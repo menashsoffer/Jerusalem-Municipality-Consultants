@@ -64,13 +64,18 @@ export const CONTACT_LABELS: Record<string, string> = {
   contact_person: 'איש קשר',
 };
 
+/** The calendar day `days` after `day` (both YYYY-MM-DD). */
+export function plusDays(day: string, days: number): string {
+  const date = new Date(`${day}T00:00:00Z`);
+  date.setUTCDate(date.getUTCDate() + days);
+  return date.toISOString().slice(0, 10);
+}
+
 /** "בתוקף עד", "הסתיים", or "מסתיים בקרוב" for a registration end date. */
 export function validity(until: string | null, today: string): 'open' | 'soon' | 'ended' | 'valid' {
   if (!until) return 'open';
   if (until < today) return 'ended';
-  const soon = new Date(`${today}T00:00:00Z`);
-  soon.setUTCDate(soon.getUTCDate() + 60);
-  return until <= soon.toISOString().slice(0, 10) ? 'soon' : 'valid';
+  return until <= plusDays(today, 60) ? 'soon' : 'valid';
 }
 
 export interface ProposalFields {

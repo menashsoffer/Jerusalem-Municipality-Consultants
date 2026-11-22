@@ -1,11 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen, within } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import * as rpc from '../../../data/rpc.ts';
 import { DataError, refusal } from '../../../data/client.ts';
-import { SupplierLinksPage } from '../links-page.tsx';
+import { SupplierLinksPage, loader } from '../links-page.tsx';
 import { proofUrl, type SupplierLink } from '../api/links.ts';
+import type { QueuedDocument } from '../api/documents.ts';
 
 const LINK: SupplierLink = {
   id: 'p',
@@ -33,10 +34,11 @@ const MATCHED: SupplierLink = {
   phone: null,
 };
 
-function show(links: SupplierLink[]) {
+function show(links: SupplierLink[], documents: QueuedDocument[] = []) {
+  const data = { links, documents };
   const router = createMemoryRouter(
-    [{ id: 'links', path: '/', Component: SupplierLinksPage, loader: () => links }],
-    { hydrationData: { loaderData: { links } } },
+    [{ id: 'links', path: '/', Component: SupplierLinksPage, loader: () => data }],
+    { hydrationData: { loaderData: { links: data } } },
   );
   render(<RouterProvider router={router} />);
   for (const dialog of document.querySelectorAll('dialog')) dialog.setAttribute('open', '');
@@ -67,7 +69,7 @@ afterEach(() => {
 describe('the supplier links queue', () => {
   it('says when nothing waits', () => {
     show([]);
-    expect(screen.getByText('אין שיוכים לבדיקה')).toBeDefined();
+    expect(screen.getByText('אין שיוכים ומסמכים לבדיקה')).toBeDefined();
   });
 
   it('groups waiting links and email matches, and approves a waiting one', async () => {
@@ -138,6 +140,75 @@ describe('the supplier links queue', () => {
     vi.spyOn(rpc, 'freshToken').mockRejectedValue(new DataError(401));
     show([LINK]);
     await userEvent.click(screen.getByRole('button', { name: 'פתיחת ההוכחה' }));
+    expect(await screen.findByRole('alert')).toBeDefined();
+  });
+});
+
+const DOC: QueuedDocument = {
+  id: 'd1',
+  supplier_id: 's1',
+  supplier_name: 'ספק',
+  kind: 'insurance',
+  valid_until: '2027-06-30',
+  created_at: '2026-11-22T08:00:00Z',
+  storage_path: 's1/d1.pdf',
+};
+
+describe('the documents queue', () => {
+  it('approves a document with a corrected date', async () => {
+    vi.spyOn(rpc, 'requireRoles').mockResolvedValue({} as rpc.Identity);
+    const call = answer((name) => (name === 'supplier_document_queue' ? [] : null));
+    show([], [DOC]);
+    const queue = screen.getByRole('region', { name: 'מסמכים לבדיקה' });
+    expect(within(queue).getByText('אישור קיום ביטוחים')).toBeDefined();
+    const form = screen.getByRole('form', { name: 'בדיקת אישור קיום ביטוחים של ספק' });
+    const until = within(form).getByLabelText(/בתוקף עד/);
+    fireEvent.change(until, { target: { value: '2027-05-31' } });
+    await userEvent.click(within(form).getByRole('button', { name: 'אישור' }));
+    expect(call).toHaveBeenCalledWith(
+      'decide_supplier_document',
+      { document_id: 'd1', approve: true, note: null, corrected_until: '2027-05-31' },
+      expect.anything(),
+    );
+  });
+
+  it('asks a reason to reject', async () => {
+    vi.spyOn(rpc, 'requireRoles').mockResolvedValue({} as rpc.Identity);
+    const call = answer((name) => (name === 'supplier_document_queue' ? [] : null));
+    show([], [DOC]);
+    const form = screen.getByRole('form', { name: 'בדיקת אישור קיום ביטוחים של ספק' });
+    await userEvent.click(within(form).getByRole('button', { name: 'דחייה' }));
+    expect(await within(form).findByText(/צריך לכתוב סיבה לדחייה/)).toBeDefined();
+    await userEvent.type(within(form).getByLabelText(/סיבה לדחייה/), 'לא קריא');
+    await userEvent.click(within(form).getByRole('button', { name: 'דחייה' }));
+    expect(call).toHaveBeenCalledWith(
+      'decide_supplier_document',
+      { document_id: 'd1', approve: false, note: 'לא קריא', corrected_until: null },
+      expect.anything(),
+    );
+  });
+
+  it('keeps the date as uploaded when it is not changed', async () => {
+    vi.spyOn(rpc, 'requireRoles').mockResolvedValue({} as rpc.Identity);
+    const call = answer((name) => (name === 'supplier_document_queue' ? [] : null));
+    show([], [DOC]);
+    const form = screen.getByRole('form', { name: 'בדיקת אישור קיום ביטוחים של ספק' });
+    await userEvent.click(within(form).getByRole('button', { name: 'אישור' }));
+    expect(call).toHaveBeenCalledWith(
+      'decide_supplier_document',
+      { document_id: 'd1', approve: true, note: null, corrected_until: null },
+      expect.anything(),
+    );
+  });
+
+  it('opens the file and loads both queues for the screen', async () => {
+    vi.spyOn(rpc, 'requireRoles').mockResolvedValue({} as rpc.Identity);
+    answer((name) => (name === 'supplier_document_queue' ? [DOC] : [LINK]));
+    const result = await loader();
+    expect(result).toEqual({ links: [LINK], documents: [DOC] });
+    vi.spyOn(rpc, 'freshToken').mockRejectedValue(new DataError(401));
+    show([], [DOC]);
+    await userEvent.click(screen.getByRole('button', { name: 'פתיחת הקובץ' }));
     expect(await screen.findByRole('alert')).toBeDefined();
   });
 });
