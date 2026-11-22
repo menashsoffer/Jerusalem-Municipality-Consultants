@@ -4,7 +4,7 @@ export const candidateSchema = z.object({
   supplier_id: z.string(),
   scheme: z.enum(['company', 'nonprofit', 'vat_dealer', 'personal_id']),
   value: z.string().regex(/^[0-9]{5,9}$/),
-  source: z.enum(['companies_registrar', 'guidestar', 'pool_file']),
+  source: z.enum(['companies_registrar', 'nonprofits_registrar', 'guidestar', 'pool_file']),
   registrar_name: z.string().nullable(),
   registrar_status: z.string().nullable(),
   searched_name: z.string(),
@@ -13,6 +13,7 @@ export const candidateSchema = z.object({
 export type Candidate = z.infer<typeof candidateSchema>;
 export const SOURCES = {
   companies_registrar: 'רשם החברות',
+  nonprofits_registrar: 'רשם העמותות',
   guidestar: 'GuideStar — רשם העמותות',
   pool_file: 'קובץ מאגר מאוחד (לא נבדק מול רשם)',
 };
