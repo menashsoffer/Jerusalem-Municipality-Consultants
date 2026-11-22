@@ -51,6 +51,7 @@ function ShortlistBar() {
       <div className={styles.shortlistActions}>
         <Button
           variant="quiet"
+          data-usage="shortlist.clear"
           onClick={() => {
             replaceShortlist([]);
           }}

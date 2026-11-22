@@ -83,12 +83,11 @@ describe('session renewal requests', () => {
 });
 
 describe('request builders', () => {
-  it('builds the activity and telemetry requests with the token', () => {
-    const events = site.eventRequest('tok', []);
-    assert.match(events.url, /\/rest\/v1\/activity_events$/);
-    assert.equal((events.init.headers as Record<string, string>).Authorization, 'Bearer tok');
-    assert.equal((events.init.headers as Record<string, string>).Prefer, 'return=minimal');
-    const telemetry = site.telemetryRequest('tok', []);
+  it('builds the monitoring and usage requests with the token', () => {
+    const usage = site.eventRpcRequest('record_usage_events', 'tok', []);
+    assert.match(usage.url, /\/rpc\/record_usage_events$/);
+    assert.equal((usage.init.headers as Record<string, string>).Authorization, 'Bearer tok');
+    const telemetry = site.eventRpcRequest('record_web_telemetry', 'tok', []);
     assert.match(telemetry.url, /\/rpc\/record_web_telemetry$/);
     assert.deepEqual(requestBody(telemetry.init), { events: [] });
   });

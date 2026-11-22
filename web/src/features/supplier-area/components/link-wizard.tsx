@@ -15,6 +15,7 @@ import {
 } from '../api/portal.ts';
 import { proofProblem, readIdentifier } from '../model/portal-model.ts';
 import styles from './area.module.css';
+import { reportStep } from '../../../lib/usage-signal.ts';
 
 interface Found {
   supplier_id: string;
@@ -22,6 +23,7 @@ interface Found {
 }
 type Step =
   { kind: 'number' } | { kind: 'confirm'; found: Found } | { kind: 'proof'; found: Found };
+const STEP_ORDER: readonly Step['kind'][] = ['number', 'confirm', 'proof'];
 interface Result {
   error: string;
   next?: Step;
@@ -74,8 +76,10 @@ function useStep(step: Step, setStep: (next: Step) => void, proof: File | null) 
           : step.kind === 'confirm'
             ? await confirm(step.found)
             : await sendProof(step.found, proof);
-      if (result.next) setStep(result.next);
-      else if (!result.error) await revalidate();
+      if (result.next) {
+        setStep(result.next);
+        reportStep(STEP_ORDER.indexOf(result.next.kind) + 1);
+      } else if (!result.error) await revalidate();
       return result.error;
     } catch (failure) {
       return errorText(failure);
@@ -156,7 +160,7 @@ export function LinkWizard() {
       {error && <Notice tone="error" title={error} />}
       <StepFields step={step} onProof={setProof} number={number} />
       <FormActions>
-        <Button type="submit" pending={pending} pendingLabel="בודק…">
+        <Button type="submit" pending={pending} pendingLabel="בודק…" data-usage="portal.link">
           {SUBMIT[step.kind]}
         </Button>
         {step.kind !== 'number' && (

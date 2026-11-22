@@ -1208,7 +1208,7 @@ export interface PublicSchema {
       "contact_kind": string | null;
       "contact_id": string | null;
       "old_value": string | null;
-      "new_value": string;
+      "new_value": string | null;
       "reason": string | null;
       "checks": Json;
       "outcome": string;
@@ -1229,7 +1229,7 @@ export interface PublicSchema {
       "contact_kind"?: string | null;
       "contact_id"?: string | null;
       "old_value"?: string | null;
-      "new_value": string;
+      "new_value"?: string | null;
       "reason"?: string | null;
       "checks": Json;
       "outcome": string;
@@ -1250,7 +1250,7 @@ export interface PublicSchema {
       "contact_kind"?: string | null;
       "contact_id"?: string | null;
       "old_value"?: string | null;
-      "new_value"?: string;
+      "new_value"?: string | null;
       "reason"?: string | null;
       "checks"?: Json;
       "outcome"?: string;
@@ -1637,6 +1637,85 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+    };
+  };
+  "usage_daily": {
+    Row: {
+      "day": string;
+      "role": string;
+      "kind": string;
+      "screen": string;
+      "action": string;
+      "step": number;
+      "events": number;
+      "visitors": number;
+      "visits": number;
+      "duration_ms": number;
+    };
+    Insert: {
+      "day": string;
+      "role": string;
+      "kind": string;
+      "screen": string;
+      "action"?: string;
+      "step"?: number;
+      "events": number;
+      "visitors": number;
+      "visits": number;
+      "duration_ms"?: number;
+    };
+    Update: {
+      "day"?: string;
+      "role"?: string;
+      "kind"?: string;
+      "screen"?: string;
+      "action"?: string;
+      "step"?: number;
+      "events"?: number;
+      "visitors"?: number;
+      "visits"?: number;
+      "duration_ms"?: number;
+    };
+  };
+  "usage_events": {
+    Row: {
+      "id": number;
+      "visit_id": string;
+      "visitor_key": string;
+      "role": string;
+      "kind": string;
+      "screen": string;
+      "action": string | null;
+      "step": number | null;
+      "duration_ms": number | null;
+      "device": string;
+      "created_at": string;
+    };
+    Insert: {
+      "id"?: never;
+      "visit_id": string;
+      "visitor_key": string;
+      "role": string;
+      "kind": string;
+      "screen": string;
+      "action"?: string | null;
+      "step"?: number | null;
+      "duration_ms"?: number | null;
+      "device": string;
+      "created_at"?: string;
+    };
+    Update: {
+      "id"?: never;
+      "visit_id"?: string;
+      "visitor_key"?: string;
+      "role"?: string;
+      "kind"?: string;
+      "screen"?: string;
+      "action"?: string | null;
+      "step"?: number | null;
+      "duration_ms"?: number | null;
+      "device"?: string;
+      "created_at"?: string;
     };
   };
   "venue_specs": {

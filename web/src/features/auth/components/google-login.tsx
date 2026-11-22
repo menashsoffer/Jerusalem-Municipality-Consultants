@@ -47,6 +47,7 @@ export function GoogleLogin() {
         className={styles.google}
         pending={pending}
         pendingLabel="מעביר ל-Google…"
+        data-usage="login.google"
       >
         <GoogleMark />
         כניסה באמצעות Google

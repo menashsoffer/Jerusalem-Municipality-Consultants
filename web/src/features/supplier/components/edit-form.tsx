@@ -8,10 +8,10 @@ import { StatusMessage } from '../../../ui/status-message.tsx';
 import { runEdit, START, type EditState } from '../api/edit-flow.ts';
 import { reasonNeeded, waitsForDecision } from '../model/change-checks.ts';
 import { CONTACT_KINDS, ENTITY_KINDS } from '../model/labels.ts';
-import { contactLabel, sortContacts } from '../model/contact-order.ts';
+import { sortContacts } from '../model/contact-order.ts';
 import { contactField, KIND, NAME, NEW_KIND, NEW_VALUE, REASON } from '../model/edit-form.ts';
 import { ChangeResults } from './change-results.tsx';
-import { KindIcon } from './kind-icon.tsx';
+import { ContactRow } from './contact-row.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -34,21 +34,7 @@ function Contacts({ data, errors, typed }: ContactsProps) {
     <fieldset className={styles.fieldset}>
       <legend>פרטי קשר</legend>
       {current.map((item) => (
-        // The icon sits beside the label: a phone, a mobile, an envelope (Menash, 22.11).
-        <div key={item.id} className={styles.contactField}>
-          <KindIcon kind={item.kind} value={item.value} />
-          <FormField
-            field={{
-              label: contactLabel(item.kind, item.value),
-              error: errors[contactField(item.id)],
-            }}
-            input={{
-              name: contactField(item.id),
-              defaultValue: typed[contactField(item.id)] ?? item.value,
-              maxLength: 500,
-            }}
-          />
-        </div>
+        <ContactRow key={item.id} item={item} error={errors[contactField(item.id)]} typed={typed} />
       ))}
       <div className={styles.newContact}>
         {/* A select keeps its choice through a form reset; a new key restores the typed one. */}
@@ -139,7 +125,7 @@ export function EditForm({ data, admin = false, aside }: Props) {
         />
       )}
       <div className={styles.dialogActions}>
-        <Button type="submit" pending={pending}>
+        <Button type="submit" pending={pending} data-usage="supplier.save">
           {saveLabel(state, admin)}
         </Button>
         {aside}

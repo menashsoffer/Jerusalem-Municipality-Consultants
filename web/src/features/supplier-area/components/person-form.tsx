@@ -65,7 +65,7 @@ export function PersonForm({ person }: { person: PortalPerson | null }) {
         />
       ))}
       <FormActions>
-        <Button type="submit" pending={pending} pendingLabel="שומר…">
+        <Button type="submit" pending={pending} pendingLabel="שומר…" data-usage="portal.person">
           שמירה והמשך
         </Button>
       </FormActions>

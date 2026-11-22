@@ -143,7 +143,12 @@ export function ProposeFix({ supplierId, target }: { supplierId: string; target:
           {state.error && <Notice tone="error" title={state.error} />}
           <Fields target={target} typed={state} />
           <FormActions>
-            <Button type="submit" pending={pending} pendingLabel="שולח…">
+            <Button
+              type="submit"
+              pending={pending}
+              pendingLabel="שולח…"
+              data-usage="portal.propose"
+            >
               שליחה לבדיקה
             </Button>
           </FormActions>

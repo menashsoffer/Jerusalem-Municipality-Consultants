@@ -17,7 +17,7 @@ function NoResults({ reset }: Pick<Props, 'reset'>) {
     <EmptyState title="לא נמצאו ספקים">
       <p>אפשר לשנות את החיפוש או את המסננים.</p>
       {reset && (
-        <Button variant="secondary" onClick={reset}>
+        <Button variant="secondary" onClick={reset} data-usage="catalog.reset">
           ניקוי החיפוש והמסננים
         </Button>
       )}

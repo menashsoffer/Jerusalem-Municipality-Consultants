@@ -76,18 +76,19 @@ export function ShortlistTools(props: Props) {
           <Button
             pending={tools.recording}
             pendingLabel="רושם פנייה…"
+            data-usage="request.approach"
             onClick={() => void tools.approach()}
           >
             רישום פנייה לספקים
           </Button>
         )}
-        <Button variant="secondary" onClick={() => void tools.bcc()}>
+        <Button variant="secondary" onClick={() => void tools.bcc()} data-usage="request.bcc">
           העתקת כתובות ל-BCC
         </Button>
-        <Button variant="secondary" onClick={() => void tools.csv()}>
+        <Button variant="secondary" onClick={() => void tools.csv()} data-usage="request.export">
           ייצוא לקובץ
         </Button>
-        <Button variant="secondary" onClick={() => void tools.share()}>
+        <Button variant="secondary" onClick={() => void tools.share()} data-usage="request.share">
           העתקת קישור
         </Button>
       </FormActions>

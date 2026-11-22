@@ -26,7 +26,8 @@ describe('admin screens by role', () => {
     assert.deepEqual(paths(access(['editor'])), ['/supplier/new']);
     assert.deepEqual(paths(access(['auditor'])), ['/load-control']);
     assert.ok(paths(access(['unit_manager'])).includes('/users'));
-    assert.equal(paths(access(['admin'])).length, 8);
+    assert.equal(paths(access(['admin'])).length, 9);
+    assert.ok(paths(access(['admin'])).includes('/usage'));
   });
 
   it('gives nothing to someone whose access is not active', () => {

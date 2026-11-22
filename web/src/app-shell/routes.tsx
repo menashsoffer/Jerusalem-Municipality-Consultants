@@ -148,6 +148,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'usage',
+        handle: { title: 'שימוש באתר' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/usage/usage-page.tsx');
+          return { Component: m.UsagePage, loader: m.loader };
+        },
+      },
+      {
         path: 'auth',
         handle: { title: 'כניסה והרשאות' },
         errorElement: <ScreenError />,

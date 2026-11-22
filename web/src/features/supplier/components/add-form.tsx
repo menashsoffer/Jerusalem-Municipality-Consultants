@@ -245,7 +245,7 @@ export function AddForm({ context }: { context: WriteContext }) {
       </div>
       <Fields key={result.saved} context={context} />
       <FormActions>
-        <Button type="submit" pending={pending} pendingLabel="שומר…">
+        <Button type="submit" pending={pending} pendingLabel="שומר…" data-usage="supplier.add">
           הוספת הספק
         </Button>
         <Link to="/catalog" className={controls.quiet}>

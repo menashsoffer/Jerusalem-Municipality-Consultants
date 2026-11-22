@@ -149,6 +149,13 @@ const CALLS: Record<string, [string, Expect]> = {
     'email'`,
     'reject',
   ],
+  // Suppliers report usage like staff; the server stores their role only.
+  'record_usage_events(jsonb)': [
+    `'[{"visit_id":"70000000-0000-0000-0000-000000000001","kind":"visit_start",` +
+      `"screen":"supplier-area","device":"mobile"}]'::jsonb`,
+    () => undefined,
+  ],
+  'usage_summary(date,date,text)': [`current_date, current_date, null`, 'reject'],
   'rename_supplier(jsonb)': [json({ supplier_id: SUPPLIER, display_name: 'שם אחר' }), 'reject'],
   'replace_supplier_contact(jsonb)': [
     json({ supplier_id: SUPPLIER, kind: 'phone', value: '0527654321' }),

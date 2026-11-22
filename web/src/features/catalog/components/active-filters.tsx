@@ -35,7 +35,7 @@ export function ActiveFilters({ filters, suppliers, remove, clear }: Props) {
           </li>
         ))}
       </ul>
-      <Button variant="quiet" onClick={clear}>
+      <Button variant="quiet" onClick={clear} data-usage="catalog.clear-filters">
         ניקוי הכול
       </Button>
     </div>
