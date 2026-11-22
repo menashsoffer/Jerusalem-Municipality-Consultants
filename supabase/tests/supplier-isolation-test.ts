@@ -36,9 +36,12 @@ const READABLE: Record<string, (rows: Json[]) => void> = {
 const REJECT = new Set([
   'addresses_to_check()',
   'cancel_access_change(uuid)',
+  'cancel_supplier_change(uuid)',
+  'check_supplier_change(jsonb)',
   'decide_access_change(uuid,boolean,text)',
   'decide_category_request(uuid,text,text,uuid)',
   'decide_identifier_candidate(uuid,boolean)',
+  'decide_supplier_change(uuid,boolean,text)',
   'decide_threshold_proposal(uuid,boolean,text)',
   'error_summary()',
   'grant_role(uuid,text,uuid)',
@@ -56,6 +59,7 @@ const REJECT = new Set([
   'revoke_role(uuid)',
   'route_check_preview_input(jsonb,date)',
   'set_supplier_status(uuid,jsonb)',
+  'submit_supplier_change(jsonb)',
 ]);
 
 // Calls that need real arguments: with nulls they would fail on input before the access check.
