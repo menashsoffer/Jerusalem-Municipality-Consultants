@@ -1159,6 +1159,65 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "supplier_change_requests": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "change_kind": string;
+      "contact_kind": string | null;
+      "contact_id": string | null;
+      "old_value": string | null;
+      "new_value": string;
+      "reason": string | null;
+      "checks": Json;
+      "outcome": string;
+      "status": string;
+      "decided_by": string | null;
+      "decided_at": string | null;
+      "decision_note": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "change_kind": string;
+      "contact_kind"?: string | null;
+      "contact_id"?: string | null;
+      "old_value"?: string | null;
+      "new_value": string;
+      "reason"?: string | null;
+      "checks": Json;
+      "outcome": string;
+      "status": string;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
+      "decision_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "change_kind"?: string;
+      "contact_kind"?: string | null;
+      "contact_id"?: string | null;
+      "old_value"?: string | null;
+      "new_value"?: string;
+      "reason"?: string | null;
+      "checks"?: Json;
+      "outcome"?: string;
+      "status"?: string;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
+      "decision_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "supplier_contacts": {
     Row: {
       "id": string;
