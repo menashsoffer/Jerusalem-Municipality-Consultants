@@ -17,6 +17,7 @@ import {
   type Options,
 } from '../model/filter-groups.ts';
 import styles from './catalog.module.css';
+import { usage } from '../../../lib/usage-signal.ts';
 
 interface Props {
   filters: Filters;
@@ -34,6 +35,7 @@ function Control({ name, options, ...props }: Props & { name: FilterKey; options
     <SelectField
       field={{ label: LABELS[name] }}
       select={{
+        ...usage(`catalog.filter.${name}`),
         value: filters[name],
         disabled,
         onChange: (e) => {
@@ -63,6 +65,7 @@ function Toggles({ filters, toggle }: Pick<Props, 'filters' | 'toggle'>) {
   return TOGGLES.map(({ key, label }) => (
     <label key={key} className={styles.toggle}>
       <input
+        data-usage={`catalog.toggle.${key}`}
         type="checkbox"
         checked={filters[key]}
         onChange={(e) => {
@@ -82,7 +85,9 @@ function Sheet({ title, keys, ...props }: Props & { title: string; keys: readonl
         <Toggles filters={props.filters} toggle={props.toggle} />
       </div>
       <div className={styles.sheetActions}>
-        <Button command={{ target: SHEET, action: 'close' }}>הצגת התוצאות</Button>
+        <Button data-usage="catalog.filters-apply" command={{ target: SHEET, action: 'close' }}>
+          הצגת התוצאות
+        </Button>
       </div>
     </Dialog>
   );
@@ -93,6 +98,7 @@ function Opener({ label, count }: { label: string; count: number }) {
     <Button
       variant="secondary"
       className={styles.moreButton}
+      data-usage="catalog.filters-open"
       command={{ target: SHEET, action: 'show-modal' }}
     >
       {label}

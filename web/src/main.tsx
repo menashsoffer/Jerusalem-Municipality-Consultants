@@ -7,9 +7,8 @@ import { prepareAdmin } from './features/auth/api/bootstrap.ts';
 import { PageLoader } from './ui/logo-dots.tsx';
 import { setAdminSession, getAdminSession, installKeeper } from './data/rpc.ts';
 import { browserKeeper, endedStart, watchSession } from './app-shell/session-watch.ts';
-import { getAccess, telemetryRequest } from './data/site.ts';
+import { eventRpcRequest, getAccess } from './data/site.ts';
 import { EventBatcher } from './lib/tracker.ts';
-import { observeVitals } from './lib/vitals.ts';
 import { setTelemetryReporter, reportBoundaryError } from './lib/telemetry.ts';
 import type { TelemetryEvent } from './lib/vitals-model.ts';
 import './styles/fonts.css';
@@ -24,23 +23,12 @@ const batcher = new EventBatcher<TelemetryEvent>(window, (events) => {
   const session = getAdminSession(),
     access = getAccess();
   return session && session.exp > Date.now() && access?.member && access.state === 'active'
-    ? telemetryRequest(session.token, events)
+    ? eventRpcRequest('record_web_telemetry', session.token, events)
     : null;
 });
 setTelemetryReporter((event) => {
   batcher.add(event);
 });
-observeVitals(
-  window,
-  (event) => {
-    batcher.add(event);
-  },
-  {
-    flush: () => {
-      batcher.flush();
-    },
-  },
-);
 const mounted = createRoot(root, {
   onUncaughtError: (error) => {
     reportBoundaryError(error, 'root');
@@ -63,6 +51,10 @@ try {
   if (start) window.history.replaceState(null, '', `#${start}`);
   const router = createAdminRouter();
   watchSession(keeper, router);
+  // Speed and usage tracking load after the first screen, outside the initial bundle.
+  void import('./data/monitoring.ts').then((m) => {
+    m.startMonitoring({ win: window, router, telemetry: batcher });
+  });
   mounted.render(
     <StrictMode>
       <AppRouter router={router} />

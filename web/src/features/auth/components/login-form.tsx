@@ -17,7 +17,7 @@ export function LoginForm() {
           maxLength: 320,
         }}
       />
-      <Button type="submit" pending={pending} pendingLabel="שולח קישור…">
+      <Button type="submit" pending={pending} pendingLabel="שולח קישור…" data-usage="login.email">
         שליחת קישור כניסה
       </Button>
       <StatusMessage>{pending ? '' : state.message}</StatusMessage>
