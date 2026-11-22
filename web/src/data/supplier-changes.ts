@@ -8,6 +8,7 @@ export type ChangeKind = 'rename' | 'entity_kind' | 'contact';
 export interface SupplierChange {
   supplier_id: string;
   kind: ChangeKind;
+  /** An empty value on a contact change with a contact_id deletes that contact. */
   value: string;
   contact_kind?: string;
   contact_id?: string;
@@ -41,7 +42,8 @@ export const changeRequestSchema = z.object({
   change_kind: z.enum(['rename', 'entity_kind', 'contact']),
   contact_kind: z.string().nullable(),
   old_value: z.string().nullable(),
-  new_value: z.string(),
+  /** Null when the change deletes a contact. */
+  new_value: z.string().nullable(),
   reason: z.string().nullable(),
   checks: z.array(checkSchema),
   created_at: z.string(),
