@@ -246,26 +246,17 @@ export interface Identity {
   userId: string;
   access: Access;
 }
-function unauthorized(error: unknown): boolean {
-  return error instanceof DataError && error.status === 401;
-}
 /** Runs a request with a fresh token, and once more with a renewed token after a 401. */
 async function authorized<T>(request: (token: string) => Promise<T>): Promise<T> {
   const token = await freshToken();
   try {
     return await request(token);
   } catch (error) {
-    if (!unauthorized(error)) throw error;
+    if (!(error instanceof DataError && error.status === 401)) throw error;
     const renewed = await recoverSession(token);
     if (!renewed) throw error;
     return request(renewed);
   }
-}
-async function validated<T>(
-  request: (token: string) => Promise<unknown>,
-  schema: ZodType<T>,
-): Promise<T> {
-  return schema.parse(await authorized(request));
 }
 /** All roles come from the existing server access loader, never from JWT app_metadata. */
 let pendingIdentity: Promise<Identity> | null = null;
@@ -292,9 +283,11 @@ export async function rpc<K extends keyof AdminRpc, T>(
   args: AdminRpc[K],
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated((token) => data(token).rpc(name, args), schema).catch((error: unknown) => {
+  try {
+    return schema.parse(await authorized((token) => data(token).rpc(name, args)));
+  } catch (error) {
     throw tagRequest(error, name);
-  });
+  }
 }
 /** A signed-in person's own access request (RLS policy profiles_signup). */
 export async function insertProfile(row: PublicSchema['profiles']['Insert']): Promise<void> {
@@ -305,7 +298,7 @@ export async function rows<T>(
   filters: Record<string, string>,
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated((token) => data(token).list(table, filters), schema);
+  return schema.parse(await authorized((token) => data(token).list(table, filters)));
 }
 type PortalPerson = PublicSchema['portal_people']['Insert'];
 /** The signed-in person's own supplier-side details (RLS portal_people_*_own). */
