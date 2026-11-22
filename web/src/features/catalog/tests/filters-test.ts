@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { optionsFor, emptyFilters, changeFilter, reconcile } from '../model/filters.ts';
 import { restoreFilters, saveFilters } from '../model/saved-filters.ts';
+import { clearKeys } from '../model/filter-groups.ts';
 describe('catalog filter choices', () => {
   it('deduplicates roots and offers children only under the selected root', () => {
     const options = optionsFor(suppliers(), { registry: 'r1', category: 'root' });
@@ -55,5 +56,26 @@ describe('saved catalog search', () => {
     assert.equal(restoreFilters('c', fresh), null);
     values.set('catalog-filters:d', '{broken');
     assert.equal(restoreFilters('d', fresh), null);
+  });
+});
+
+describe('clearing the filters dialog', () => {
+  it('clears only the given filters and both toggles', () => {
+    const set = {
+      ...emptyFilters('2026-11-22'),
+      query: 'ספק',
+      registry: 'r1',
+      category: 'root',
+      subcategory: 'c1',
+      showInactive: true,
+      showClosed: true,
+    };
+    const next = clearKeys(set, ['category', 'subcategory']);
+    assert.equal(next.registry, 'r1');
+    assert.equal(next.query, 'ספק');
+    assert.equal(next.category, '');
+    assert.equal(next.subcategory, '');
+    assert.equal(next.showInactive, false);
+    assert.equal(next.showClosed, false);
   });
 });

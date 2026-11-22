@@ -35,20 +35,54 @@
   .moreButton {
     white-space: nowrap;
   }
+  /* The filters dialog (DESIGN.md 6.6): two columns on a computer, one on a phone; the fields sit
+     close together, the display toggles in their own soft box, and a footer that stays in view. */
   .sheetFilters {
     display: grid;
-    gap: 0 var(--space-lg);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-lg);
+    inline-size: 33rem;
+    max-inline-size: 100%;
+    & > div {
+      margin-block: 0;
+    }
+    @media (width < 40rem) {
+      grid-template-columns: minmax(0, 1fr);
+      inline-size: auto;
+    }
+  }
+  .sheetToggles {
+    display: grid;
+    gap: 0;
+    margin: var(--space-xl) 0 0;
+    padding: var(--space-xs) var(--space-lg);
+    border: var(--border-width) solid var(--color-brand-line);
+    border-radius: var(--radius-control);
+    background: var(--color-brand-soft);
+    & legend {
+      float: inline-start;
+      inline-size: 100%;
+      padding: var(--space-sm) 0 0;
+      font-weight: var(--font-weight-label);
+    }
   }
   /* Stays in view at the bottom of a long sheet. */
   .sheetActions {
     position: sticky;
     inset-block-end: calc(-1 * var(--space-xl));
     display: flex;
-    justify-content: end;
-    margin: var(--space-md) calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl));
-    padding: var(--space-md) var(--space-xl) var(--space-xl);
+    flex-wrap: wrap;
+    gap: var(--space-md);
+    margin: var(--space-xl) calc(-1 * var(--space-xl)) calc(-1 * var(--space-xl));
+    padding: var(--space-md) var(--space-xl);
     border-block-start: var(--border-width) solid var(--color-border);
     background: var(--color-surface);
+    @media (width < 40rem) {
+      flex-wrap: nowrap;
+      & > :first-child {
+        flex: 1 1 auto;
+      }
+    }
   }
   /* Active filters as tags with their own ×, then "ניקוי הכול" (spec 1.4). */
   .active {
