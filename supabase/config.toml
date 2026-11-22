@@ -446,3 +446,7 @@ verify_jwt = false
 # would also refuse the browser's CORS preflight, which carries no token.
 [functions.supplier-change-check]
 verify_jwt = false
+
+# Called by the daily schedule without a token; takes no input (see its index.ts).
+[functions.registry-recheck]
+verify_jwt = false
