@@ -99,23 +99,55 @@
     background: var(--color-subtle);
     color: var(--color-muted);
   }
-  .columns {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-lg);
-    align-items: flex-start;
+  /* Page body: the wide column holds the registries, waiting changes and history; the side
+     column holds the short cards and runs the full height beside them. Rows have no gap, so a
+     missing section (no waiting changes, no history for non-admins) leaves no empty space. */
+  .layout {
+    display: grid;
+    grid-template-areas:
+      'listings side'
+      'pending  side'
+      'history  side';
+    grid-template-rows: auto auto 1fr;
+    grid-template-columns: minmax(0, 1fr) minmax(18rem, 22rem);
+    column-gap: var(--space-lg);
+    align-items: start;
     margin-block-start: var(--space-lg);
+    @media (width < 48rem) {
+      grid-template-areas: 'listings' 'pending' 'side' 'history';
+      grid-template-rows: auto;
+      grid-template-columns: minmax(0, 1fr);
+    }
+    & > * {
+      min-inline-size: 0;
+    }
+    & > :not(:empty) {
+      margin-block-end: var(--space-lg);
+    }
   }
   .main {
-    flex: 999 1 34rem;
     min-inline-size: 0;
+  }
+  .listingsArea {
+    grid-area: listings;
+  }
+  .pendingArea {
+    grid-area: pending;
+    & h2 {
+      margin-block-start: 0;
+    }
+    & > section > article + article {
+      margin-block-start: var(--space-md);
+    }
+  }
+  .historyArea {
+    grid-area: history;
   }
   .side {
     display: flex;
-    flex: 1 1 20rem;
+    grid-area: side;
     flex-direction: column;
     gap: var(--space-lg);
-    min-inline-size: 0;
   }
   .listing {
     display: flex;
@@ -220,7 +252,6 @@
     }
   }
   .wide {
-    margin-block-start: var(--space-lg);
     & h3 {
       margin-block: var(--space-lg) var(--space-sm);
       color: var(--color-muted);

@@ -24,8 +24,23 @@ export function SupplierDetails({ data, today, editor = false, admin = false, pe
   return (
     <>
       <SupplierHeader data={data} editor={editor || admin} />
-      <div className={styles.columns}>
-        <Listings data={data} today={today} />
+      {/* Two columns on a computer (DESIGN.md 6.5): the registries, waiting changes and history on
+          the wide side, the short cards beside them, so neither column is left half empty. On a
+          phone the DOM order is the reading order of spec section 5. */}
+      <div className={styles.layout}>
+        <div className={styles.listingsArea}>
+          <Listings data={data} today={today} />
+        </div>
+        {pending && (
+          <div className={styles.pendingArea}>
+            <PendingChanges
+              changes={pending.changes}
+              userId={pending.userId}
+              admin={admin}
+              editor={editor}
+            />
+          </div>
+        )}
         <div className={styles.side}>
           <ContactCard contacts={data.contacts} />
           <IdentityCard data={data} />
@@ -34,16 +49,10 @@ export function SupplierDetails({ data, today, editor = false, admin = false, pe
             <AreaInvite data={data} admin={admin} />
           )}
         </div>
+        <div className={styles.historyArea}>
+          <History audit={data.audit} />
+        </div>
       </div>
-      {pending && (
-        <PendingChanges
-          changes={pending.changes}
-          userId={pending.userId}
-          admin={admin}
-          editor={editor}
-        />
-      )}
-      <History audit={data.audit} />
       {(editor || admin) && <EditDialog data={data} editor={editor} admin={admin} today={today} />}
     </>
   );
