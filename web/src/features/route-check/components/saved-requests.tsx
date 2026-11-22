@@ -145,7 +145,7 @@ function RequestDialogs({
       </Dialog>
       <Dialog id={REQUEST_APPROACHES} title={titled('approaches', chosen)}>
         {request && chosen.mode === 'approaches' && (
-          <RequestApproaches key={request.id} requestId={request.id} />
+          <RequestApproaches key={request.id} requestId={request.id} today={today} />
         )}
       </Dialog>
       <Dialog id={CANCEL_REQUEST} title={titled('cancel', chosen)}>

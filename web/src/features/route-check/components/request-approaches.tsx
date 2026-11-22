@@ -13,10 +13,13 @@ import {
   answerText,
   CHANNEL_LABELS,
   comparable,
+  extendRange,
   opensOn,
+  recordable,
   shortDay,
   VAT_RATE,
 } from '../model/approaches.ts';
+import { ExtendDeadline, RecordAnswer } from './approach-staff.tsx';
 
 export const REQUEST_APPROACHES = 'request-approaches';
 
@@ -26,7 +29,7 @@ const COLUMNS = [
   { id: 'sent', label: 'נשלחה' },
   { id: 'due', label: 'מועד' },
   { id: 'answer', label: 'תשובה' },
-  { id: 'file', label: 'קובץ', actions: true },
+  { id: 'file', label: 'פעולות', actions: true },
 ];
 
 /** Opened offers first, cheapest first (compared with VAT); the rest keep their order. */
@@ -58,7 +61,31 @@ function FileButton({ path, supplier }: { path: string; supplier: string }) {
   );
 }
 
-function rowsOf(list: RequestApproach[]) {
+interface Rows {
+  list: RequestApproach[];
+  today: string;
+  record: (row: RequestApproach) => void;
+}
+
+function Action({ row, today, record }: Omit<Rows, 'list'> & { row: RequestApproach }) {
+  if (row.answer?.file_path) {
+    return <FileButton path={row.answer.file_path} supplier={row.supplier_name} />;
+  }
+  if (!recordable(row, today)) return null;
+  return (
+    <Button
+      variant="quiet"
+      aria-label={`רישום תשובה של ${row.supplier_name}`}
+      onClick={() => {
+        record(row);
+      }}
+    >
+      רישום תשובה
+    </Button>
+  );
+}
+
+function rowsOf({ list, ...actions }: Rows) {
   return ordered(list).map((row) => ({
     id: row.id,
     cells: {
@@ -67,9 +94,7 @@ function rowsOf(list: RequestApproach[]) {
       sent: shortDay(row.approached_on),
       due: row.respond_by ? shortDay(row.respond_by) : 'בלי מועד',
       answer: answerText(row.answer),
-      file: row.answer?.file_path ? (
-        <FileButton path={row.answer.file_path} supplier={row.supplier_name} />
-      ) : null,
+      file: <Action row={row} {...actions} />,
     },
   }));
 }
@@ -91,7 +116,8 @@ function Notes({ list }: { list: RequestApproach[] }) {
 
 type Loaded = { list: RequestApproach[]; error: string } | null;
 
-export function RequestApproaches({ requestId }: { requestId: string }) {
+/** The request's approaches, fetched again whenever `round` changes. */
+function useApproaches(requestId: string, round: number): Loaded {
   const [loaded, setLoaded] = useState<Loaded>(null);
   useEffect(() => {
     let live = true;
@@ -106,7 +132,92 @@ export function RequestApproaches({ requestId }: { requestId: string }) {
     return () => {
       live = false;
     };
-  }, [requestId]);
+  }, [requestId, round]);
+  return loaded;
+}
+
+type Open = { kind: 'record'; row: RequestApproach } | { kind: 'extend' } | null;
+
+interface Props {
+  requestId: string;
+  today: string;
+}
+
+function StaffForm({
+  open,
+  list,
+  ...props
+}: Props & Done & { open: Open; list: RequestApproach[] }) {
+  const range = extendRange(list, props.today);
+  if (open?.kind === 'record') return <RecordAnswer key={open.row.id} row={open.row} {...props} />;
+  if (open?.kind === 'extend' && range) return <ExtendDeadline range={range} {...props} />;
+  return null;
+}
+
+interface Done {
+  done: (message: string) => void;
+  cancel: () => void;
+}
+
+function ExtendButton({ open }: { open: () => void }) {
+  return (
+    <Button variant="secondary" onClick={open}>
+      הארכת המועד
+    </Button>
+  );
+}
+
+function ApproachList({
+  list,
+  reload,
+  ...props
+}: Props & { list: RequestApproach[]; reload: () => void }) {
+  const [open, setOpen] = useState<Open>(null);
+  const [message, setMessage] = useState('');
+  const choose = (next: Open) => {
+    setMessage('');
+    setOpen(next);
+  };
+  const done = (text: string) => {
+    setOpen(null);
+    setMessage(text);
+    reload();
+  };
+  const record = (row: RequestApproach) => {
+    choose({ kind: 'record', row });
+  };
+  return (
+    <>
+      <Notes list={list} />
+      <StatusMessage>{message}</StatusMessage>
+      {!open && extendRange(list, props.today) && (
+        <ExtendButton
+          open={() => {
+            choose({ kind: 'extend' });
+          }}
+        />
+      )}
+      <DataTable
+        caption="פניות ותשובות"
+        columns={COLUMNS}
+        rows={rowsOf({ list, today: props.today, record })}
+      />
+      <StaffForm
+        open={open}
+        list={list}
+        {...props}
+        done={done}
+        cancel={() => {
+          choose(null);
+        }}
+      />
+    </>
+  );
+}
+
+export function RequestApproaches(props: Props) {
+  const [round, setRound] = useState(0);
+  const loaded = useApproaches(props.requestId, round);
   if (!loaded) return <StatusMessage>טוען פניות…</StatusMessage>;
   if (loaded.error) return <Notice tone="error" title={loaded.error} />;
   if (!loaded.list.length)
@@ -116,9 +227,12 @@ export function RequestApproaches({ requestId }: { requestId: string }) {
       </EmptyState>
     );
   return (
-    <>
-      <Notes list={loaded.list} />
-      <DataTable caption="פניות ותשובות" columns={COLUMNS} rows={rowsOf(loaded.list)} />
-    </>
+    <ApproachList
+      list={loaded.list}
+      {...props}
+      reload={() => {
+        setRound((n) => n + 1);
+      }}
+    />
   );
 }

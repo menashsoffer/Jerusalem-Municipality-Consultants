@@ -11,7 +11,11 @@ import { DataError } from './client.ts';
 import { tagRequest } from '../lib/telemetry.ts';
 import type { SupplierChange } from './supplier-changes.ts';
 
+/** An approach answer, from the supplier area or recorded by staff. */
 type AnswerParts = Partial<Record<'offer_amount' | 'file_path' | 'decline_reason', string>> & {
+  approach_id: string;
+  answer: 'offer' | 'declined';
+  note: string;
   offer_includes_vat?: boolean;
 };
 
@@ -44,12 +48,7 @@ interface AdminRpc {
   };
   update_engagement_request: {
     request: string;
-    draft: {
-      subject: string;
-      estimated_value: number;
-      value_includes_vat: boolean;
-      requested_exemption: string | null;
-    };
+    draft: Omit<AdminRpc['create_engagement_request']['draft'], 'unit_id'>;
   };
   cancel_engagement_request: { request: string; note: string };
   record_supplier_approaches: {
@@ -59,6 +58,8 @@ interface AdminRpc {
     respond_by: string | null;
   };
   request_approaches: { request_id: string };
+  record_approach_answer: { answer: AnswerParts & { received_on: string } };
+  extend_approach_deadline: { request: string; respond_by: string; reason: string };
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
   error_summary: Record<string, never>;
@@ -108,9 +109,7 @@ interface AdminRpc {
   };
   portal_members: { supplier_id: string };
   portal_approaches: { supplier_id: string };
-  portal_answer_approach: {
-    answer: { approach_id: string; answer: 'offer' | 'declined'; note: string } & AnswerParts;
-  };
+  portal_answer_approach: { answer: AnswerParts };
   portal_withdraw_answer: { response_id: string };
   portal_invite_member: { invite: { supplier_id: string; email: string; role: string } };
   portal_cancel_invite: { invite_id: string };
@@ -148,6 +147,8 @@ declare module '../database.types.ts' {
     cancel_engagement_request: { Args: AdminRpc['cancel_engagement_request']; Returns: null };
     record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
     request_approaches: { Args: AdminRpc['request_approaches']; Returns: unknown };
+    record_approach_answer: { Args: AdminRpc['record_approach_answer']; Returns: unknown };
+    extend_approach_deadline: { Args: AdminRpc['extend_approach_deadline']; Returns: number };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
     error_summary: { Args: AdminRpc['error_summary']; Returns: unknown };
     error_cases: { Args: AdminRpc['error_cases']; Returns: unknown };

@@ -105,7 +105,7 @@ describe('request approaches', () => {
     vi.spyOn(api, 'loadRequestApproaches').mockResolvedValue([
       row('a', { sealed: true, answer: offer(null, null) }),
     ]);
-    render(<RequestApproaches requestId="r1" />);
+    render(<RequestApproaches requestId="r1" today="2026-11-24" />);
     expect(await screen.findByText('ההצעות ייפתחו ב-30.11.2026 ב-00:00.')).toBeDefined();
     expect(screen.getByRole('table').textContent).toContain('הגיש הצעה');
     expect(screen.queryByText(/לצורך השוואה/u)).toBeNull();
@@ -118,7 +118,7 @@ describe('request approaches', () => {
     ]);
     const open = vi.spyOn(window, 'open').mockReturnValue(null);
     const sign = vi.spyOn(files, 'signedFileUrl').mockResolvedValue('https://signed');
-    render(<RequestApproaches requestId="r1" />);
+    render(<RequestApproaches requestId="r1" today="2026-11-24" />);
     const [, first] = await screen.findAllByRole('row');
     expect(first?.textContent).toContain('ספק b');
     expect(first?.textContent).toContain('בלי מועד');
@@ -135,18 +135,18 @@ describe('request approaches', () => {
       row('a', { answer: offer(10, true, 'p') }),
     ]);
     vi.spyOn(files, 'signedFileUrl').mockRejectedValue(new Error('x'));
-    render(<RequestApproaches requestId="r1" />);
+    render(<RequestApproaches requestId="r1" today="2026-11-24" />);
     await userEvent.click(await screen.findByRole('button', { name: /פתיחת קובץ/u }));
     expect(await screen.findByText(/תקלה במערכת/u)).toBeDefined();
   });
 
   it('shows an empty list and a failure', async () => {
     const load = vi.spyOn(api, 'loadRequestApproaches').mockResolvedValueOnce([]);
-    render(<RequestApproaches requestId="r1" />);
+    render(<RequestApproaches requestId="r1" today="2026-11-24" />);
     expect(await screen.findByText('עוד לא נרשמו פניות')).toBeDefined();
     cleanup();
     load.mockRejectedValueOnce(new Error('x'));
-    render(<RequestApproaches requestId="r2" />);
+    render(<RequestApproaches requestId="r2" today="2026-11-24" />);
     expect(await screen.findByRole('alert')).toBeDefined();
   });
 });

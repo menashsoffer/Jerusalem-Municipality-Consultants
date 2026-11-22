@@ -71,3 +71,50 @@ export function shortDay(value: string): string {
 
 /** The day after the deadline, when sealed offers open. */
 export const opensOn = (respondBy: string) => shortDay(plusDays(respondBy, 1));
+
+const AMOUNT = /^\d{1,9}(\.\d{1,2})?$/;
+
+/** An amount as typed, without thousands commas. */
+export const cleanAmount = (raw: string) => raw.trim().replaceAll(',', '');
+
+/** The same rule the database keeps: positive, up to two decimals. */
+export function amountProblem(raw: string): string | null {
+  const value = cleanAmount(raw);
+  return AMOUNT.test(value) && Number(value) > 0
+    ? null
+    : 'כתבו סכום חיובי בספרות, עם עד שתי ספרות אחרי הנקודה.';
+}
+
+interface Recordable {
+  channel: Channel;
+  approached_on: string;
+  respond_by: string | null;
+  answer: unknown;
+}
+
+/** Staff record an answer that came outside the area while the approach is open (spec 6.3). */
+export function recordable(row: Recordable, today: string): boolean {
+  return row.channel !== 'portal' && !row.answer && (!row.respond_by || today <= row.respond_by);
+}
+
+/** The day the answer came: from the approach day to today, and not after the deadline. */
+export function receivedRange(row: Recordable, today: string) {
+  const max = row.respond_by && row.respond_by < today ? row.respond_by : today;
+  return { min: row.approached_on, max };
+}
+
+/** The days a deadline may move to: after the latest open one, from tomorrow up to 90 days. */
+export function extendRange(
+  rows: readonly { respond_by: string | null; sealed: boolean }[],
+  today: string,
+): { min: string; max: string } | null {
+  const [latest] = rows
+    .filter((row) => row.sealed)
+    .map((row) => row.respond_by ?? '')
+    .sort()
+    .reverse();
+  if (!latest) return null;
+  const after = plusDays(latest, 1);
+  const tomorrow = plusDays(today, 1);
+  return { min: after > tomorrow ? after : tomorrow, max: plusDays(today, 90) };
+}
