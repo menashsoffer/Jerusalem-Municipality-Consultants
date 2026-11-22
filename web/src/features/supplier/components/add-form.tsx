@@ -4,7 +4,6 @@ import type { RegistryOption, WriteContext } from '../../../data/write-context.t
 import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { SelectField } from '../../../ui/select-field.tsx';
-import { StatusMessage } from '../../../ui/status-message.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import controls from '../../../ui/control.module.css';
@@ -14,6 +13,7 @@ import { parseAddForm, fieldsOf, versionLabel } from '../model/add-form.ts';
 import { duplicates } from '../model/duplicates.ts';
 import { ENTITY_KINDS, ID_TYPES } from '../model/labels.ts';
 import { DuplicateChoices } from './duplicate-choices.tsx';
+import { SaveStatus } from './save-status.tsx';
 import styles from './supplier.module.css';
 
 interface Result {
@@ -252,10 +252,7 @@ export function AddForm({ context }: { context: WriteContext }) {
           ביטול
         </Link>
       </FormActions>
-      {/* The button already shows "שומר…"; this copy is only for a screen reader. */}
-      <div className={styles.visuallyHidden}>
-        <StatusMessage>{pending ? 'שומר…' : ''}</StatusMessage>
-      </div>
+      <SaveStatus pending={pending} saving="שומר…" />
     </form>
   );
 }

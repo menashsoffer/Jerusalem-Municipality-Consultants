@@ -4,9 +4,9 @@ import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { check, statusForm, type FieldErrors } from '../../../lib/rules/forms.ts';
 import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
-import { StatusMessage } from '../../../ui/status-message.tsx';
 import { IDLE, saveAndRefresh, status, type SaveResult } from '../api/write.ts';
 import { formText } from '../model/add-form.ts';
+import { SaveStatus } from './save-status.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -100,7 +100,7 @@ export function StatusPanel({ data, today, cancel }: Props) {
           ביטול
         </Button>
       </div>
-      <StatusMessage>{pending ? 'שומר…' : state.message}</StatusMessage>
+      <SaveStatus pending={pending} saving="שומר…" message={state.message} />
       {state.error && <p role="alert">{state.error}</p>}
     </form>
   );

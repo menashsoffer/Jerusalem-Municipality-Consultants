@@ -60,7 +60,7 @@ export function Sources({ data }: Props) {
     ].filter((id): id is string => typeof id === 'string'),
   );
   const links = data.documents.flatMap((item) => {
-    const url = ids.has(item.id) ? safeSourceUrl(item.url) : null;
+    const url = ids.has(item.id) && item.url ? safeSourceUrl(item.url) : null;
     return url ? [url] : [];
   });
   if (!links.length) return null;
