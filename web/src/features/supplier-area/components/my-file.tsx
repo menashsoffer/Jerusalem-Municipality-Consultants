@@ -1,10 +1,12 @@
 import { dayOf } from '../../../lib/dates.ts';
+import type { Approach } from '../api/approaches.ts';
 import type { Members } from '../api/members.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
 import type { KindRow } from '../model/documents.ts';
 import { missingTasks, orderedMemberships } from '../model/missing.ts';
 import { CONTACT_LABELS, SCHEME_LABELS, validity } from '../model/portal-model.ts';
 import { MissingTasks } from './missing-tasks.tsx';
+import { MyApproaches } from './my-approaches.tsx';
 import { MyDocuments } from './my-documents.tsx';
 import { MyRequests } from './my-requests.tsx';
 import { OurPeople } from './our-people.tsx';
@@ -125,18 +127,20 @@ interface Props {
   proposals: Proposal[];
   documents: KindRow[];
   members: Members | null;
+  approaches: Approach[];
   today: string;
 }
 
 /** "התיק שלי" (spec 6.3): how the municipality sees the supplier, and fixes to propose. */
-export function MyFile({ file, proposals, documents, members, today }: Props) {
+export function MyFile({ file, proposals, documents, members, approaches, today }: Props) {
   return (
     <>
       <header className={styles.title}>
         <h1 tabIndex={-1}>{file.name}</h1>
         <p className={styles.muted}>{file.role === 'owner' ? 'מורשה ספק' : 'עובד ספק'}</p>
       </header>
-      <MissingTasks tasks={missingTasks({ file, proposals, documents }, today)} />
+      <MissingTasks tasks={missingTasks({ file, proposals, documents, approaches }, today)} />
+      <MyApproaches supplierId={file.id} approaches={approaches} today={today} />
       <Details file={file} proposals={proposals} />
       <Memberships file={file} today={today} />
       <MyDocuments supplierId={file.id} rows={documents} today={today} />

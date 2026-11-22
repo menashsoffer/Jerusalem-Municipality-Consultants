@@ -8,8 +8,8 @@ import { cleanIds, replaceShortlist, shortlistIds } from '../../../lib/shortlist
 import { pickedSupplier, type PickedSupplier } from '../model/engagement.ts';
 import type { Draft } from '../model/result.ts';
 import type { Channel } from '../model/approaches.ts';
-import '../../../lib/errors/approach-reasons.ts';
 import { savedChanged } from './saved.ts';
+import '../model/approach-reasons.ts';
 
 const lastSchema = z.array(z.object({ supplier_id: z.string(), last_on: z.iso.date() }));
 

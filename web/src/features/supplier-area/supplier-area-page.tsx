@@ -9,6 +9,7 @@ import {
   type Proposal,
   type SupplierFile,
 } from './api/portal.ts';
+import { loadApproaches, type Approach } from './api/approaches.ts';
 import { loadDocuments } from './api/documents.ts';
 import { loadMembers, type Members } from './api/members.ts';
 import { documentRows, type KindRow } from './model/documents.ts';
@@ -29,6 +30,7 @@ interface AreaData {
   proposals: Proposal[];
   documents: KindRow[];
   members: Members | null;
+  approaches: Approach[];
   today: string;
 }
 
@@ -40,14 +42,19 @@ export async function loader(): Promise<AreaData | Response> {
   const first = activeAccounts(me)[0];
   const id = step === 'file' ? first?.supplier_id : undefined;
   const today = israelToday();
-  if (!id) return { me, step, file: null, proposals: [], documents: [], members: null, today };
-  const [file, proposals, list, members] = await Promise.all([
+  if (!id) {
+    const empty = { proposals: [], documents: [], members: null, approaches: [] };
+    return { me, step, file: null, ...empty, today };
+  }
+  const [file, proposals, list, members, approaches] = await Promise.all([
     loadFile(id),
     loadProposals(id),
     loadDocuments(id),
     first?.role === 'owner' ? loadMembers(id) : null,
+    loadApproaches(id),
   ]);
-  return { me, step, file, proposals, documents: documentRows(list, today), members, today };
+  const documents = documentRows(list, today);
+  return { me, step, file, proposals, documents, members, approaches, today };
 }
 
 function Start({ me, step }: { me: PortalMe; step: AreaStep }) {

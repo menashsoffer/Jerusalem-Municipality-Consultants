@@ -10,6 +10,10 @@ import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
 import type { SupplierChange } from './supplier-changes.ts';
 
+type AnswerParts = Partial<Record<'offer_amount' | 'file_path' | 'decline_reason', string>> & {
+  offer_includes_vat?: boolean;
+};
+
 interface AdminRpc {
   decide_threshold_proposal: { proposal: string; approve: boolean; note?: string | null };
   decide_profile: { target_user: string; decision: 'active' | 'rejected'; note: string | null };
@@ -101,6 +105,11 @@ interface AdminRpc {
     corrected_until: string | null;
   };
   portal_members: { supplier_id: string };
+  portal_approaches: { supplier_id: string };
+  portal_answer_approach: {
+    answer: { approach_id: string; answer: 'offer' | 'declined'; note: string } & AnswerParts;
+  };
+  portal_withdraw_answer: { response_id: string };
   portal_invite_member: { invite: { supplier_id: string; email: string; role: string } };
   portal_cancel_invite: { invite_id: string };
   portal_remove_member: { account_id: string };
@@ -170,6 +179,9 @@ declare module '../database.types.ts' {
     supplier_document_queue: { Args: AdminRpc['supplier_document_queue']; Returns: unknown };
     decide_supplier_document: { Args: AdminRpc['decide_supplier_document']; Returns: null };
     portal_members: { Args: AdminRpc['portal_members']; Returns: unknown };
+    portal_approaches: { Args: AdminRpc['portal_approaches']; Returns: unknown };
+    portal_answer_approach: { Args: AdminRpc['portal_answer_approach']; Returns: unknown };
+    portal_withdraw_answer: { Args: AdminRpc['portal_withdraw_answer']; Returns: null };
     portal_invite_member: { Args: AdminRpc['portal_invite_member']; Returns: string };
     portal_cancel_invite: { Args: AdminRpc['portal_cancel_invite']; Returns: null };
     portal_remove_member: { Args: AdminRpc['portal_remove_member']; Returns: null };

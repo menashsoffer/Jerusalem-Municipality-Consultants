@@ -1,12 +1,14 @@
 // "מה חסר לי" and the order of "המאגרים שלי" (supplier-portal-spec-he.md 6.3), without the network.
 import { dayOf } from '../../../lib/dates.ts';
+import type { Approach } from '../api/approaches.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
+import { waitingTaskText } from './approaches.ts';
 import { documentsTaskText, type KindRow } from './documents.ts';
 import { plusDays, validity } from './portal-model.ts';
 
 /** The section a task card moves to; each is the id of that section's heading. */
 export type TaskTarget =
-  'details-title' | 'requests-title' | 'registries-title' | 'documents-title';
+  'details-title' | 'requests-title' | 'registries-title' | 'documents-title' | 'approaches-title';
 
 export interface Task {
   key: string;
@@ -74,15 +76,23 @@ function documentsTask(rows: KindRow[]): Task | null {
   return text ? { key: 'documents', text, target: 'documents-title' } : null;
 }
 
+function approachesTask(approaches: readonly Approach[]): Task | null {
+  const text = waitingTaskText(approaches);
+  return text ? { key: 'approaches', text, target: 'approaches-title' } : null;
+}
+
 export interface FileState {
   file: SupplierFile;
   proposals: Proposal[];
   documents: KindRow[];
+  approaches?: readonly Approach[];
 }
 
 /** Up to three things the supplier should look at, most urgent first; empty when all is well. */
-export function missingTasks({ file, proposals, documents }: FileState, today: string): Task[] {
+export function missingTasks(state: FileState, today: string): Task[] {
+  const { file, proposals, documents, approaches = [] } = state;
   const tasks = [
+    approachesTask(approaches),
     endingTask(file.memberships, today),
     documentsTask(documents),
     rejectedTask(proposals, today),
