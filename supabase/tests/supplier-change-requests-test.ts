@@ -207,4 +207,20 @@ describe('supplier change requests', () => {
       /^42501/,
     );
   });
+
+  it('lets no signed-in user skip the checks through the older write functions', async () => {
+    const calls = [
+      ['rename_supplier', { supplier_id: SUPPLIER, display_name: 'שם בלי בדיקה' }],
+      ['replace_supplier_contact', { supplier_id: SUPPLIER, kind: 'phone', value: '02-6297777' }],
+    ] as const;
+    for (const user of [USERS.admin, USERS.editor]) {
+      for (const [name, payload] of calls) {
+        const sql = `select public.${name}($1::jsonb)`;
+        const result = await as(db, user, () => failure(db.query(sql, [JSON.stringify(payload)])));
+        assert.match(result, /^42501.*permission denied/, `${name} by ${user}`);
+      }
+    }
+    const gone = await db.query("select to_regprocedure('public.update_supplier(jsonb)') as fn");
+    assert.equal((gone.rows[0] as { fn: string | null }).fn, null);
+  });
 });

@@ -187,9 +187,9 @@ it('returns the id of a supplier write and rejects any other answer', async () =
     assert.deepEqual(requestBody(init), { payload: { a: '1' } });
     return Promise.resolve(Response.json('id-1'));
   });
-  assert.equal(await saved.supplierWrite('update_supplier', { a: '1' }), 'id-1');
+  assert.equal(await saved.supplierWrite('save_supplier_membership', { a: '1' }), 'id-1');
   const odd = api(() => Promise.resolve(Response.json({ id: 1 })));
-  await assert.rejects(odd.supplierWrite('update_supplier', {}), DataError);
+  await assert.rejects(odd.supplierWrite('save_supplier_membership', {}), DataError);
 });
 
 it('confirms an update or a delete only when rows came back', async () => {

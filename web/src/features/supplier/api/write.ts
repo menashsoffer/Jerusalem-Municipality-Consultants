@@ -1,14 +1,7 @@
 import { rpc, freshToken, z } from '../../../data/rpc.ts';
-import {
-  loadSnapshot,
-  saveMembership,
-  updateSupplier,
-  writeContext,
-  type SupplierUpdate,
-} from '../../../data/site.ts';
+import { loadSnapshot, saveMembership, writeContext } from '../../../data/site.ts';
 import type { WriteContext } from '../../../data/write-context.ts';
 import { refreshScreen, type Key } from '../../../data/screen-data.ts';
-import { requestAddressCheck } from './address-check.ts';
 
 export interface SaveResult {
   message: string;
@@ -44,13 +37,6 @@ export async function saveAndRefresh(
   }
   return { message: typeof saved === 'string' ? saved : saved(answer), error: '' };
 }
-
-/** Name and contacts in one transaction; the database checks the same rules again. */
-export const update = (payload: SupplierUpdate) => async (token: string) => {
-  const saved = await updateSupplier(token, payload);
-  if (payload.contacts.some((contact) => contact.kind === 'address')) requestAddressCheck();
-  return saved;
-};
 
 export interface StatusChange {
   active: boolean;

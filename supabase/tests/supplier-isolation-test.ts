@@ -139,10 +139,6 @@ const CALLS: Record<string, [string, Expect]> = {
     `'${REQUEST}', ${json({ subject: 'שינוי' })}`,
     'reject',
   ],
-  'update_supplier(jsonb)': [
-    json({ supplier_id: SUPPLIER, display_name: 'שם אחר', contacts: [] }),
-    'reject',
-  ],
 };
 
 const RELATIONS = `select c.relname as name from pg_class c

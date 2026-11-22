@@ -5,7 +5,7 @@ import type { PGlite } from '@electric-sql/pglite';
 
 import { RULE_CASES } from '../../web/src/lib/rules/tests/rule-cases.ts';
 import { ACCESS_FIXTURE, SUPPLIER, UNIT_1, USERS, VERSION } from './access-fixture.ts';
-import { as, migratedDatabase } from './pglite.ts';
+import { as, asOwnerFor, migratedDatabase } from './pglite.ts';
 
 async function rejection(db: PGlite, sql: string, params: unknown[] = []): Promise<string> {
   try {
@@ -36,8 +36,8 @@ describe('validation rules in the database', () => {
     }
   });
 
-  it('refuses junk contacts and names from a signed-in editor', async () => {
-    await as(db, USERS.admin, async () => {
+  it('refuses junk contacts and names even when the change functions call them', async () => {
+    await asOwnerFor(db, USERS.admin, async () => {
       const contact = 'select public.replace_supplier_contact($1::jsonb)';
       const phone = JSON.stringify({ supplier_id: SUPPLIER, kind: 'phone', value: 'שטויות' });
       assert.equal(await rejection(db, contact, [phone]), 'invalid:bad_phone');
@@ -80,57 +80,6 @@ describe('validation rules in the database', () => {
     const insert = `insert into public.supplier_contacts (supplier_id, kind, value)
       values ($1::uuid, 'phone', '02-6297111 שלוחה 3')`;
     assert.equal(await rejection(db, insert, [SUPPLIER]), '');
-  });
-});
-
-describe('one save for the edit dialog', () => {
-  let db: PGlite;
-  before(async () => {
-    db = await migratedDatabase();
-    await db.exec(ACCESS_FIXTURE);
-  });
-  after(async () => {
-    await db.close();
-  });
-  const update = 'select public.update_supplier($1::jsonb)';
-
-  it('stores the name and contacts together, or nothing when one part is wrong', async () => {
-    await as(db, USERS.admin, async () => {
-      const bad = {
-        supplier_id: SUPPLIER,
-        display_name: 'שם חדש לגמרי',
-        contacts: [
-          { contact_id: '', kind: 'email', value: 'office@example.co.il' },
-          { contact_id: '', kind: 'phone', value: '123' },
-        ],
-      };
-      assert.equal(await rejection(db, update, [JSON.stringify(bad)]), 'invalid:bad_phone');
-      const names = await db.query('select 1 from public.suppliers where display_name = $1', [
-        'שם חדש לגמרי',
-      ]);
-      assert.equal(names.rows.length, 0);
-      const good = { ...bad, contacts: [{ contact_id: '', kind: 'phone', value: '02-6297777' }] };
-      assert.equal(await rejection(db, update, [JSON.stringify(good)]), '');
-      const stored = await db.query<{ value: string }>(
-        "select value from public.supplier_contacts where supplier_id = $1::uuid and kind = 'phone'",
-        [SUPPLIER],
-      );
-      assert.deepEqual(
-        stored.rows.map((row) => row.value),
-        ['02-6297777'],
-      );
-    });
-  });
-
-  it('refuses unknown fields and anyone who may not edit the supplier', async () => {
-    const extra = JSON.stringify({ supplier_id: SUPPLIER, contacts: [], note: 'x' });
-    await as(db, USERS.admin, async () => {
-      assert.equal(await rejection(db, update, [extra]), 'Invalid supplier input');
-    });
-    const rename = JSON.stringify({ supplier_id: SUPPLIER, display_name: 'שם אחר', contacts: [] });
-    await as(db, USERS.viewer, async () => {
-      assert.notEqual(await rejection(db, update, [rename]), '');
-    });
   });
 });
 
