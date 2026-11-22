@@ -74,6 +74,10 @@ const REJECT = new Set([
   // A linked supplier may propose or record a file; null input fails on its shape first.
   'portal_propose_change(jsonb)',
   'portal_save_document(jsonb)',
+  // An owner manages the supplier's people; null input finds no supplier, invite or link.
+  'portal_invite_member(jsonb)',
+  'portal_cancel_invite(uuid)',
+  'portal_remove_member(uuid)',
 ]);
 
 // Calls that need real arguments: with nulls they would fail on input before the access check.
@@ -118,6 +122,12 @@ const CALLS: Record<string, [string, Expect]> = {
     `'${SUPPLIER}'`,
     (v) => {
       assert.deepEqual((v as Json).documents, []);
+    },
+  ],
+  'portal_members(uuid)': [
+    `'${SUPPLIER}'`,
+    (v) => {
+      assert.equal(((v as Json).members as Json[]).length, 1);
     },
   ],
   'portal_supplier(uuid)': [
