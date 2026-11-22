@@ -12,18 +12,41 @@ export const REASON = 'change_reason';
 export const NEW_KIND = 'new_kind';
 export const NEW_VALUE = 'new_value';
 export const contactField = (id: string) => `contact:${id}`;
+/** Set to "1" by the trash can beside a contact: save deletes it. */
+export const removeField = (id: string) => `remove:${id}`;
 
 type Contact = SupplierDetail['contacts'][number];
 export type EditResult =
   { changes: SupplierChange[] } | { errors: FieldErrors } | { unchanged: true };
 
+const removed = (form: FormData, item: Contact) => formText(form, removeField(item.id)) === '1';
+
+/** A deletion is a contact change with an empty value (migration 20261123000000). */
+function removals(form: FormData, supplierId: string, current: readonly Contact[]) {
+  return current
+    .filter((item) => removed(form, item))
+    .map((item): SupplierChange => ({
+      supplier_id: supplierId,
+      kind: 'contact',
+      contact_kind: item.kind,
+      contact_id: item.id,
+      value: '',
+    }));
+}
+
 /** Which inputs the contacts in the request came from, so an error lands on its field. */
 function contactRows(form: FormData, current: readonly Contact[]) {
-  const rows = current.map((item) => ({
-    field: contactField(item.id),
-    contact: { contact_id: item.id, kind: item.kind, value: formText(form, contactField(item.id)) },
-    before: item.value,
-  }));
+  const rows = current
+    .filter((item) => !removed(form, item))
+    .map((item) => ({
+      field: contactField(item.id),
+      contact: {
+        contact_id: item.id,
+        kind: item.kind,
+        value: formText(form, contactField(item.id)),
+      },
+      before: item.value,
+    }));
   const value = formText(form, NEW_VALUE);
   const kind = formText(form, NEW_KIND);
   if (value || kind) {
@@ -81,5 +104,6 @@ export function parseEditForm(form: FormData, data: SupplierDetail): EditResult 
     changes.push({ supplier_id: id, kind: 'entity_kind', value: kind });
   }
   changes.push(...contactChanges(id, checked.value.contacts, rows));
+  changes.push(...removals(form, id, current));
   return changes.length === 0 ? { unchanged: true } : { changes };
 }

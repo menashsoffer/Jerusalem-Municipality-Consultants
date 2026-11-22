@@ -1,6 +1,12 @@
 import type { Outcome } from '../../../data/supplier-changes.ts';
 import { Notice, type NoticeTone } from '../../../ui/notice.tsx';
-import { changeLabel, changeValue, checkText, type CheckedChange } from '../model/change-checks.ts';
+import {
+  changeLabel,
+  changeValue,
+  checkText,
+  isRemoval,
+  type CheckedChange,
+} from '../model/change-checks.ts';
 
 const TONE: Record<Outcome, NoticeTone> = { green: 'success', yellow: 'warning', red: 'error' };
 const TITLE: Record<Outcome, string> = {
@@ -22,11 +28,15 @@ export function ChangeResults({ checked, admin }: Props) {
       {checked.map(({ change, result }) => {
         const outcome = admin && result.outcome === 'yellow' ? 'green' : result.outcome;
         const label = changeLabel(change.kind, change.contact_kind);
+        // A deletion names the detail in its check, so the title only says what is deleted.
+        const subject = isRemoval(change.kind, change.value)
+          ? `מחיקת ${label}`
+          : `${label} (${changeValue(change.kind, change.value)})`;
         return (
           <Notice
             key={`${change.kind}:${change.contact_id ?? change.contact_kind ?? ''}:${change.value}`}
             tone={TONE[result.outcome]}
-            title={`${label} (${changeValue(change.kind, change.value)}): ${TITLE[outcome]}`}
+            title={`${subject}: ${TITLE[outcome]}`}
           >
             {result.checks.map(checkText).join(' ')}
           </Notice>
