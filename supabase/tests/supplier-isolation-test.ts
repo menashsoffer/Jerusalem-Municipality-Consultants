@@ -1,0 +1,189 @@
+// A supplier account must get nothing from the staff side (supplier-portal spec, 7.5).
+// Every table and every function a signed-in user can reach is listed here. A new one fails
+// this test until it is classified, so no staff function reaches suppliers by accident.
+import assert from 'node:assert/strict';
+import { after, before, describe, it } from 'node:test';
+
+import type { PGlite } from '@electric-sql/pglite';
+
+import { SUPPLIER, UNIT_1, USERS, VERSION } from './access-fixture.ts';
+import { PEOPLE, REQUEST, SUPPLIER_ACCOUNT_FIXTURE } from './supplier-account-fixture.ts';
+import { as, migratedDatabase } from './pglite.ts';
+
+type Json = Record<string, unknown>;
+type Expect = 'reject' | ((value: unknown) => void);
+
+const NO_ACCESS = { admin: false, editor: false, member: false, manager: false };
+
+function json(value: Json): string {
+  return `'${JSON.stringify(value)}'::jsonb`;
+}
+
+// Relations a supplier may read, and what they may hold for the fixture's owner.
+const READABLE: Record<string, (rows: Json[]) => void> = {
+  org_units: () => undefined, // unit names, shown on the municipality's site too
+  supplier_accounts: (rows) => {
+    assert.equal(rows.length, 1);
+  },
+  portal_people: (rows) => {
+    assert.equal(rows.length, 1);
+  },
+  threshold_coverage: (rows) => {
+    assert.equal(rows[0]?.covered_until, null);
+  },
+};
+
+const REJECT = new Set([
+  'addresses_to_check()',
+  'cancel_access_change(uuid)',
+  'decide_access_change(uuid,boolean,text)',
+  'decide_category_request(uuid,text,text,uuid)',
+  'decide_identifier_candidate(uuid,boolean)',
+  'decide_threshold_proposal(uuid,boolean,text)',
+  'error_summary()',
+  'grant_role(uuid,text,uuid)',
+  'identifier_lookup_input(uuid)',
+  'import_identifier_candidates(jsonb)',
+  'import_pool_contacts(jsonb)',
+  'import_pool_registry(jsonb)',
+  'import_venue_specs(jsonb)',
+  'last_approaches(uuid[])',
+  'load_control()',
+  'merge_suppliers(uuid,uuid)',
+  'record_threshold(numeric,date,text)',
+  'record_web_telemetry(jsonb)',
+  'request_access_change(text,text,text,uuid,uuid,jsonb)',
+  'revoke_role(uuid)',
+  'route_check_preview_input(jsonb,date)',
+  'set_supplier_status(uuid,jsonb)',
+]);
+
+// Calls that need real arguments: with nulls they would fail on input before the access check.
+const CALLS: Record<string, [string, Expect]> = {
+  'admin_overview()': [
+    '',
+    (v) => {
+      assert.deepEqual(v, {});
+    },
+  ],
+  'approve_profile(uuid,text,uuid,text)': [
+    `'${PEOPLE.owner}', 'viewer', '${UNIT_1}', null`,
+    'reject',
+  ],
+  'calculate_thresholds(numeric)': ['100', () => undefined], // arithmetic on public amounts
+  'cancel_engagement_request(uuid,text)': [`'${REQUEST}', 'סיבה לביטול'`, 'reject'],
+  'catalog_snapshot(text)': [
+    'null',
+    (v) => {
+      assert.deepEqual(Object.keys(v as Json).sort(), ['access', 'user_id', 'version']);
+    },
+  ],
+  'create_engagement_request(jsonb)': [
+    json({ unit_id: UNIT_1, subject: 'בדיקה', estimated_value: 1, value_includes_vat: true }),
+    'reject',
+  ],
+  'decide_profile(uuid,text,text)': [`'${PEOPLE.owner}', 'active', null`, 'reject'],
+  'my_access()': [
+    '',
+    (v) => {
+      assert.deepEqual(v, NO_ACCESS);
+    },
+  ],
+  'record_supplier_approaches(uuid,uuid[],text)': [
+    `'${REQUEST}', array['${SUPPLIER}']::uuid[],
+    'email'`,
+    'reject',
+  ],
+  'rename_supplier(jsonb)': [json({ supplier_id: SUPPLIER, display_name: 'שם אחר' }), 'reject'],
+  'replace_supplier_contact(jsonb)': [
+    json({ supplier_id: SUPPLIER, kind: 'phone', value: '0527654321' }),
+    'reject',
+  ],
+  'route_check_input(uuid,date)': [`'${REQUEST}', null`, 'reject'],
+  'save_supplier_membership(jsonb)': [
+    json({ supplier_id: SUPPLIER, registry_version_id: VERSION }),
+    'reject',
+  ],
+  'supplier_detail(uuid)': [
+    `'${SUPPLIER}'`,
+    (v) => {
+      assert.deepEqual(v, { audit: null, contacts: [], identifiers: [] });
+    },
+  ],
+  'update_engagement_request(uuid,jsonb)': [
+    `'${REQUEST}', ${json({ subject: 'שינוי' })}`,
+    'reject',
+  ],
+  'update_supplier(jsonb)': [
+    json({ supplier_id: SUPPLIER, display_name: 'שם אחר', contacts: [] }),
+    'reject',
+  ],
+};
+
+const RELATIONS = `select c.relname as name from pg_class c
+  where c.relnamespace = 'public'::regnamespace and c.relkind in ('r', 'v', 'm', 'p')
+  order by 1`;
+
+const FUNCTIONS = `select replace(p.oid::regprocedure::text, 'public.', '') as signature,
+    p.proname as name,
+    (select string_agg(format('null::%s', format_type(t, null)), ', ')
+      from unnest(p.proargtypes::oid[]) t) as nulls
+  from pg_proc p
+  where p.pronamespace = 'public'::regnamespace and p.prokind = 'f'
+    and p.prorettype <> 'trigger'::regtype
+    and has_function_privilege('authenticated', p.oid, 'execute')
+  order by 1`;
+
+describe('a supplier account and the staff side', () => {
+  let db: PGlite;
+  before(async () => {
+    db = await migratedDatabase();
+    await db.exec(SUPPLIER_ACCOUNT_FIXTURE);
+  });
+  after(async () => {
+    await db.close();
+  });
+
+  it('reads no staff table or view', async () => {
+    const { rows } = await db.query<{ name: string }>(RELATIONS);
+    await as(db, PEOPLE.owner, async () => {
+      for (const { name } of rows) {
+        const read = await db.query<Json>(`select * from public.${name}`).then(
+          (r) => r.rows,
+          () => [],
+        );
+        const check = READABLE[name];
+        if (check) check(read);
+        else assert.equal(read.length, 0, `${name} returned rows to a supplier`);
+      }
+    });
+  });
+
+  it('classifies every function a signed-in user can call', async () => {
+    const { rows } = await db.query<{ signature: string }>(FUNCTIONS);
+    const known = new Set([...REJECT, ...Object.keys(CALLS)]);
+    const unknown = rows.map((r) => r.signature).filter((s) => !known.has(s));
+    assert.deepEqual(unknown, [], 'add each new function to this test');
+  });
+
+  it('gets a refusal or nothing from every staff function', async () => {
+    const { rows } = await db.query<{ signature: string; name: string; nulls: string | null }>(
+      FUNCTIONS,
+    );
+    await as(db, PEOPLE.owner, async () => {
+      for (const { signature, name, nulls } of rows) {
+        const [args, expect] = CALLS[signature] ?? [nulls ?? '', 'reject'];
+        const call = db.query<{ v: unknown }>(`select public.${name}(${args}) as v`);
+        if (expect === 'reject') await assert.rejects(call, Error, signature);
+        else expect((await call).rows[0]?.v);
+      }
+    });
+  });
+
+  it('still lets staff use what the supplier is refused', async () => {
+    await as(db, USERS.admin, async () => {
+      const { rows } = await db.query<{ v: Json }>('select public.my_access() as v');
+      assert.equal(rows[0]?.v.admin, true);
+    });
+  });
+});

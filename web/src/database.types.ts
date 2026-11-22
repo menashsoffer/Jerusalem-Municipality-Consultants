@@ -720,6 +720,38 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "portal_people": {
+    Row: {
+      "user_id": string;
+      "first_name": string;
+      "last_name": string;
+      "job_title": string | null;
+      "phone": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "user_id": string;
+      "first_name": string;
+      "last_name": string;
+      "job_title"?: string | null;
+      "phone"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "user_id"?: string;
+      "first_name"?: string;
+      "last_name"?: string;
+      "job_title"?: string | null;
+      "phone"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "profiles": {
     Row: {
       "user_id": string;
@@ -1031,6 +1063,53 @@ export interface PublicSchema {
       "content_sha256"?: string | null;
       "page_count"?: number | null;
       "note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
+  "supplier_accounts": {
+    Row: {
+      "id": string;
+      "user_id": string;
+      "supplier_id": string;
+      "role": string;
+      "status": string;
+      "method": string;
+      "proof_path": string | null;
+      "decided_by": string | null;
+      "decided_at": string | null;
+      "decision_note": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "user_id": string;
+      "supplier_id": string;
+      "role": string;
+      "status"?: string;
+      "method": string;
+      "proof_path"?: string | null;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
+      "decision_note"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "user_id"?: string;
+      "supplier_id"?: string;
+      "role"?: string;
+      "status"?: string;
+      "method"?: string;
+      "proof_path"?: string | null;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
+      "decision_note"?: string | null;
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
