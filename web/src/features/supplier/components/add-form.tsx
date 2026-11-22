@@ -248,7 +248,10 @@ export function AddForm({ context }: { context: WriteContext }) {
           ביטול
         </Link>
       </FormActions>
-      <StatusMessage>{pending ? 'שומר…' : ''}</StatusMessage>
+      {/* The button already shows "שומר…"; this copy is only for a screen reader. */}
+      <div className={styles.visuallyHidden}>
+        <StatusMessage>{pending ? 'שומר…' : ''}</StatusMessage>
+      </div>
     </form>
   );
 }
