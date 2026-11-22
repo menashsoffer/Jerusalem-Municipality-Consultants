@@ -95,3 +95,10 @@ export function withoutTag(filters: Filters, key: ActiveTag['key']): Filters {
 export function clearFilters(filters: Filters): Filters {
   return { ...emptyFilters(filters.today), query: filters.query };
 }
+
+/** Clears the given filters and both toggles, for "ניקוי" inside the filters dialog. */
+export function clearKeys(filters: Filters, keys: readonly FilterKey[]): Filters {
+  const next = { ...filters, showInactive: false, showClosed: false };
+  for (const key of keys) next[key] = '';
+  return next;
+}

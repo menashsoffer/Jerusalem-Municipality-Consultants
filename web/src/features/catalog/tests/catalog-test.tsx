@@ -163,9 +163,33 @@ describe('filter row', () => {
     page();
     await userEvent.click(screen.getByRole('button', { name: 'עוד מסננים' }));
     await userEvent.click(screen.getByRole('checkbox', { name: 'להציג גם ספקים לא פעילים' }));
-    await userEvent.click(screen.getByRole('button', { name: 'הצגת התוצאות' }));
+    await userEvent.click(screen.getByRole('button', { name: /^הצגת (ספק אחד|[\d,]+ ספקים)$/ }));
     expect(screen.getByRole('button', { name: 'עוד מסננים (1)' })).toBeDefined();
     expect(screen.getByText('כולל לא פעילים')).toBeDefined();
+  });
+
+  it('shows the live count on the dialog button and clears only what the dialog holds', async () => {
+    page();
+    await userEvent.selectOptions(screen.getByRole('combobox', { name: 'תוקף' }), 'valid');
+    await userEvent.click(screen.getByRole('button', { name: 'עוד מסננים' }));
+    expect(screen.queryByRole('button', { name: 'ניקוי המסננים כאן' })).toBeNull();
+    const count = filterCatalog(suppliers(), { ...emptyFilters(TODAY), validity: 'valid' }).length;
+    const label = count === 1 ? 'הצגת ספק אחד' : `הצגת ${String(count)} ספקים`;
+    expect(screen.getByRole('button', { name: label })).toBeDefined();
+    await userEvent.click(screen.getByRole('checkbox', { name: 'להציג גם ספקים לא פעילים' }));
+    await userEvent.click(screen.getByRole('button', { name: 'ניקוי המסננים כאן' }));
+    expect(
+      screen.getByRole<HTMLInputElement>('checkbox', { name: 'להציג גם ספקים לא פעילים' }).checked,
+    ).toBe(false);
+    expect(screen.getByRole<HTMLSelectElement>('combobox', { name: 'תוקף' }).value).toBe('valid');
+  });
+
+  it('asks for a category before the subcategory list opens', async () => {
+    page();
+    await userEvent.click(screen.getByRole('button', { name: 'עוד מסננים' }));
+    const sub = screen.getByRole<HTMLSelectElement>('combobox', { name: 'תת־קטגוריה' });
+    expect(sub.disabled).toBe(true);
+    expect(within(sub).getByRole('option', { name: 'קודם בוחרים קטגוריה' })).toBeDefined();
   });
 
   it('turns the row into one "סינון" button on a phone', async () => {
