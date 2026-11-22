@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { it } from 'node:test';
 import { EventBatcher } from '../src/lib/tracker.ts';
 import type { TelemetryEvent } from '../src/lib/vitals-model.ts';
-import { telemetryRequest } from '../src/data/site.ts';
+import { eventRpcRequest } from '../src/data/site.ts';
 it('reuses batching for identifier-free telemetry and tolerates missing authorization', () => {
   const sent: RequestInit[] = [];
   const win = {
@@ -14,7 +14,7 @@ it('reuses batching for identifier-free telemetry and tolerates missing authoriz
   } as unknown as Window;
   let authorized = false;
   const batcher = new EventBatcher<TelemetryEvent>(win, (events) =>
-    authorized ? telemetryRequest('authorization-only', events) : null,
+    authorized ? eventRpcRequest('record_web_telemetry', 'authorization-only', events) : null,
   );
   batcher.add({ name: 'CLS', value: 0.05, bounded: false });
   batcher.flush();

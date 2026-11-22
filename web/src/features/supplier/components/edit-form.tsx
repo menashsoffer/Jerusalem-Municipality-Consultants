@@ -139,7 +139,7 @@ export function EditForm({ data, admin = false, aside }: Props) {
         />
       )}
       <div className={styles.dialogActions}>
-        <Button type="submit" pending={pending}>
+        <Button type="submit" pending={pending} data-usage="supplier.save">
           {saveLabel(state, admin)}
         </Button>
         {aside}

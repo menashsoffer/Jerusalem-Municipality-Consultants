@@ -12,6 +12,7 @@ import { FilterControls } from './filter-controls.tsx';
 import { ActiveFilters } from './active-filters.tsx';
 import { Results } from './results.tsx';
 import styles from './catalog.module.css';
+import { usage } from '../../../lib/usage-signal.ts';
 interface Props {
   state: CatalogState;
   today: string;
@@ -32,6 +33,7 @@ function SearchBox({ value, change }: { value: string; change: (query: string) =
     <FormField
       field={{ label: 'חיפוש ספקים', hint: 'אפשר לחפש בשם ספק, בשם קודם או בתחום.' }}
       input={{
+        ...usage('catalog.search'),
         type: 'search',
         value,
         onChange: (e) => {

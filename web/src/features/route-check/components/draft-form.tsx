@@ -209,7 +209,7 @@ export function DraftForm(props: Props) {
         <Fields entry={entry} units={units} unit={unit} change={setUnit} />
       </fieldset>
       <FormActions>
-        <Button type="submit" pending={pending} pendingLabel="בודק…">
+        <Button type="submit" pending={pending} pendingLabel="בודק…" data-usage="request.check">
           {label(!!entry.saved, unit)}
         </Button>
         <Button
@@ -224,7 +224,7 @@ export function DraftForm(props: Props) {
           {backLabel}
         </Button>
         {!entry.saved && clear && (
-          <Button variant="quiet" onClick={clear} disabled={pending}>
+          <Button variant="quiet" onClick={clear} disabled={pending} data-usage="request.clear">
             ניקוי הפרטים
           </Button>
         )}
