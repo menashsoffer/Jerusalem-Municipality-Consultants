@@ -100,6 +100,7 @@ describe('the supplier area', () => {
     answer((name) => {
       if (name === 'portal_me') return me({ accounts: [account] as never });
       if (name === 'portal_documents') return { kinds: ['insurance'], documents: [] };
+      if (name === 'portal_members') return { members: [], invites: [] };
       return name === 'portal_changes' ? [] : FILE;
     });
     const result = await loader();
@@ -107,6 +108,7 @@ describe('the supplier area', () => {
       step: 'file',
       file: { name: 'ספק בע"מ' },
       documents: [{ kind: 'insurance', state: 'missing' }],
+      members: { members: [], invites: [] },
     });
   });
 

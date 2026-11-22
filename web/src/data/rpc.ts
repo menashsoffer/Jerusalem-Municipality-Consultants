@@ -94,6 +94,10 @@ interface AdminRpc {
     note: string | null;
     corrected_until: string | null;
   };
+  portal_members: { supplier_id: string };
+  portal_invite_member: { invite: { supplier_id: string; email: string; role: string } };
+  portal_cancel_invite: { invite_id: string };
+  portal_remove_member: { account_id: string };
   check_supplier_change: { change: SupplierChange };
   submit_supplier_change: { change: SupplierChange };
   decide_supplier_change: { request_id: string; approve: boolean; note: string | null };
@@ -154,6 +158,10 @@ declare module '../database.types.ts' {
     portal_save_document: { Args: AdminRpc['portal_save_document']; Returns: unknown };
     supplier_document_queue: { Args: AdminRpc['supplier_document_queue']; Returns: unknown };
     decide_supplier_document: { Args: AdminRpc['decide_supplier_document']; Returns: null };
+    portal_members: { Args: AdminRpc['portal_members']; Returns: unknown };
+    portal_invite_member: { Args: AdminRpc['portal_invite_member']; Returns: string };
+    portal_cancel_invite: { Args: AdminRpc['portal_cancel_invite']; Returns: null };
+    portal_remove_member: { Args: AdminRpc['portal_remove_member']; Returns: null };
   }
 }
 const accessSchema = z.object({

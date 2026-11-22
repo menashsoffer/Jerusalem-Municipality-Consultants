@@ -153,6 +153,38 @@ describe('supplier edit dialog', () => {
     expect(site.loadSnapshot).toHaveBeenCalledWith('token');
   });
 
+  it('shows one saving state, the button, and the outcome once', async () => {
+    mockWrites();
+    const spy = mockChanges();
+    let finish: (value: unknown) => void = () => undefined;
+    spy.mockImplementation((name: string) => {
+      if (name === 'check_supplier_change') {
+        return Promise.resolve({
+          outcome: 'green',
+          checks: [{ check: 'change_size', outcome: 'green' }],
+        });
+      }
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+    const data = await detail();
+    data.contacts = data.contacts.map((c) => ({ ...c, status: 'current', value: 'a@b.co.il' }));
+    await openDialog(data);
+    const email = await screen.findByRole('textbox', { name: 'דוא״ל' });
+    await userEvent.clear(email);
+    await userEvent.type(email, 'office@example.co.il');
+    await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));
+    await screen.findByRole('button', { name: 'שומר…' });
+    // The live region tells a screen reader, but is not drawn as a second saving line.
+    const status = screen.getByRole('status');
+    expect(status.closest(`.${styles.visuallyHidden ?? 'missing'}`)).not.toBeNull();
+    finish({ request_id: 'r1', status: 'applied', outcome: 'green', checks: [] });
+    await screen.findByText('השינויים נשמרו.');
+    expect(document.body.textContent.match(/נשמרו/gu)).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: 'שמירה' })).toHaveLength(1);
+  });
+
   it('shows the checks of a rename and saves it only with a reason', async () => {
     mockWrites();
     const spy = mockChanges();

@@ -1,4 +1,5 @@
 import { dayOf } from '../../../lib/dates.ts';
+import type { Members } from '../api/members.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
 import type { KindRow } from '../model/documents.ts';
 import { missingTasks, orderedMemberships } from '../model/missing.ts';
@@ -6,6 +7,7 @@ import { CONTACT_LABELS, SCHEME_LABELS, validity } from '../model/portal-model.t
 import { MissingTasks } from './missing-tasks.tsx';
 import { MyDocuments } from './my-documents.tsx';
 import { MyRequests } from './my-requests.tsx';
+import { OurPeople } from './our-people.tsx';
 import { ProposeFix } from './propose-fix.tsx';
 import styles from './area.module.css';
 
@@ -122,11 +124,12 @@ interface Props {
   file: SupplierFile;
   proposals: Proposal[];
   documents: KindRow[];
+  members: Members | null;
   today: string;
 }
 
 /** "התיק שלי" (spec 6.3): how the municipality sees the supplier, and fixes to propose. */
-export function MyFile({ file, proposals, documents, today }: Props) {
+export function MyFile({ file, proposals, documents, members, today }: Props) {
   return (
     <>
       <header className={styles.title}>
@@ -137,6 +140,7 @@ export function MyFile({ file, proposals, documents, today }: Props) {
       <Details file={file} proposals={proposals} />
       <Memberships file={file} today={today} />
       <MyDocuments supplierId={file.id} rows={documents} today={today} />
+      {members && <OurPeople supplierId={file.id} list={members} />}
     </>
   );
 }
