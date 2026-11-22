@@ -169,4 +169,19 @@ describe('identifier candidates', () => {
     await decide(db, USERS.admin, { id: nonprofit.id, accept: false });
     assert.deepEqual(await save(db, [FOUND[1]]), []);
   });
+  it('accepts a candidate found in the Nonprofits Registrar with that source', async () => {
+    const inserted = await db.query<{ id: string }>(
+      `insert into public.identifier_candidates (supplier_id, scheme, value, source,
+        registrar_name, registrar_status, searched_name)
+      values ($1, 'nonprofit', '580000008', 'nonprofits_registrar', 'ה (ע"ר)', 'רשומה', 'ספק')
+      returning id`,
+      [SUPPLIER],
+    );
+    const id = inserted.rows[0]?.id ?? '';
+    await decide(db, USERS.admin, { id, accept: true });
+    const added = await db.query<{ source: string; registrar_name: string }>(
+      "select source, registrar_name from public.supplier_identifiers where value = '580000008'",
+    );
+    assert.deepEqual(added.rows, [{ source: 'nonprofits_registrar', registrar_name: 'ה (ע"ר)' }]);
+  });
 });
