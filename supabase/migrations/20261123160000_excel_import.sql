@@ -37,7 +37,8 @@ create trigger audit_row after insert or update or delete on public.source_docum
 
 alter table public.identifier_candidates drop constraint identifier_candidates_source_check;
 alter table public.identifier_candidates add constraint identifier_candidates_source_check
-  check (source in ('companies_registrar', 'guidestar', 'pool_file', 'excel_import'));
+  check (source in ('companies_registrar', 'nonprofits_registrar', 'guidestar', 'pool_file',
+    'excel_import'));
 alter table public.supplier_identifiers drop constraint supplier_identifiers_source_check;
 alter table public.supplier_identifiers add constraint supplier_identifiers_source_check
   check (source in ('companies_registrar', 'nonprofits_registrar', 'guidestar',
