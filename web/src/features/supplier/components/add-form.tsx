@@ -169,7 +169,7 @@ function SupplierFields({ setName, setIdentifier }: SupplierFieldsProps) {
           }}
         />
         <FormField
-          field={{ label: 'מזהה רשמי', hint: '5 עד 9 ספרות, בלי מקפים. ממלאים יחד עם סוג המזהה.' }}
+          field={{ label: 'מזהה רשמי', info: '5 עד 9 ספרות, בלי מקפים. ממלאים יחד עם סוג המזהה.' }}
           input={{
             name: 'identifier',
             inputMode: 'numeric',

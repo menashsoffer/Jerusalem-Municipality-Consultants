@@ -56,4 +56,12 @@
       display: none;
     }
   }
+  /* A long tip beside a label opens toward the field, so it stays on a narrow screen. */
+  .tip.long {
+    inset-inline-end: auto;
+    inset-inline-start: 0;
+    inline-size: max-content;
+    max-inline-size: min(18rem, 80vw);
+    white-space: normal;
+  }
 }

@@ -17,7 +17,11 @@ export function useField({ field, id: suppliedId, extra }: Options) {
   return {
     id,
     error,
-    description: describedBy(id, { hint: field.hint ?? '', error, extra: extra ?? '' }),
+    description: describedBy(id, {
+      hint: field.hint ?? field.info ?? '',
+      error,
+      extra: extra ?? '',
+    }),
     invalid: (event: SyntheticEvent<Control>) => {
       setError(
         event.currentTarget.validity.valueMissing ? 'יש למלא את השדה.' : 'יש להזין ערך תקין בשדה.',

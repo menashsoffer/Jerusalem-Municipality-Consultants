@@ -1,7 +1,7 @@
 import type { ComponentProps } from 'react';
 import type { FieldLabel } from '../lib/field-description.ts';
 import { useField } from './use-field.ts';
-import { FieldError, RequiredMark } from './field-parts.tsx';
+import { FieldError, FieldInfo, RequiredMark } from './field-parts.tsx';
 import styles from './control.module.css';
 interface Props {
   field: FieldLabel;
@@ -11,11 +11,14 @@ export function FormField({ field, input }: Props) {
   const state = useField({ field, id: input.id, extra: input['aria-describedby'] });
   return (
     <div className={styles.field}>
-      <label htmlFor={state.id}>
-        {field.label}
-        {input.required && <RequiredMark />}
-      </label>
-      {field.hint && (
+      <div className={styles.labelRow}>
+        <label htmlFor={state.id}>
+          {field.label}
+          {input.required && <RequiredMark />}
+        </label>
+        {field.info && <FieldInfo id={`${state.id}-hint`} label={field.label} text={field.info} />}
+      </div>
+      {field.hint && !field.info && (
         <span id={`${state.id}-hint`} className={styles.hint}>
           {field.hint}
         </span>

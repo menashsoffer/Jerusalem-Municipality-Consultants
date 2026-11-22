@@ -1,6 +1,8 @@
 export interface FieldLabel {
   label: string;
   hint?: string;
+  /** Guidance behind an info icon beside the label, for fields whose rule most people know. */
+  info?: string;
   error?: string | undefined;
 }
 export function describedBy(id: string, parts: { hint?: string; error?: string; extra?: string }) {
