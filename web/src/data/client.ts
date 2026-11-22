@@ -1,6 +1,7 @@
 import type { PublicFunctions, PublicSchema } from '../database.types.ts';
 import { databaseRuleMessage } from '../lib/rules/messages.ts';
 import { reasonMessage } from '../lib/errors/reasons.ts';
+import { tagRequest } from '../lib/telemetry.ts';
 import {
   FAILURES,
   failureSentence,
@@ -189,7 +190,9 @@ export class DataClient {
     args: PublicFunctions[K]['Args'],
   ): Promise<unknown> {
     const init = { method: 'POST', body: JSON.stringify(args) };
-    return this.request(`rpc/${name}`, init, READ_RPCS.has(name));
+    return this.request(`rpc/${name}`, init, READ_RPCS.has(name)).catch((error: unknown) => {
+      throw tagRequest(error, name);
+    });
   }
 
   async supplierWrite(

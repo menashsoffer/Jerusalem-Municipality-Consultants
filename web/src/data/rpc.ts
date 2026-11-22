@@ -8,6 +8,7 @@ import { SessionKeeper } from './auth-session.ts';
 import { MemoryStorage } from './memory-storage.ts';
 import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
+import { tagRequest } from '../lib/telemetry.ts';
 import type { SupplierChange } from './supplier-changes.ts';
 
 type AnswerParts = Partial<Record<'offer_amount' | 'file_path' | 'decline_reason', string>> & {
@@ -61,6 +62,7 @@ interface AdminRpc {
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
   error_summary: Record<string, never>;
+  error_cases: { days: number | null };
   usage_summary: { from_day: string; to_day: string; only_role: string | null };
   addresses_to_check: Record<string, never>;
   admin_overview: Record<string, never>;
@@ -148,6 +150,7 @@ declare module '../database.types.ts' {
     request_approaches: { Args: AdminRpc['request_approaches']; Returns: unknown };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
     error_summary: { Args: AdminRpc['error_summary']; Returns: unknown };
+    error_cases: { Args: AdminRpc['error_cases']; Returns: unknown };
     usage_summary: { Args: AdminRpc['usage_summary']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     admin_overview: { Args: AdminRpc['admin_overview']; Returns: unknown };
@@ -243,29 +246,25 @@ export interface Identity {
   userId: string;
   access: Access;
 }
-function unauthorized(error: unknown): boolean {
-  return error instanceof DataError && error.status === 401;
-}
 /** Runs a request with a fresh token, and once more with a renewed token after a 401. */
 async function authorized<T>(request: (token: string) => Promise<T>): Promise<T> {
   const token = await freshToken();
   try {
     return await request(token);
   } catch (error) {
-    if (!unauthorized(error)) throw error;
+    if (!(error instanceof DataError && error.status === 401)) throw error;
     const renewed = await recoverSession(token);
     if (!renewed) throw error;
     return request(renewed);
   }
 }
-async function validated<T>(
-  request: (token: string) => Promise<unknown>,
-  schema: ZodType<T>,
-): Promise<T> {
-  return schema.parse(await authorized(request));
-}
 /** All roles come from the existing server access loader, never from JWT app_metadata. */
-export async function identity(): Promise<Identity> {
+let pendingIdentity: Promise<Identity> | null = null;
+// Checks that start together share one load; a second would fail the first (error-details 7).
+export function identity(): Promise<Identity> {
+  return (pendingIdentity ??= loadIdentity().finally(() => (pendingIdentity = null)));
+}
+async function loadIdentity(): Promise<Identity> {
   const state = await authorized((token) => loadSnapshot(token));
   return { userId: state.userId, access: accessSchema.parse(state.access) };
 }
@@ -284,7 +283,11 @@ export async function rpc<K extends keyof AdminRpc, T>(
   args: AdminRpc[K],
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated((token) => data(token).rpc(name, args), schema);
+  try {
+    return schema.parse(await authorized((token) => data(token).rpc(name, args)));
+  } catch (error) {
+    throw tagRequest(error, name);
+  }
 }
 /** A signed-in person's own access request (RLS policy profiles_signup). */
 export async function insertProfile(row: PublicSchema['profiles']['Insert']): Promise<void> {
@@ -295,7 +298,7 @@ export async function rows<T>(
   filters: Record<string, string>,
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated((token) => data(token).list(table, filters), schema);
+  return schema.parse(await authorized((token) => data(token).list(table, filters)));
 }
 type PortalPerson = PublicSchema['portal_people']['Insert'];
 /** The signed-in person's own supplier-side details (RLS portal_people_*_own). */

@@ -1860,6 +1860,11 @@ export interface PublicSchema {
       "created_at": string;
       "kind": string | null;
       "screen": string | null;
+      "cause": string | null;
+      "request": string | null;
+      "role": string | null;
+      "device": string | null;
+      "site_version": string | null;
     };
     Insert: {
       "id"?: never;
@@ -1872,6 +1877,11 @@ export interface PublicSchema {
       "created_at"?: string;
       "kind"?: string | null;
       "screen"?: string | null;
+      "cause"?: string | null;
+      "request"?: string | null;
+      "role"?: string | null;
+      "device"?: string | null;
+      "site_version"?: string | null;
     };
     Update: {
       "id"?: never;
@@ -1884,6 +1894,11 @@ export interface PublicSchema {
       "created_at"?: string;
       "kind"?: string | null;
       "screen"?: string | null;
+      "cause"?: string | null;
+      "request"?: string | null;
+      "role"?: string | null;
+      "device"?: string | null;
+      "site_version"?: string | null;
     };
   };
 }

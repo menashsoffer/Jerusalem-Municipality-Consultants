@@ -53,6 +53,7 @@ const REJECT = new Set([
   'decide_identifier_candidate(uuid,boolean)',
   'decide_supplier_change(uuid,boolean,text)',
   'decide_threshold_proposal(uuid,boolean,text)',
+  'error_cases(integer)',
   'error_summary()',
   'grant_role(uuid,text,uuid)',
   'identifier_lookup_input(uuid)',

@@ -163,6 +163,20 @@ describe('admin RPC helpers', () => {
     assert.equal((await rpc.requireRoles(['viewer'])).userId, who.userId);
   });
 
+  // error-details-spec-he.md section 7: the supplier-links screen failed on first open.
+  it('lets two role checks that start together both pass with one catalog request', async () => {
+    signIn();
+    const calls = stubFetch(snapshotOr(() => Response.json([])));
+    const [first, second] = await Promise.all([
+      rpc.requireRoles(['viewer']),
+      rpc.requireRoles(['viewer']),
+    ]);
+    assert.equal(first.userId, second.userId);
+    assert.equal(calls.filter(({ url }) => url.endsWith('/catalog_snapshot')).length, 1);
+    await rpc.identity();
+    assert.equal(calls.filter(({ url }) => url.endsWith('/catalog_snapshot')).length, 2);
+  });
+
   it('lets an admin through any role check, but never an inactive user', () => {
     assert.equal(rpc.permitted(access({ admin: true, grants: [] }), ['editor']), true);
     assert.equal(rpc.permitted(access({ state: 'blocked', admin: true }), ['viewer']), false);

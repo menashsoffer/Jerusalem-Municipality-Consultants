@@ -4,7 +4,9 @@
 import type { EventBatcher } from '../lib/tracker.ts';
 import { observeVitals } from '../lib/vitals.ts';
 import type { TelemetryEvent } from '../lib/vitals-model.ts';
-import { startUsage, type UsageRouter } from './usage.ts';
+import { SITE_VERSION, withDetails } from '../lib/error-details.ts';
+import { setTelemetryReporter } from '../lib/telemetry.ts';
+import { screenOf, startUsage, type UsageRouter } from './usage.ts';
 
 interface Monitoring {
   win: Window;
@@ -14,6 +16,12 @@ interface Monitoring {
 }
 
 export function startMonitoring({ win, router, telemetry }: Monitoring): void {
+  const device = win.matchMedia('(pointer: coarse)').matches ? 'mobile' : 'desktop';
+  // Errors are sent with what failed and where (error-details-spec-he.md section 6).
+  setTelemetryReporter((event, error) => {
+    const context = { screen: screenOf(router.state), device, version: SITE_VERSION } as const;
+    telemetry.add(event.name === 'error' ? withDetails(event, error, context) : event);
+  });
   observeVitals(
     win,
     (event) => {

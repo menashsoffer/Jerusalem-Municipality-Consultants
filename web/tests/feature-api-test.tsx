@@ -114,26 +114,9 @@ describe('loaders check the role and read the right rows', () => {
 
   it('load control', async () => {
     vi.mocked(rpc.rpc).mockResolvedValueOnce({ jobs: [] });
-    expect(await loadControl()).toEqual({ jobs: [], errors: null });
+    expect(await loadControl()).toEqual({ jobs: [] });
     expect(rpc.requireRoles).toHaveBeenCalledWith(['admin', 'auditor']);
     expect(vi.mocked(rpc.rpc).mock.calls.map((call) => call[0])).toEqual(['load_control']);
-  });
-
-  it('adds the error summary for an administrator, and leaves it out if it fails', async () => {
-    vi.mocked(rpc.requireRoles).mockResolvedValueOnce({
-      userId: 'admin-1',
-      access: { admin: true } as never,
-    });
-    vi.mocked(rpc.rpc).mockResolvedValueOnce({ jobs: [] }).mockResolvedValueOnce(['row']);
-    expect(await loadControl()).toEqual({ jobs: [], errors: ['row'] });
-    vi.mocked(rpc.requireRoles).mockResolvedValueOnce({
-      userId: 'admin-1',
-      access: { admin: true } as never,
-    });
-    vi.mocked(rpc.rpc)
-      .mockResolvedValueOnce({ jobs: [] })
-      .mockRejectedValueOnce(new DataError(404));
-    expect(await loadControl()).toEqual({ jobs: [], errors: null });
   });
 });
 

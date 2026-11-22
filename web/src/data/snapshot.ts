@@ -162,7 +162,7 @@ export class SnapshotLoader {
   }
 
   private assertCurrent(generation: number): void {
-    if (generation !== this.generation) throw new DataError(0);
+    if (generation !== this.generation) throw Object.assign(new DataError(0), { superseded: true });
   }
 
   private async failed(error: unknown, context: { generation: number; userId: string | null }) {
