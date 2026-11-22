@@ -98,11 +98,9 @@ describe('supplier writes', () => {
   it('sends each change to its database function', async () => {
     const calls = stubFetch(() => Response.json('id'));
     assert.equal(await site.saveMembership(TOKEN, { a: '1' }), 'id');
-    const update = { supplier_id: 's', contacts: [] };
-    assert.equal(await site.updateSupplier(TOKEN, update), 'id');
     assert.deepEqual(
       calls.map(({ url }) => url.split('/rpc/')[1]),
-      ['save_supplier_membership', 'update_supplier'],
+      ['save_supplier_membership'],
     );
   });
 
@@ -110,11 +108,11 @@ describe('supplier writes', () => {
     stubFetch(() =>
       Response.json({ code: '22023', message: 'invalid:bad_phone' }, { status: 400 }),
     );
-    await assert.rejects(site.updateSupplier(TOKEN, { supplier_id: 's', contacts: [] }), {
+    await assert.rejects(site.saveMembership(TOKEN, { supplier_id: 's' }), {
       message: RULE_MESSAGES.bad_phone,
     });
     stubFetch(() => Response.json({ message: 'something else' }, { status: 400 }));
-    await assert.rejects(site.updateSupplier(TOKEN, { supplier_id: 's', contacts: [] }), {
+    await assert.rejects(site.saveMembership(TOKEN, { supplier_id: 's' }), {
       kind: 'system',
     });
   });

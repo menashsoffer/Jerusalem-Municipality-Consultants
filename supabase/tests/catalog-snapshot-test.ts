@@ -164,9 +164,9 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
   it('bumps for an authenticated writer but prevents direct counter manipulation', async () => {
     await as(db, USERS.admin, async () => {
       const before = await snapshot(db);
-      await db.query('select public.rename_supplier($1::jsonb)', [
-        JSON.stringify({ supplier_id: SUPPLIER, display_name: 'שם חדש' }),
-      ]);
+      // An admin's checked rename is saved at once.
+      const change = { supplier_id: SUPPLIER, kind: 'rename', value: 'שם חדש', reason: 'תיקון' };
+      await db.query('select public.submit_supplier_change($1::jsonb)', [JSON.stringify(change)]);
       const changed = await snapshot(db);
       assert.notEqual(changed.version, before.version);
       await db.exec('update private.catalog_version set counter = 1');

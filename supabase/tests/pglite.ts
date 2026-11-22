@@ -135,6 +135,24 @@ export async function as<T>(db: PGlite, user: string | null, action: () => Promi
   }
 }
 
+/**
+ * Runs as the database owner with a signed-in user's claims, the way a security definer
+ * function (such as submit_supplier_change) calls the functions it uses.
+ */
+export async function asOwnerFor<T>(db: PGlite, user: string, action: () => Promise<T>) {
+  const claims = JSON.stringify({
+    sub: user,
+    role: 'authenticated',
+    email: `${user}@example.test`,
+  });
+  await db.query("select set_config('request.jwt.claims', $1, false)", [claims]);
+  try {
+    return await action();
+  } finally {
+    await db.query("select set_config('request.jwt.claims', '', false)");
+  }
+}
+
 export async function count(db: PGlite, sql: string): Promise<number> {
   const result = await db.query<{ n: number }>(`select count(*)::int as n from (${sql}) q`);
   return result.rows[0]?.n ?? Number.NaN;

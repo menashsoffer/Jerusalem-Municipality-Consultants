@@ -193,7 +193,7 @@ export class DataClient {
   }
 
   async supplierWrite(
-    name: 'save_supplier_membership' | 'update_supplier',
+    name: 'save_supplier_membership',
     payload: Record<string, unknown>,
   ): Promise<string> {
     const result = await this.request(`rpc/${name}`, {

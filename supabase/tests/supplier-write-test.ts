@@ -4,7 +4,7 @@ import { after, before, describe, it } from 'node:test';
 import type { PGlite } from '@electric-sql/pglite';
 
 import { ACCESS_FIXTURE, REGISTRY, SUPPLIER, UNIT_2, USERS, VERSION } from './access-fixture.ts';
-import { as, count, migratedDatabase } from './pglite.ts';
+import { as, asOwnerFor, count, migratedDatabase } from './pglite.ts';
 
 const FIELD = '60000000-0000-0000-0000-000000000001';
 const OTHER_VERSION = '60000000-0000-0000-0000-000000000002';
@@ -160,7 +160,7 @@ describe('supplier and membership creation', () => {
   });
 
   it('preserves an old name and marks the edited supplier for review', async () => {
-    await as(db, USERS.editor, async () => {
+    await asOwnerFor(db, USERS.editor, async () => {
       await db.query('select public.rename_supplier($1::jsonb)', [
         JSON.stringify({
           supplier_id: SUPPLIER,
@@ -182,7 +182,7 @@ describe('supplier and membership creation', () => {
         1,
       );
     });
-    await as(db, USERS.viewer, async () => {
+    await asOwnerFor(db, USERS.viewer, async () => {
       await assert.rejects(
         db.query('select public.rename_supplier($1::jsonb)', [
           JSON.stringify({
@@ -195,7 +195,7 @@ describe('supplier and membership creation', () => {
   });
 
   it('replaces a contact atomically and retains the old value as outdated', async () => {
-    await as(db, USERS.editor, async () => {
+    await asOwnerFor(db, USERS.editor, async () => {
       const original = await db.query<{ id: string }>(
         `insert into public.supplier_contacts
         (supplier_id, kind, value, is_primary) values ($1::uuid, 'phone', '0521234567', true) returning id`,

@@ -3,9 +3,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { cleanup, render, screen } from '@testing-library/react';
 
-import * as site from '../../../data/site.ts';
+import * as rpc from '../../../data/rpc.ts';
 import { requestAddressCheck } from '../api/address-check.ts';
-import * as write from '../api/write.ts';
+import { submitChanges } from '../api/changes.ts';
 import { ContactCard } from '../components/contact-card.tsx';
 
 afterEach(() => {
@@ -46,14 +46,14 @@ describe('address check after a save', () => {
     expect(fetcher.mock.calls[0]?.[1]).toMatchObject({ method: 'POST', keepalive: true });
   });
 
-  it('asks for a check only when the saved contacts include an address', async () => {
-    vi.spyOn(site, 'updateSupplier').mockResolvedValue('');
+  it('asks for a check only when a saved change is an address', async () => {
+    const answer = { request_id: 'r', status: 'applied', outcome: 'green', checks: [] };
+    vi.spyOn(rpc, 'rpc').mockResolvedValue(answer);
     const fetcher = vi.spyOn(globalThis, 'fetch').mockResolvedValue(new Response('{}'));
-    const contacts = [{ contact_id: '', kind: 'email', value: 'a@b.co.il' }];
-    await write.update({ supplier_id: 's', contacts })('token');
+    const contact = { supplier_id: 's', kind: 'contact' as const, contact_kind: 'email' };
+    await submitChanges([{ ...contact, value: 'a@b.co.il' }], '');
     expect(fetcher).not.toHaveBeenCalled();
-    const address = [{ contact_id: '', kind: 'address', value: 'יפו 1, ירושלים' }];
-    await write.update({ supplier_id: 's', contacts: address })('token');
+    await submitChanges([{ ...contact, contact_kind: 'address', value: 'יפו 1, ירושלים' }], '');
     expect(fetcher).toHaveBeenCalledTimes(1);
   });
 });
