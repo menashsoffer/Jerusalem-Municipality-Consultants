@@ -246,7 +246,15 @@ async function validated<T>(
   return schema.parse(await authorized(request));
 }
 /** All roles come from the existing server access loader, never from JWT app_metadata. */
-export async function identity(): Promise<Identity> {
+let pendingIdentity: Promise<Identity> | null = null;
+/**
+ * Checks that start together share one catalog load: a second load would supersede the first
+ * and fail it (error-details-spec-he.md section 7).
+ */
+export function identity(): Promise<Identity> {
+  return (pendingIdentity ??= loadIdentity().finally(() => (pendingIdentity = null)));
+}
+async function loadIdentity(): Promise<Identity> {
   const state = await authorized((token) => loadSnapshot(token));
   return { userId: state.userId, access: accessSchema.parse(state.access) };
 }
