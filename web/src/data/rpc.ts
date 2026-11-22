@@ -94,10 +94,18 @@ interface AdminRpc {
     note: string | null;
     corrected_until: string | null;
   };
+  portal_members: { supplier_id: string };
+  portal_invite_member: { invite: { supplier_id: string; email: string; role: string } };
+  portal_cancel_invite: { invite_id: string };
+  portal_remove_member: { account_id: string };
   check_supplier_change: { change: SupplierChange };
   submit_supplier_change: { change: SupplierChange };
   decide_supplier_change: { request_id: string; approve: boolean; note: string | null };
   cancel_supplier_change: { request_id: string };
+  // Supplier import from Excel (supplier-excel-import-spec-he.md, section 10).
+  stage_excel_import: { batch: Record<string, unknown> };
+  decide_import_rows: { decisions: Record<string, unknown>[] };
+  apply_import_batch: { batch: string };
 }
 // Existing SQL RPCs not yet covered by the snapshot-only generator.
 declare module '../database.types.ts' {
@@ -154,6 +162,13 @@ declare module '../database.types.ts' {
     portal_save_document: { Args: AdminRpc['portal_save_document']; Returns: unknown };
     supplier_document_queue: { Args: AdminRpc['supplier_document_queue']; Returns: unknown };
     decide_supplier_document: { Args: AdminRpc['decide_supplier_document']; Returns: null };
+    portal_members: { Args: AdminRpc['portal_members']; Returns: unknown };
+    portal_invite_member: { Args: AdminRpc['portal_invite_member']; Returns: string };
+    portal_cancel_invite: { Args: AdminRpc['portal_cancel_invite']; Returns: null };
+    portal_remove_member: { Args: AdminRpc['portal_remove_member']; Returns: null };
+    stage_excel_import: { Args: AdminRpc['stage_excel_import']; Returns: unknown };
+    decide_import_rows: { Args: AdminRpc['decide_import_rows']; Returns: number };
+    apply_import_batch: { Args: AdminRpc['apply_import_batch']; Returns: unknown };
   }
 }
 const accessSchema = z.object({

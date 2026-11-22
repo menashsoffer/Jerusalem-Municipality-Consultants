@@ -10,6 +10,7 @@ import {
   type SupplierFile,
 } from './api/portal.ts';
 import { loadDocuments } from './api/documents.ts';
+import { loadMembers, type Members } from './api/members.ts';
 import { documentRows, type KindRow } from './model/documents.ts';
 import { activeAccounts, areaStep, type AreaStep } from './model/portal-model.ts';
 import { AccountNotes } from './components/account-notes.tsx';
@@ -27,6 +28,7 @@ interface AreaData {
   file: SupplierFile | null;
   proposals: Proposal[];
   documents: KindRow[];
+  members: Members | null;
   today: string;
 }
 
@@ -38,13 +40,14 @@ export async function loader(): Promise<AreaData | Response> {
   const first = activeAccounts(me)[0];
   const id = step === 'file' ? first?.supplier_id : undefined;
   const today = israelToday();
-  if (!id) return { me, step, file: null, proposals: [], documents: [], today };
-  const [file, proposals, list] = await Promise.all([
+  if (!id) return { me, step, file: null, proposals: [], documents: [], members: null, today };
+  const [file, proposals, list, members] = await Promise.all([
     loadFile(id),
     loadProposals(id),
     loadDocuments(id),
+    first?.role === 'owner' ? loadMembers(id) : null,
   ]);
-  return { me, step, file, proposals, documents: documentRows(list, today), today };
+  return { me, step, file, proposals, documents: documentRows(list, today), members, today };
 }
 
 function Start({ me, step }: { me: PortalMe; step: AreaStep }) {
@@ -63,14 +66,10 @@ function Start({ me, step }: { me: PortalMe; step: AreaStep }) {
 }
 
 export function SupplierAreaPage() {
-  const { me, step, file, proposals, documents, today } = useLoaderData<AreaData>();
+  const { me, step, file, ...rest } = useLoaderData<AreaData>();
   return (
     <div className={styles.area}>
-      {file ? (
-        <MyFile file={file} proposals={proposals} documents={documents} today={today} />
-      ) : (
-        <Start me={me} step={step} />
-      )}
+      {file ? <MyFile file={file} {...rest} /> : <Start me={me} step={step} />}
     </div>
   );
 }

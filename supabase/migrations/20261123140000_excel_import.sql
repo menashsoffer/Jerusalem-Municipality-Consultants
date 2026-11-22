@@ -43,8 +43,10 @@ alter table public.supplier_identifiers add constraint supplier_identifiers_sour
   check (source in ('companies_registrar', 'nonprofits_registrar', 'guidestar',
     'municipality', 'manual', 'pool_file', 'excel_import'));
 
-insert into storage.buckets (id, name, public, file_size_limit)
-values ('source-files', 'source-files', false, 5242880);
+-- Only the two file types the import reads; the site sends each with its own type.
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('source-files', 'source-files', false, 5242880, array['text/csv',
+  'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']);
 create policy source_files_select on storage.objects for select to authenticated
   using (bucket_id = 'source-files' and (select private.is_admin()));
 create policy source_files_insert on storage.objects for insert to authenticated
@@ -57,6 +59,31 @@ create policy source_files_update on storage.objects for update to authenticated
 create policy source_files_delete on storage.objects for delete to authenticated
   using (bucket_id = 'source-files' and (select private.is_admin()) and not exists (
     select 1 from public.source_documents d where d.storage_path = name));
+
+-- The protection layer (excel-import-errors-spec-he.md, section 3), the same rules the browser
+-- checks first: no control or direction-override characters, nothing a spreadsheet would run
+-- as a formula when the data is exported, no markup or script address, and a length limit.
+create function private.excel_unsafe(value text)
+returns boolean language sql immutable set search_path = '' as $$
+  select value is not null and (
+    length(value) > 2000
+    or value ~ '[\x01-\x08\x0b\x0c\x0e-\x1f\x7f\u202a-\u202e\u2066-\u2069]'
+    or value ~ '^[=@\t\r]' or value ~ '^[+-][^0-9\s(]'
+    or value ~* '<\s*[a-z!/?]' or value ~* '\m(javascript|vbscript|data)\s*:');
+$$;
+revoke all on function private.excel_unsafe(text) from public, anon, authenticated;
+
+-- Mapped values: only the known fields, each a string or null, each safe.
+create function private.excel_edited_ok(edited jsonb)
+returns boolean language sql immutable set search_path = '' as $$
+  select jsonb_typeof(edited) = 'object' and not exists (
+    select 1 from jsonb_each(edited) e
+    where e.key not in ('name', 'entity_kind', 'scheme', 'value', 'field', 'phone', 'email',
+        'address', 'contact_person', 'website')
+      or jsonb_typeof(e.value) not in ('string', 'null')
+      or private.excel_unsafe(e.value #>> '{}'));
+$$;
+revoke all on function private.excel_edited_ok(jsonb) from public, anon, authenticated;
 
 -- Recompute suggestions when an administrator returns to a saved draft.
 create function private.excel_candidates(edited jsonb)
@@ -114,11 +141,14 @@ begin
   if not private.is_admin() then
     raise exception 'Not authorized' using errcode = '42501';
   end if;
+  if jsonb_typeof(batch) <> 'object' then
+    raise exception 'reason:import_batch_invalid' using errcode = '22023';
+  end if;
   if batch ? 'batch_id' then
     batch_id := (batch ->> 'batch_id')::uuid;
     if not exists (select 1 from public.import_batches b where b.id = batch_id
       and b.script_name = 'excel_import') then
-      raise exception 'Batch not found' using errcode = 'P0002';
+      raise exception 'reason:import_batch_missing' using errcode = 'P0002';
     end if;
     select coalesce(jsonb_agg(jsonb_build_object('row_id', r.id,
       'candidates', private.excel_candidates(r.edited)) order by r.row_number), '[]'::jsonb)
@@ -126,18 +156,22 @@ begin
       and r.status = 'pending';
     return jsonb_build_object('batch_id', batch_id, 'duplicate', true, 'rows', staged);
   end if;
-  if jsonb_typeof(batch) <> 'object' or jsonb_typeof(batch -> 'rows') <> 'array'
+  if coalesce(jsonb_typeof(batch -> 'rows'), '') <> 'array'
     or jsonb_array_length(batch -> 'rows') not between 1 and 5000
     or octet_length((batch -> 'rows')::text) > 15728640
     or digest is null or digest !~ '^[0-9a-f]{64}$'
     or path is null or length(path) not between 1 and 500
     or length(coalesce(batch ->> 'file_name', '')) not between 1 and 300
-    or lower(batch ->> 'file_name') !~ '[.](xlsx|csv)$' then
-    raise exception 'Invalid import batch' using errcode = '22023';
+    or lower(batch ->> 'file_name') !~ '[.](xlsx|csv)$'
+    or private.excel_unsafe(batch ->> 'file_name')
+    or path <> 'excel/' || digest || '.'
+      || substring(lower(batch ->> 'file_name') from '(xlsx|csv)$')
+  then
+    raise exception 'reason:import_batch_invalid' using errcode = '22023';
   end if;
   if not exists (select 1 from storage.objects o where o.bucket_id = 'source-files'
       and o.name = path and (o.metadata ->> 'size')::bigint between 1 and 5242880) then
-    raise exception 'Source file missing or too large' using errcode = '22023';
+    raise exception 'reason:import_file_missing' using errcode = '22023';
   end if;
   select b.id into batch_id from public.source_documents d
     join public.import_batches b on b.source_document_id = d.id
@@ -161,7 +195,7 @@ begin
   if (registry is null) <> (version is null) or (version is not null and not exists (
     select 1 from public.registry_versions v where v.id = version and v.registry_id = registry
   )) then
-    raise exception 'Invalid registry version' using errcode = '22023';
+    raise exception 'reason:import_registry_invalid' using errcode = '22023';
   end if;
   insert into public.source_documents (url, file_name, content_sha256, storage_path, published_on)
   values (nullif(batch ->> 'url', ''), batch ->> 'file_name', digest, path,
@@ -173,9 +207,10 @@ begin
     script_name, row_count) values (document_id, registry, version, 'excel_import',
     jsonb_array_length(batch -> 'rows')) returning id into batch_id;
   for item in select * from jsonb_array_elements(batch -> 'rows') loop
-    if jsonb_typeof(item -> 'raw') <> 'object' or jsonb_typeof(item -> 'edited') <> 'object'
+    if jsonb_typeof(item -> 'raw') <> 'object' or not private.excel_edited_ok(item -> 'edited')
+      or (select count(*) from jsonb_object_keys(item -> 'raw')) > 200
       or (item ->> 'row_number') !~ '^[1-9][0-9]{0,7}$' then
-      raise exception 'Invalid import row' using errcode = '22023';
+      raise exception 'reason:import_row_invalid' using errcode = '22023';
     end if;
     insert into public.import_rows (batch_id, row_number, raw, edited, decision)
     values (batch_id, (item ->> 'row_number')::integer, item -> 'raw', item -> 'edited', 'hold')
@@ -202,17 +237,17 @@ begin
     raise exception 'Not authorized' using errcode = '42501';
   end if;
   if jsonb_typeof(decisions) <> 'array' or jsonb_array_length(decisions) > 5000 then
-    raise exception 'Invalid decisions' using errcode = '22023';
+    raise exception 'reason:import_decision_invalid' using errcode = '22023';
   end if;
   for item in select * from jsonb_array_elements(decisions) loop
     target := nullif(item ->> 'target_supplier_id', '')::uuid;
     if item ->> 'decision' is null or item ->> 'decision' not in ('new', 'link', 'hold', 'skip')
-      or jsonb_typeof(item -> 'edited') <> 'object'
+      or not private.excel_edited_ok(item -> 'edited')
       or ((item ->> 'decision' = 'link') <> (target is not null))
       or (target is not null and not exists (select 1 from public.suppliers
         where id = target and status = 'active'))
       or (item ->> 'decision' = 'skip' and length(trim(coalesce(item ->> 'note', ''))) < 2) then
-      raise exception 'Invalid decision' using errcode = '22023';
+      raise exception 'reason:import_decision_invalid' using errcode = '22023';
     end if;
     update public.import_rows r set
       decision = case when item ->> 'decision' = 'skip' then 'hold' else item ->> 'decision' end,
@@ -223,7 +258,7 @@ begin
     from public.import_batches b where r.id = (item ->> 'row_id')::bigint
       and r.batch_id = b.id and b.script_name = 'excel_import' and r.status = 'pending';
     if not found then
-      raise exception 'Row is not pending' using errcode = '22023';
+      raise exception 'reason:already_decided' using errcode = '22023';
     end if;
     changed := changed + 1;
   end loop;
@@ -248,10 +283,9 @@ begin
   select * into strict r from public.import_rows where id = row_id for update;
   select * into strict b from public.import_batches where id = r.batch_id;
   v := r.edited;
-  if exists (select 1 from jsonb_each(v) e where jsonb_typeof(e.value) not in ('string', 'null'))
-    then raise exception 'Invalid mapped values'; end if;
+  if not private.excel_edited_ok(v) then raise exception 'reason:import_unsafe_value'; end if;
   if length(trim(coalesce(v ->> 'name', ''))) not between 1 and 300 then
-    raise exception 'Invalid supplier name';
+    raise exception 'reason:import_name_invalid';
   end if;
   if coalesce(nullif(v ->> 'entity_kind', ''), 'unknown') not in
     ('company', 'sole_trader', 'nonprofit', 'partnership', 'cooperative', 'public_body',
@@ -259,7 +293,7 @@ begin
     or (nullif(v ->> 'website', '') is not null and v ->> 'website' !~ '^https?://')
     or (nullif(v ->> 'value', '') is not null and (v ->> 'value' !~ '^[0-9]{5,9}$'
       or v ->> 'scheme' not in ('company', 'nonprofit', 'vat_dealer', 'personal_id'))) then
-    raise exception 'Invalid supplier fields';
+    raise exception 'reason:import_fields_invalid';
   end if;
   if r.decision = 'new' then
     insert into public.suppliers (display_name, entity_kind, website)
@@ -273,13 +307,13 @@ begin
         then coalesce(nullif(v ->> 'entity_kind', ''), 'unknown') else entity_kind end,
       website = coalesce(website, nullif(v ->> 'website', '')) where id = supplier;
   else
-    raise exception 'Row has no decision';
+    raise exception 'reason:import_decision_invalid';
   end if;
   if nullif(v ->> 'value', '') is not null and exists (
     select 1 from public.supplier_identifiers i where i.scheme = v ->> 'scheme'
       and i.value = v ->> 'value' and i.supplier_id <> supplier and i.review_status <> 'rejected'
   ) then
-    raise exception 'Identifier belongs to another supplier';
+    raise exception 'reason:identifier_taken';
   end if;
   insert into public.supplier_names (supplier_id, name, kind, source_document_id)
     values (supplier, trim(v ->> 'name'), 'as_published', b.source_document_id)
@@ -288,7 +322,7 @@ begin
     ('address', v ->> 'address'), ('contact_person', v ->> 'contact_person')) as x(k, val)
   loop
     if nullif(trim(value), '') is not null then
-      if length(trim(value)) > 500 then raise exception 'Contact too long'; end if;
+      if length(trim(value)) > 500 then raise exception 'reason:import_fields_invalid'; end if;
       insert into public.supplier_contacts (supplier_id, kind, value, source_document_id)
         values (supplier, kind, trim(value), b.source_document_id) on conflict do nothing;
     end if;
@@ -328,7 +362,9 @@ declare
 begin
   if not private.is_admin() then raise exception 'Not authorized' using errcode = '42501'; end if;
   perform 1 from public.import_batches where id = batch and script_name = 'excel_import' for update;
-  if not found then raise exception 'Batch not found' using errcode = 'P0002'; end if;
+  if not found then
+    raise exception 'reason:import_batch_missing' using errcode = 'P0002';
+  end if;
   for r in select id from public.import_rows where batch_id = batch and status = 'pending'
     and decision in ('new', 'link') order by row_number for update
   loop
@@ -336,7 +372,10 @@ begin
       perform private.apply_excel_row(r.id);
       succeeded := succeeded + 1;
     exception when others then
-      update public.import_rows set error = left(sqlerrm, 500) where id = r.id;
+      -- A known refusal keeps its reason; anything else is stored as an unexpected failure
+      -- with its SQL state, so the screen never shows raw database text.
+      update public.import_rows set error = case when sqlerrm ~ '^reason:[a-z_]+$' then sqlerrm
+        else 'reason:import_row_failed:' || sqlstate end where id = r.id;
       failed := failed + 1;
     end;
   end loop;

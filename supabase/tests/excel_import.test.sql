@@ -43,12 +43,12 @@ insert into public.suppliers (id, display_name) values
 insert into public.supplier_contacts (supplier_id, kind, value, is_primary) values
   ('48800000-0000-0000-0000-000000000001', 'email', 'original@example.test', true);
 insert into storage.objects (bucket_id, name, metadata)
-  values ('source-files', 'pgtap-test.xlsx', '{"size": 500}');
+  values ('source-files', 'excel/cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc.xlsx', '{"size": 500}');
 select set_config('request.jwt.claims',
   '{"sub":"18800000-0000-0000-0000-000000000001","role":"authenticated"}', true);
 create temporary table excel_test as
 select public.stage_excel_import(jsonb_build_object(
-  'file_name', 'pgtap-test.xlsx', 'storage_path', 'pgtap-test.xlsx',
+  'file_name', 'pgtap-test.xlsx', 'storage_path', 'excel/' || repeat('c', 64) || '.xlsx',
   'content_sha256', repeat('c', 64), 'rows', jsonb_build_array(
     jsonb_build_object('row_number', 2, 'raw', '{"name":"Excel test supplier"}'::jsonb,
       'edited', '{"name":"Excel test supplier","email":"new@example.test"}'::jsonb),
@@ -85,7 +85,7 @@ select is((select count(*)::integer from public.suppliers where
   id = '48800000-0000-0000-0000-000000000001' and review_status = 'verified'), 0,
   'import does not verify a supplier');
 select is((public.stage_excel_import(jsonb_build_object(
-  'file_name', 'pgtap-test.xlsx', 'storage_path', 'pgtap-test.xlsx',
+  'file_name', 'pgtap-test.xlsx', 'storage_path', 'excel/' || repeat('c', 64) || '.xlsx',
   'content_sha256', repeat('c', 64), 'rows', jsonb_build_array(
     jsonb_build_object('row_number', 2, 'raw', '{}'::jsonb, 'edited', '{}'::jsonb))))
   ->> 'duplicate')::boolean, true, 're-uploading the same file detects the batch');

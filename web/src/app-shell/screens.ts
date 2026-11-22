@@ -82,6 +82,13 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     group: 'tools',
   },
   {
+    to: '/import',
+    title: 'קליטת ספקים מאקסל',
+    description: 'קובץ ספקים, בדיקה ואישור לפני קליטה',
+    roles: [],
+    group: 'tools',
+  },
+  {
     to: '/usage',
     title: 'שימוש באתר',
     description: 'כמה נכנסו, איפה לוחצים ואיפה עוזבים',

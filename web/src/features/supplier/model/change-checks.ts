@@ -15,6 +15,9 @@ export function changeLabel(kind: ChangeKind, contactKind?: string | null): stri
   return CONTACT_KINDS[contactKind ?? ''] ?? 'פרט קשר';
 }
 
+/** A contact change with no value deletes the contact (migration 20261123000000). */
+export const isRemoval = (kind: ChangeKind, value: string | null) => kind === 'contact' && !value;
+
 /** The value as a person reads it: a kind by its Hebrew name. */
 export function changeValue(kind: ChangeKind, value: string | null): string {
   if (value === null || value === '') return '—';
@@ -24,7 +27,9 @@ export function changeValue(kind: ChangeKind, value: string | null): string {
 const PROBLEMS: Record<string, string | undefined> = {
   no_change: 'הערך זהה לערך הנוכחי.',
   bad_choice: 'הבחירה לא קיימת ברשימה.',
-  contact_missing: 'הפרט הקודם כבר הוחלף. רעננו את הדף ונסו שוב.',
+  contact_missing: 'הפרט הקודם כבר הוחלף או נמחק. רעננו את הדף ונסו שוב.',
+  duplicate_contact:
+    'הפרט הזה כבר רשום אצל הספק בשורה אחרת. כדי להיפטר מהכפילות, מחקו את השורה הזאת בפח.',
   no_identifier: 'אין לספק מספר מזהה שמאשר את הסוג, ולכן מנהל מערכת יאשר.',
 };
 const RULES: Record<string, string | undefined> = RULE_MESSAGES;
@@ -61,6 +66,11 @@ const TEXTS: Record<string, Texts> = {
   name_kind: {
     green: () => 'הסוג מתאים לשם הספק.',
     yellow: () => 'הסוג לא מתאים לשם הספק.',
+  },
+  contact_removal: {
+    green: (c) => `הפרט יימחק: ${c.name ?? ''}.`,
+    yellow: (c) => `זה הפרט האחרון מסוגו אצל הספק (${c.name ?? ''}), ולכן עורך אחר יאשר את המחיקה.`,
+    red: problemText,
   },
   shared_contact: {
     yellow: (c) => `אותו פרט רשום גם אצל ${c.name ?? 'ספק אחר'}. אולי זה אותו ספק.`,

@@ -23,7 +23,8 @@ describe('Excel import decisions and promotion', () => {
     await db.exec(`insert into public.supplier_contacts (supplier_id, kind, value, is_primary)
       values ('${SUPPLIER}', 'phone', '025555555', true)`);
     await db.exec(`insert into storage.objects (bucket_id, name, metadata)
-      values ('source-files', 'source.xlsx', '{"size": 500}')`);
+      values ('source-files', 'excel/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa.xlsx', '{"size": 500}'),
+        ('source-files', 'excel/bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb.xlsx', '{"size": 500}')`);
   });
   after(async () => {
     await db.close();
@@ -32,7 +33,7 @@ describe('Excel import decisions and promotion', () => {
   it('rejects unsupported files, oversized files and excessive row counts', async () => {
     const valid = {
       file_name: 'source.xlsx',
-      storage_path: 'source.xlsx',
+      storage_path: `excel/${'b'.repeat(64)}.xlsx`,
       content_sha256: 'b'.repeat(64),
       rows: [{ row_number: 1, raw: { name: 'בדיקה' }, edited: { name: 'בדיקה' } }],
     };
@@ -44,6 +45,15 @@ describe('Excel import decisions and promotion', () => {
         { ...valid, content_sha256: null },
         { ...valid, storage_path: 'big.xlsx' },
         { ...valid, rows: Array.from({ length: 5001 }, () => valid.rows[0]) },
+        { ...valid, storage_path: 'elsewhere/file.xlsx' },
+        { ...valid, rows: [{ row_number: 1, raw: {}, edited: { name: '=HYPERLINK("x")' } }] },
+        { ...valid, rows: [{ row_number: 1, raw: {}, edited: { name: '<script>x</script>' } }] },
+        { ...valid, rows: [{ row_number: 1, raw: {}, edited: { name: 'א\u202Eב' } }] },
+        { ...valid, rows: [{ row_number: 1, raw: {}, edited: { owner: 'x' } }] },
+        { ...valid, rows: [{ row_number: 1, raw: {}, edited: { name: 'א', phone: 5 } }] },
+        { ...valid, file_name: '=cmd.xlsx' },
+        { rows: valid.rows },
+        [],
       ]) {
         await assert.rejects(db.query('select public.stage_excel_import($1)', [bad]));
       }
@@ -53,7 +63,7 @@ describe('Excel import decisions and promotion', () => {
   it('requires admin decisions, isolates failures and does not repeat promoted rows', async () => {
     const input = {
       file_name: 'source.xlsx',
-      storage_path: 'source.xlsx',
+      storage_path: `excel/${'a'.repeat(64)}.xlsx`,
       content_sha256: 'a'.repeat(64),
       registry_id: REGISTRY,
       registry_version_id: VERSION,
@@ -127,6 +137,10 @@ describe('Excel import decisions and promotion', () => {
       assert.deepEqual([applied.rows[0]?.data.promoted, applied.rows[0]?.data.failed], [2, 1]);
       assert.equal(await count(db, 'select 1 from public.memberships'), 2);
       assert.equal(
+        await count(db, "select 1 from public.import_rows where error = 'reason:identifier_taken'"),
+        1,
+      );
+      assert.equal(
         await count(
           db,
           "select 1 from public.identifier_candidates where value = '000001234' and source = 'excel_import' and status = 'pending'",
@@ -150,6 +164,12 @@ describe('Excel import decisions and promotion', () => {
       assert.equal(
         await count(db, "select 1 from public.suppliers where review_status = 'verified'"),
         0,
+      );
+      await assert.rejects(
+        db.query('select public.decide_import_rows($1)', [
+          [{ row_id: third.row_id, decision: 'new', edited: { name: '@SUM(A1)' } }],
+        ]),
+        /reason:import_decision_invalid/,
       );
       const again = await db.query<{ data: { promoted: number } }>(
         'select public.apply_import_batch($1) as data',
