@@ -47,7 +47,13 @@ interface AdminRpc {
     };
   };
   cancel_engagement_request: { request: string; note: string };
-  record_supplier_approaches: { request: string; suppliers: string[]; channel: 'email' };
+  record_supplier_approaches: {
+    request: string;
+    suppliers: string[];
+    channel: 'email' | 'phone' | 'portal' | 'letter' | 'other';
+    respond_by: string | null;
+  };
+  request_approaches: { request_id: string };
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
   error_summary: Record<string, never>;
@@ -130,6 +136,7 @@ declare module '../database.types.ts' {
     update_engagement_request: { Args: AdminRpc['update_engagement_request']; Returns: null };
     cancel_engagement_request: { Args: AdminRpc['cancel_engagement_request']; Returns: null };
     record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
+    request_approaches: { Args: AdminRpc['request_approaches']; Returns: unknown };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
     error_summary: { Args: AdminRpc['error_summary']; Returns: unknown };
     usage_summary: { Args: AdminRpc['usage_summary']; Returns: unknown };
