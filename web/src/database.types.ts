@@ -1312,6 +1312,44 @@ export interface PublicSchema {
       "updated_at"?: string;
     };
   };
+  "supplier_invites": {
+    Row: {
+      "id": string;
+      "supplier_id": string;
+      "email": string;
+      "role": string;
+      "expires_at": string;
+      "accepted_at": string | null;
+      "account_id": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "supplier_id": string;
+      "email": string;
+      "role"?: string;
+      "expires_at"?: string;
+      "accepted_at"?: string | null;
+      "account_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "supplier_id"?: string;
+      "email"?: string;
+      "role"?: string;
+      "expires_at"?: string;
+      "accepted_at"?: string | null;
+      "account_id"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "supplier_names": {
     Row: {
       "id": string;

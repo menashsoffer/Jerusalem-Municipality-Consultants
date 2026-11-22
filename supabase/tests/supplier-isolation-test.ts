@@ -34,6 +34,13 @@ const READABLE: Record<string, (rows: Json[]) => void> = {
 };
 
 const REJECT = new Set([
+  'supplier_link_queue()',
+  'revoke_supplier_account(uuid,text)',
+  'portal_request_link(jsonb)',
+  'portal_find_supplier(text,text)',
+  'portal_accept_invite(uuid)',
+  'invite_supplier_account(uuid,text)',
+  'decide_supplier_account(uuid,boolean,text)',
   'addresses_to_check()',
   'cancel_access_change(uuid)',
   'cancel_supplier_change(uuid)',
@@ -87,6 +94,19 @@ const CALLS: Record<string, [string, Expect]> = {
     'reject',
   ],
   'decide_profile(uuid,text,text)': [`'${PEOPLE.owner}', 'active', null`, 'reject'],
+  // The supplier side: the caller's own links and own supplier only.
+  'portal_me()': [
+    '',
+    (v) => {
+      assert.equal(((v as Json).accounts as Json[]).length, 1);
+    },
+  ],
+  'portal_supplier(uuid)': [
+    `'${SUPPLIER}'`,
+    (v) => {
+      assert.equal((v as Json).name, 'ספק');
+    },
+  ],
   'my_access()': [
     '',
     (v) => {
