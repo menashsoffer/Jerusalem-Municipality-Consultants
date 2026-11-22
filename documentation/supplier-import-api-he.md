@@ -1,7 +1,7 @@
 # טיוטת ממשק ייבוא ספקים
 
 שלב 1 (מסד) של אפיון הקליטה מאקסל. נבנה בקודקס ב-17.11.2026 והועבר ל-main ב-22.11.2026,
-במיגרציה `20261123140000_excel_import.sql`. כל הפעולות למנהל פעיל בלבד.
+במיגרציה `20261123160000_excel_import.sql`. כל הפעולות למנהל פעיל בלבד.
 
 `stage_excel_import(batch)` מקבל אובייקט עם `file_name`, `storage_path`, `content_sha256`,
 `url` ו-`published_on` אופציונליים, `registry_id` ו-`registry_version_id` אופציונליים,
