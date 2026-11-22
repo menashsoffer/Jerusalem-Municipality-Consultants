@@ -116,4 +116,21 @@ describe('R8 category request decisions', () => {
       );
     });
   });
+
+  it('needs a reason for every decision, approval and link included', async () => {
+    const id = await request(USERS.viewer, 'תחום בלי נימוק');
+    await as(db, USERS.admin, async () => {
+      for (const note of [null, '', ' ']) {
+        await assert.rejects(
+          db.query("select public.decide_category_request($1,'approved',$2)", [id, note]),
+          /category_requests_check/,
+        );
+      }
+    });
+    const result = await db.query<{ status: string }>(
+      'select status from public.category_requests where id=$1',
+      [id],
+    );
+    assert.equal(result.rows[0]?.status, 'pending');
+  });
 });

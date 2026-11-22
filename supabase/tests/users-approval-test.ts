@@ -61,6 +61,14 @@ describe('user administration invariants used by R5', () => {
     );
     assert.equal(profile.rows[0]?.status, 'pending');
   });
+  it('needs a reason to reject an access request', async () => {
+    await as(db, USERS.manager, async () => {
+      await assert.rejects(
+        db.query("select public.decide_profile($1,'rejected',null)", [USERS.pending]),
+        /profiles_check/,
+      );
+    });
+  });
   it('allows another unit manager to approve and records the reviewer and initial viewer role', async () => {
     await as(db, USERS.manager, async () => {
       await db.query("select public.decide_profile($1,'active',null)", [USERS.pending]);

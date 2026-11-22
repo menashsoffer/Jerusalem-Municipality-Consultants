@@ -30,6 +30,8 @@ export interface Account {
   changes: ChangeRequest[] | null;
   /** When this account last signed in, as Supabase Auth records it; null if unknown. */
   signedInAt: string | null;
+  /** An admin's own changes are applied at once, without anyone's approval. */
+  admin: boolean;
 }
 
 const authSchema = z.object({ last_sign_in_at: z.string().nullish() });
@@ -73,18 +75,19 @@ export async function loadAccount(who: Identity): Promise<Account> {
       grants: [],
       changes: null,
       signedInAt: null,
+      admin: false,
     };
   const mine = { user_id: `eq.${who.userId}` };
   const profile = (await rows('profiles', mine, z.array(profileSchema)))[0] ?? null;
   if (state !== 'active')
-    return { profile, units: [], grants: [], changes: null, signedInAt: null };
+    return { profile, units: [], grants: [], changes: null, signedInAt: null, admin: false };
   const [units, grants, changes, signedInAt] = await Promise.all([
     departments(),
     rows('role_grants', { ...mine, revoked_at: 'is.null' }, z.array(grantSchema)),
     myChanges(who.userId),
     lastSignIn(),
   ]);
-  return { profile, units, grants, changes, signedInAt };
+  return { profile, units, grants, changes, signedInAt, admin: who.access.admin };
 }
 
 export async function requestAccess(userId: string, input: AccessInput): Promise<void> {

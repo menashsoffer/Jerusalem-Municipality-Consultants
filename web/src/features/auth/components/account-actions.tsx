@@ -43,9 +43,11 @@ interface Props {
   /** Null when change requests are not available yet: then only sign-out is offered. */
   edit: (() => void) | null;
   askChange: boolean;
+  /** An admin's changes are saved at once. */
+  admin: boolean;
 }
 /** The personal area's actions as three equal tiles (one clear target each). */
-export function AccountActions({ edit, askChange }: Props) {
+export function AccountActions({ edit, askChange, admin }: Props) {
   const signOutText = useId();
   return (
     <section aria-label="פעולות" className={styles.tiles}>
@@ -54,7 +56,7 @@ export function AccountActions({ edit, askChange }: Props) {
           tile={{
             icon: 'pencil',
             title: 'עריכת הפרטים שלי',
-            text: 'שם, תפקיד או טלפון. השינוי נשלח לאישור מנהל.',
+            text: `שם, תפקיד או טלפון. ${admin ? 'השינוי נשמר מיד.' : 'השינוי נשלח לאישור מנהל.'}`,
           }}
           run={edit}
         />
@@ -63,7 +65,7 @@ export function AccountActions({ edit, askChange }: Props) {
         <ActionTile
           tile={{
             icon: 'shield',
-            title: 'בקשה לשינוי תפקיד או יחידה',
+            title: admin ? 'שינוי תפקיד או יחידה' : 'בקשה לשינוי תפקיד או יחידה',
             text: 'תפקיד נוסף, הסרת תפקיד או מעבר יחידה.',
           }}
           run={() => {

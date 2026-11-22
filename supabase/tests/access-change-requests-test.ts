@@ -180,20 +180,34 @@ describe('access change requests (screens-spec 4.1)', () => {
     assert.deepEqual(await grants(db, USERS.viewer), [{ role: 'viewer', unit_id: UNIT_2 }]);
   });
 
-  it('removes a role on approval by another admin', async () => {
+  it('applies a change an admin asks for at once, recorded as approved', async () => {
+    const id = await ask(db, USERS.admin, [
+      `'details', $1, null, null, null, $2`,
+      [REASON, '{"job_title":"מנהל המערכת"}'],
+    ]);
+    const done = await db.query<{ status: string; decided_by: string; job_title: string }>(
+      `select r.status, r.decided_by, p.job_title from public.access_change_requests r
+       join public.profiles p using (user_id) where r.id = $1`,
+      [id],
+    );
+    assert.deepEqual(done.rows[0], {
+      status: 'approved',
+      decided_by: USERS.admin,
+      job_title: 'מנהל המערכת',
+    });
+  });
+
+  it('keeps the last admin: removing it fails and nothing is recorded', async () => {
     const grant = await db.query<{ id: string }>(
       "select id from public.role_grants where user_id = $1 and role = 'admin'",
       [USERS.admin],
     );
-    const id = await ask(db, USERS.admin, [
-      `'remove_role', $1, null, null, $2`,
-      [REASON, grant.rows[0]?.id],
-    ]);
-    await assert.rejects(decide(db, USERS.manager, [id, true]), /not authorized/);
+    const call: Call = [`'remove_role', $1, null, null, $2`, [REASON, grant.rows[0]?.id]];
+    await assert.rejects(ask(db, USERS.admin, call), /last_admin/);
     await db.query("insert into public.role_grants(user_id, role) values ($1, 'admin')", [
       USERS.auditor,
     ]);
-    await decide(db, USERS.auditor, [id, true]);
+    await ask(db, USERS.admin, call);
     assert.deepEqual(await grants(db, USERS.admin), []);
   });
 });
