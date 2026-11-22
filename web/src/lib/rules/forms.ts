@@ -59,7 +59,7 @@ const ENTITY_KINDS = [
   'nonprofit',
   'partnership',
   'public_body',
-  'individual',
+  'cooperative',
   'unknown',
   '',
 ] as const;

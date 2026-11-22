@@ -164,7 +164,9 @@ describe('catalog RPCs preserve RLS and invalidate cached snapshots', () => {
   it('bumps for an authenticated writer but prevents direct counter manipulation', async () => {
     await as(db, USERS.admin, async () => {
       const before = await snapshot(db);
-      await db.exec(`update public.suppliers set display_name = 'שם חדש' where id = '${SUPPLIER}'`);
+      await db.query('select public.rename_supplier($1::jsonb)', [
+        JSON.stringify({ supplier_id: SUPPLIER, display_name: 'שם חדש' }),
+      ]);
       const changed = await snapshot(db);
       assert.notEqual(changed.version, before.version);
       await db.exec('update private.catalog_version set counter = 1');
