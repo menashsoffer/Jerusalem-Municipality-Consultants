@@ -522,6 +522,12 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "decision": string | null;
+      "target_supplier_id": string | null;
+      "edited": Json | null;
+      "error": string | null;
+      "decided_by": string | null;
+      "decided_at": string | null;
     };
     Insert: {
       "id"?: never;
@@ -535,6 +541,12 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "decision"?: string | null;
+      "target_supplier_id"?: string | null;
+      "edited"?: Json | null;
+      "error"?: string | null;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
     };
     Update: {
       "id"?: never;
@@ -548,6 +560,12 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "decision"?: string | null;
+      "target_supplier_id"?: string | null;
+      "edited"?: Json | null;
+      "error"?: string | null;
+      "decided_by"?: string | null;
+      "decided_at"?: string | null;
     };
   };
   "job_runs": {
@@ -1068,7 +1086,7 @@ export interface PublicSchema {
   "source_documents": {
     Row: {
       "id": string;
-      "url": string;
+      "url": string | null;
       "file_name": string | null;
       "media_type": string | null;
       "published_on": string | null;
@@ -1079,10 +1097,11 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "storage_path": string | null;
     };
     Insert: {
       "id"?: string;
-      "url": string;
+      "url"?: string | null;
       "file_name"?: string | null;
       "media_type"?: string | null;
       "published_on"?: string | null;
@@ -1093,10 +1112,11 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "storage_path"?: string | null;
     };
     Update: {
       "id"?: string;
-      "url"?: string;
+      "url"?: string | null;
       "file_name"?: string | null;
       "media_type"?: string | null;
       "published_on"?: string | null;
@@ -1107,6 +1127,7 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "storage_path"?: string | null;
     };
   };
   "supplier_accounts": {
