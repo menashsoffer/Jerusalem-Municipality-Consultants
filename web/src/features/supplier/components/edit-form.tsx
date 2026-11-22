@@ -1,4 +1,3 @@
-import { supplierKey } from '../../../data/react-catalog.ts';
 import { useActionState, useState, type ReactNode } from 'react';
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import type { FieldErrors } from '../../../lib/rules/forms.ts';
@@ -6,29 +5,19 @@ import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { SelectField } from '../../../ui/select-field.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
-import { IDLE, saveAndRefresh, update, type SaveResult } from '../api/write.ts';
-import { CONTACT_KINDS } from '../model/labels.ts';
-import { contactField, NAME, NEW_KIND, NEW_VALUE, parseEditForm } from '../model/edit-form.ts';
+import { runEdit, START, type EditState } from '../api/edit-flow.ts';
+import { reasonNeeded, waitsForDecision } from '../model/change-checks.ts';
+import { CONTACT_KINDS, ENTITY_KINDS } from '../model/labels.ts';
+import { contactField, KIND, NAME, NEW_KIND, NEW_VALUE, REASON } from '../model/edit-form.ts';
+import { ChangeResults } from './change-results.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
   data: SupplierDetail;
+  /** An admin's change is saved at once, and needs a reason when a check is yellow. */
+  admin?: boolean;
   /** Shown beside the save button: the administrator's status action. */
   aside?: ReactNode;
-}
-interface State extends SaveResult {
-  errors: FieldErrors;
-  /** What was typed, so a refused form shows it again instead of the saved values. */
-  typed: Record<string, string>;
-}
-const START: State = { ...IDLE, errors: {}, typed: {} };
-
-function typedValues(form: FormData): Record<string, string> {
-  const typed: Record<string, string> = {};
-  form.forEach((value, key) => {
-    if (typeof value === 'string') typed[key] = value;
-  });
-  return typed;
 }
 
 interface ContactsProps {
@@ -84,30 +73,40 @@ function Contacts({ data, errors, typed }: ContactsProps) {
   );
 }
 
+function KindField({ data, state }: { data: SupplierDetail; state: EditState }) {
+  return (
+    <SelectField
+      key={state.typed[KIND] ?? ''}
+      field={{ label: 'סוג ישות', error: state.errors[KIND] }}
+      select={{
+        name: KIND,
+        defaultValue: state.typed[KIND] ?? data.supplier.entity_kind,
+        children: Object.entries(ENTITY_KINDS).map(([value, label]) => (
+          <option key={value} value={value}>
+            {label}
+          </option>
+        )),
+      }}
+    />
+  );
+}
+
+function saveLabel(state: EditState, admin: boolean): string {
+  return state.checked && waitsForDecision(state.checked, admin) ? 'שליחה לאישור' : 'שמירה';
+}
+
 /**
- * One form, one save (spec 4.5): the shared rules check every field first and mark each
- * mistake beside it; the database checks the same rules again and stores all or nothing.
+ * One form, one save (spec 6.6): the shared rules check every field first, then the
+ * database checks each change in green, yellow or red before anything is saved.
  */
-export function EditForm({ data, aside }: Props) {
+export function EditForm({ data, admin = false, aside }: Props) {
   const [version, setVersion] = useState(0);
-  const [state, action, pending] = useActionState(async (_: State, form: FormData) => {
-    const parsed = parseEditForm(form, data);
-    if ('errors' in parsed)
-      return {
-        ...IDLE,
-        error: 'יש לתקן את השדות המסומנים.',
-        errors: parsed.errors,
-        typed: typedValues(form),
-      };
-    if ('unchanged' in parsed) return { ...START, message: 'אין שינויים לשמירה.' };
-    const result = await saveAndRefresh(
-      update(parsed.update),
-      supplierKey(data.supplier.id),
-      'השינויים נשמרו.',
-    );
-    if (!result.error) setVersion((value) => value + 1);
-    return { ...result, errors: {}, typed: result.error ? typedValues(form) : {} };
+  const [state, action, pending] = useActionState(async (previous: EditState, form: FormData) => {
+    const next = await runEdit(previous, form, { data, admin });
+    if (next.done) setVersion((value) => value + 1);
+    return next;
   }, START);
+  const askReason = state.checked !== null && reasonNeeded(state.checked, admin);
   return (
     <form action={action} aria-label="עריכת פרטי הספק" key={version} noValidate>
       <FormField
@@ -119,14 +118,27 @@ export function EditForm({ data, aside }: Props) {
           maxLength: 300,
         }}
       />
+      <KindField data={data} state={state} />
       <Contacts data={data} errors={state.errors} typed={state.typed} />
+      {state.checked && <ChangeResults checked={state.checked} admin={admin} />}
+      {askReason && (
+        <FormField
+          field={{ label: 'סיבת השינוי', error: state.errors[REASON] }}
+          input={{
+            name: REASON,
+            defaultValue: state.typed[REASON] ?? '',
+            required: true,
+            maxLength: 500,
+          }}
+        />
+      )}
       <div className={styles.dialogActions}>
         <Button type="submit" pending={pending}>
-          שמירה
+          {saveLabel(state, admin)}
         </Button>
         {aside}
       </div>
-      <StatusMessage>{pending ? 'שומר…' : state.message}</StatusMessage>
+      <StatusMessage>{pending ? 'בודק ושומר…' : state.message}</StatusMessage>
       {state.error && <p role="alert">{state.error}</p>}
     </form>
   );

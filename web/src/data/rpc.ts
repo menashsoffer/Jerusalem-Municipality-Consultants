@@ -8,6 +8,7 @@ import { SessionKeeper } from './auth-session.ts';
 import { MemoryStorage } from './memory-storage.ts';
 import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
+import type { SupplierChange } from './supplier-changes.ts';
 
 interface AdminRpc {
   decide_threshold_proposal: { proposal: string; approve: boolean; note?: string | null };
@@ -77,6 +78,10 @@ interface AdminRpc {
   revoke_supplier_account: { account_id: string; note: string };
   invite_supplier_account: { supplier_id: string; email: string };
   supplier_area_accounts: { target: string };
+  check_supplier_change: { change: SupplierChange };
+  submit_supplier_change: { change: SupplierChange };
+  decide_supplier_change: { request_id: string; approve: boolean; note: string | null };
+  cancel_supplier_change: { request_id: string };
 }
 // Existing SQL RPCs not yet covered by the snapshot-only generator.
 declare module '../database.types.ts' {
@@ -106,6 +111,10 @@ declare module '../database.types.ts' {
     request_access_change: { Args: AdminRpc['request_access_change']; Returns: string };
     cancel_access_change: { Args: AdminRpc['cancel_access_change']; Returns: null };
     decide_access_change: { Args: AdminRpc['decide_access_change']; Returns: null };
+    check_supplier_change: { Args: AdminRpc['check_supplier_change']; Returns: unknown };
+    submit_supplier_change: { Args: AdminRpc['submit_supplier_change']; Returns: unknown };
+    decide_supplier_change: { Args: AdminRpc['decide_supplier_change']; Returns: null };
+    cancel_supplier_change: { Args: AdminRpc['cancel_supplier_change']; Returns: null };
     last_approaches: {
       Args: AdminRpc['last_approaches'];
       Returns: { supplier_id: string; last_on: string }[];
