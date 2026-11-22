@@ -83,7 +83,14 @@ function useStep(step: Step, setStep: (next: Step) => void, proof: File | null) 
   }, '');
 }
 
-function StepFields({ step, onProof }: { step: Step; onProof: (file: File | null) => void }) {
+interface FieldsProps {
+  step: Step;
+  onProof: (file: File | null) => void;
+  /** The number stays as typed when the form resets after a failed lookup. */
+  number: [string, (value: string) => void];
+}
+
+function StepFields({ step, onProof, number }: FieldsProps) {
   return (
     <>
       {step.kind === 'number' && (
@@ -96,6 +103,10 @@ function StepFields({ step, onProof }: { step: Step; onProof: (file: File | null
             maxLength: 11,
             pattern: '[0-9\\- ]{9,11}',
             autoComplete: 'off',
+            value: number[0],
+            onChange: (event) => {
+              number[1](event.currentTarget.value);
+            },
           }}
         />
       )}
@@ -137,12 +148,13 @@ const SUBMIT: Record<Step['kind'], string> = {
 export function LinkWizard() {
   const [step, setStep] = useState<Step>({ kind: 'number' });
   const [proof, setProof] = useState<File | null>(null);
+  const number = useState('');
   const [error, action, pending] = useStep(step, setStep, proof);
   return (
     <form action={action} aria-label="שיוך לספק" className={styles.panel}>
       <h2>שיוך לספק</h2>
       {error && <Notice tone="error" title={error} />}
-      <StepFields step={step} onProof={setProof} />
+      <StepFields step={step} onProof={setProof} number={number} />
       <FormActions>
         <Button type="submit" pending={pending} pendingLabel="בודק…">
           {SUBMIT[step.kind]}

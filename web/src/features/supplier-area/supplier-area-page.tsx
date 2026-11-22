@@ -1,7 +1,14 @@
 import { redirect, useLoaderData } from 'react-router';
 import { getAdminSession } from '../../data/rpc.ts';
 import { israelToday } from '../../lib/dates.ts';
-import { loadFile, loadMe, type PortalMe, type SupplierFile } from './api/portal.ts';
+import {
+  loadFile,
+  loadMe,
+  loadProposals,
+  type PortalMe,
+  type Proposal,
+  type SupplierFile,
+} from './api/portal.ts';
 import { activeAccounts, areaStep, type AreaStep } from './model/portal-model.ts';
 import { AccountNotes } from './components/account-notes.tsx';
 import { Invites } from './components/invites.tsx';
@@ -16,6 +23,7 @@ interface AreaData {
   me: PortalMe;
   step: AreaStep;
   file: SupplierFile | null;
+  proposals: Proposal[];
   today: string;
 }
 
@@ -25,8 +33,9 @@ export async function loader(): Promise<AreaData | Response> {
   const me = await loadMe();
   const step = areaStep(me);
   const first = activeAccounts(me)[0];
-  const file = step === 'file' && first ? await loadFile(first.supplier_id) : null;
-  return { me, step, file, today: israelToday() };
+  const id = step === 'file' ? first?.supplier_id : undefined;
+  const [file, proposals] = id ? await Promise.all([loadFile(id), loadProposals(id)]) : [null, []];
+  return { me, step, file, proposals, today: israelToday() };
 }
 
 function Start({ me, step }: { me: PortalMe; step: AreaStep }) {
@@ -45,10 +54,14 @@ function Start({ me, step }: { me: PortalMe; step: AreaStep }) {
 }
 
 export function SupplierAreaPage() {
-  const { me, step, file, today } = useLoaderData<AreaData>();
+  const { me, step, file, proposals, today } = useLoaderData<AreaData>();
   return (
     <div className={styles.area}>
-      {file ? <MyFile file={file} today={today} /> : <Start me={me} step={step} />}
+      {file ? (
+        <MyFile file={file} proposals={proposals} today={today} />
+      ) : (
+        <Start me={me} step={step} />
+      )}
     </div>
   );
 }

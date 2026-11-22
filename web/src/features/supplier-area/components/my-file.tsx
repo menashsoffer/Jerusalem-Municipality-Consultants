@@ -1,6 +1,8 @@
 import { dayOf } from '../../../lib/dates.ts';
-import type { SupplierFile } from '../api/portal.ts';
+import type { Proposal, SupplierFile } from '../api/portal.ts';
 import { CONTACT_LABELS, SCHEME_LABELS, validity } from '../model/portal-model.ts';
+import { MyRequests } from './my-requests.tsx';
+import { ProposeFix } from './propose-fix.tsx';
 import styles from './area.module.css';
 
 const UNTIL: Record<ReturnType<typeof validity>, (until: string) => string> = {
@@ -10,11 +12,49 @@ const UNTIL: Record<ReturnType<typeof validity>, (until: string) => string> = {
   ended: (until) => `הסתיים ב-${dayOf(until)}`,
 };
 
-function Details({ file }: { file: SupplierFile }) {
+function Contacts({ file }: { file: SupplierFile }) {
+  return (
+    <>
+      {file.contacts.map((c) => {
+        const label = CONTACT_LABELS[c.kind] ?? c.kind;
+        return (
+          <div key={c.id}>
+            <dt>{label}</dt>
+            <dd>
+              <bdi>{c.value}</bdi>
+              <ProposeFix
+                supplierId={file.id}
+                target={{
+                  kind: 'contact',
+                  label,
+                  current: c.value,
+                  contactKind: c.kind,
+                  contactId: c.id,
+                }}
+              />
+            </dd>
+          </div>
+        );
+      })}
+    </>
+  );
+}
+
+function Details({ file, proposals }: { file: SupplierFile; proposals: Proposal[] }) {
   return (
     <section className={styles.panel} aria-labelledby="details-title">
       <h2 id="details-title">הפרטים שלי</h2>
       <dl className={styles.facts}>
+        <div>
+          <dt>שם</dt>
+          <dd>
+            {file.name}
+            <ProposeFix
+              supplierId={file.id}
+              target={{ kind: 'rename', label: 'שם הספק', current: file.name }}
+            />
+          </dd>
+        </div>
         {file.other_names.length > 0 && (
           <div>
             <dt>שמות נוספים</dt>
@@ -29,18 +69,13 @@ function Details({ file }: { file: SupplierFile }) {
             </dd>
           </div>
         ))}
-        {file.contacts.map((c) => (
-          <div key={`${c.kind}-${c.value}`}>
-            <dt>{CONTACT_LABELS[c.kind] ?? c.kind}</dt>
-            <dd>
-              <bdi>{c.value}</bdi>
-            </dd>
-          </div>
-        ))}
+        <Contacts file={file} />
       </dl>
+      <ProposeFix supplierId={file.id} target={{ kind: 'contact', label: 'פרט קשר' }} />
       <p className={styles.muted}>
-        פרט שגוי? בקרוב אפשר יהיה להציע תיקון מכאן. בינתיים פנו ליחידה שאיתה אתם עובדים.
+        העירייה בודקת כל תיקון לפני שהוא נשמר. המזהים מתעדכנים רק דרך היחידה שאיתה אתם עובדים.
       </p>
+      <MyRequests proposals={proposals} />
     </section>
   );
 }
@@ -75,15 +110,21 @@ function Memberships({ file, today }: { file: SupplierFile; today: string }) {
   );
 }
 
-/** "התיק שלי" (spec 6.3): how the municipality sees the supplier, read only in stage 1. */
-export function MyFile({ file, today }: { file: SupplierFile; today: string }) {
+interface Props {
+  file: SupplierFile;
+  proposals: Proposal[];
+  today: string;
+}
+
+/** "התיק שלי" (spec 6.3): how the municipality sees the supplier, and fixes to propose. */
+export function MyFile({ file, proposals, today }: Props) {
   return (
     <>
       <header className={styles.title}>
         <h1 tabIndex={-1}>{file.name}</h1>
         <p className={styles.muted}>{file.role === 'owner' ? 'מורשה ספק' : 'עובד ספק'}</p>
       </header>
-      <Details file={file} />
+      <Details file={file} proposals={proposals} />
       <Memberships file={file} today={today} />
     </>
   );

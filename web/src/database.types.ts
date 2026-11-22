@@ -1178,6 +1178,8 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "origin": string;
+      "account_id": string | null;
     };
     Insert: {
       "id"?: string;
@@ -1197,6 +1199,8 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "origin"?: string;
+      "account_id"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -1216,6 +1220,8 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "origin"?: string;
+      "account_id"?: string | null;
     };
   };
   "supplier_contacts": {

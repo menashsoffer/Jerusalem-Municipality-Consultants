@@ -78,6 +78,8 @@ interface AdminRpc {
   revoke_supplier_account: { account_id: string; note: string };
   invite_supplier_account: { supplier_id: string; email: string };
   supplier_area_accounts: { target: string };
+  portal_propose_change: { change: SupplierChange };
+  portal_changes: { supplier_id: string };
   check_supplier_change: { change: SupplierChange };
   submit_supplier_change: { change: SupplierChange };
   decide_supplier_change: { request_id: string; approve: boolean; note: string | null };
@@ -129,6 +131,8 @@ declare module '../database.types.ts' {
     decide_supplier_account: { Args: AdminRpc['decide_supplier_account']; Returns: null };
     revoke_supplier_account: { Args: AdminRpc['revoke_supplier_account']; Returns: null };
     supplier_area_accounts: { Args: AdminRpc['supplier_area_accounts']; Returns: unknown };
+    portal_propose_change: { Args: AdminRpc['portal_propose_change']; Returns: unknown };
+    portal_changes: { Args: AdminRpc['portal_changes']; Returns: unknown };
   }
 }
 const accessSchema = z.object({

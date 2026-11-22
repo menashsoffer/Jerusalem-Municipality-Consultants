@@ -85,7 +85,8 @@ function PendingChange({ change, props }: { change: ChangeRequest; props: Props 
         {changeValue(change.change_kind, change.new_value)}
       </h3>
       <p>
-        {own ? 'הבקשה שלך' : 'נשלחה'} ב-{dayOf(change.created_at)}
+        {own ? 'הבקשה שלך' : change.origin === 'supplier' ? 'הספק הציע' : 'נשלחה'} ב-
+        {dayOf(change.created_at)}
         {change.reason ? `. הסיבה: ${change.reason}` : ''}
       </p>
       <p>{change.checks.map(checkText).join(' ')}</p>

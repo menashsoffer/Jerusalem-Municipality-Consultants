@@ -1,5 +1,8 @@
 // What the supplier area shows and checks, without the network (supplier-portal-spec-he.md 5-6).
 import { validCheckDigit } from '../../../lib/rules/israeli-id.ts';
+import { RULE_MESSAGES } from '../../../lib/rules/messages.ts';
+import { CONTACT_RULES, nameProblem, type ContactKind } from '../../../lib/rules/supplier.ts';
+import { textProblem } from '../../../lib/rules/text.ts';
 import type { PortalAccount, PortalMe } from '../api/portal.ts';
 
 export type Scheme = 'company' | 'nonprofit';
@@ -68,4 +71,43 @@ export function validity(until: string | null, today: string): 'open' | 'soon' |
   const soon = new Date(`${today}T00:00:00Z`);
   soon.setUTCDate(soon.getUTCDate() + 60);
   return until <= soon.toISOString().slice(0, 10) ? 'soon' : 'valid';
+}
+
+export interface ProposalFields {
+  kind: 'rename' | 'contact';
+  contact_kind?: string;
+  value: string;
+  reason: string;
+}
+
+const TEXT_REASON = { min: 3, max: 500, letters: 2 };
+
+/** The same rules the database runs, as one sentence, or null when the fix can be sent. */
+export function proposalProblem(fields: ProposalFields): string | null {
+  const value = fields.value.trim();
+  const rule =
+    fields.kind === 'rename'
+      ? nameProblem(value)
+      : fields.contact_kind && fields.contact_kind in CONTACT_RULES
+        ? CONTACT_RULES[fields.contact_kind as ContactKind](value)
+        : 'bad_choice';
+  if (rule) return RULE_MESSAGES[rule];
+  const reason = fields.reason.trim();
+  if ((fields.kind === 'rename' || reason) && textProblem(reason, TEXT_REASON))
+    return 'צריך לכתוב סיבה לשינוי, לפחות 3 תווים.';
+  return null;
+}
+export const PROPOSAL_STATUS: Record<string, string> = {
+  pending: 'ממתין לבדיקה',
+  applied: 'עודכן',
+  approved: 'אושר ועודכן',
+  rejected: 'נדחה',
+  cancelled: 'בוטל',
+};
+
+/** What a proposal is about, for its line in "הבקשות שלי". */
+export function proposalLabel(kind: string, contactKind: string | null): string {
+  if (kind === 'rename') return 'שם הספק';
+  if (kind === 'entity_kind') return 'סוג הספק';
+  return CONTACT_LABELS[contactKind ?? ''] ?? 'פרט קשר';
 }

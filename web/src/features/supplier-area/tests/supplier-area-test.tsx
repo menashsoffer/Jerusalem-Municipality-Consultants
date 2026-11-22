@@ -1,11 +1,11 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import * as rpc from '../../../data/rpc.ts';
 import { refusal } from '../../../data/client.ts';
 import { SupplierAreaPage, loader } from '../supplier-area-page.tsx';
-import type { PortalMe, SupplierFile } from '../api/portal.ts';
+import type { PortalMe, Proposal, SupplierFile } from '../api/portal.ts';
 
 const USER = '11111111-1111-4111-8111-111111111111';
 const TOKEN = `x.${btoa(JSON.stringify({ sub: USER }))}.y`;
@@ -25,7 +25,7 @@ const FILE: SupplierFile = {
   role: 'owner',
   other_names: ['שם מסחרי'],
   identifiers: [{ scheme: 'company', value: '512345679', verified: true }],
-  contacts: [{ kind: 'phone', value: '02-6291111' }],
+  contacts: [{ id: 'c1', kind: 'phone', value: '02-6291111' }],
   memberships: [
     {
       registry: 'מאגר יועצים',
@@ -46,8 +46,13 @@ const FILE: SupplierFile = {
   ],
 };
 
-function page(value: { me: PortalMe; step: string; file: SupplierFile | null }) {
-  const data = { ...value, today: '2026-11-22' };
+function page(value: {
+  me: PortalMe;
+  step: string;
+  file: SupplierFile | null;
+  proposals?: Proposal[];
+}) {
+  const data = { proposals: [], ...value, today: '2026-11-22' };
   const router = createMemoryRouter(
     [{ id: 'area', path: '/', Component: SupplierAreaPage, loader: () => data }],
     { hydrationData: { loaderData: { area: data } } },
@@ -90,7 +95,10 @@ describe('the supplier area', () => {
       decision_note: null,
       created_at: '2026-11-22T08:00:00Z',
     };
-    answer((name) => (name === 'portal_me' ? me({ accounts: [account] as never }) : FILE));
+    answer((name) => {
+      if (name === 'portal_me') return me({ accounts: [account] as never });
+      return name === 'portal_changes' ? [] : FILE;
+    });
     const result = await loader();
     expect(result).toMatchObject({ step: 'file', file: { name: 'ספק בע"מ' } });
   });
@@ -133,6 +141,7 @@ describe('the supplier area', () => {
     await userEvent.type(field, '512345678');
     await userEvent.click(screen.getByRole('button', { name: 'המשך' }));
     expect(await screen.findByText(/המספר לא תקין/)).toBeDefined();
+    expect((field as HTMLInputElement).value).toBe('512345678');
     await userEvent.clear(field);
     await userEvent.type(field, '512345679');
     await userEvent.click(screen.getByRole('button', { name: 'המשך' }));
@@ -202,5 +211,126 @@ describe('the supplier area', () => {
     expect(screen.getByText('מסתיים ב-01.12.2026')).toBeDefined();
     expect(screen.getByText('הסתיים ב-01.01.2025')).toBeDefined();
     expect(screen.getByRole('link', { name: 'מסמך המאגר' })).toBeDefined();
+  });
+});
+
+describe('proposing a fix', () => {
+  beforeEach(() => {
+    // jsdom has no native dialog close; the real one is checked in Chromium.
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      configurable: true,
+      value: function (this: HTMLDialogElement) {
+        this.open = false;
+      },
+    });
+  });
+  const openDialogs = () => {
+    for (const dialog of document.querySelectorAll('dialog')) dialog.setAttribute('open', '');
+  };
+
+  it('checks the value, then sends a contact fix and says it will be checked', async () => {
+    const call = answer(() => ({ request_id: 'r1', status: 'pending' }));
+    page({ me: me(), step: 'file', file: FILE });
+    openDialogs();
+    const form = screen.getByRole('form', { name: 'תיקון טלפון' });
+    await userEvent.type(within(form).getByLabelText(/הערך הנכון/), 'abc');
+    await userEvent.click(within(form).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(await within(form).findByText(/מספר טלפון לא תקין/)).toBeDefined();
+    expect(call).not.toHaveBeenCalled();
+    await userEvent.clear(within(form).getByLabelText(/הערך הנכון/));
+    await userEvent.type(within(form).getByLabelText(/הערך הנכון/), '026293333');
+    await userEvent.click(within(form).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(call).toHaveBeenCalledWith(
+      'portal_propose_change',
+      {
+        change: {
+          supplier_id: 's1',
+          kind: 'contact',
+          value: '026293333',
+          contact_kind: 'phone',
+          contact_id: 'c1',
+        },
+      },
+      expect.anything(),
+    );
+    expect(await screen.findByText('נבדוק את השינוי ונעדכן.')).toBeDefined();
+  });
+
+  it('asks for a reason to rename, and shows a refusal from the database', async () => {
+    answer(() => {
+      throw refusal(400, 'reason:proposal_pending', 'rule');
+    });
+    page({ me: me(), step: 'file', file: FILE });
+    openDialogs();
+    const form = screen.getByRole('form', { name: 'תיקון שם הספק' });
+    await userEvent.type(within(form).getByLabelText(/הערך הנכון/), 'ספק חדש בעמ');
+    await userEvent.click(within(form).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(await within(form).findByText(/צריך לכתוב סיבה/)).toBeDefined();
+    await userEvent.type(within(form).getByLabelText(/סיבה/), 'שינוי שם ברשם');
+    await userEvent.click(within(form).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(await within(form).findByText(/כבר שלחתם תיקון/)).toBeDefined();
+  });
+
+  it('adds a new contact of a chosen kind', async () => {
+    const call = answer(() => ({ request_id: 'r2', status: 'pending' }));
+    page({ me: me(), step: 'file', file: FILE });
+    openDialogs();
+    const form = screen.getByRole('form', { name: 'פרט חדש' });
+    await userEvent.selectOptions(within(form).getByLabelText(/סוג הפרט/), 'email');
+    await userEvent.type(within(form).getByLabelText(/^הערך/), 'office@example.co.il');
+    await userEvent.click(within(form).getByRole('button', { name: 'שליחה לבדיקה' }));
+    expect(call).toHaveBeenCalledWith(
+      'portal_propose_change',
+      {
+        change: {
+          supplier_id: 's1',
+          kind: 'contact',
+          value: 'office@example.co.il',
+          contact_kind: 'email',
+        },
+      },
+      expect.anything(),
+    );
+  });
+
+  it('lists the requests with their state, and cancels a waiting one of mine', async () => {
+    const call = answer(() => null);
+    const base = {
+      contact_kind: null,
+      old_value: 'ספק',
+      decided_at: null,
+      created_at: '2026-11-22',
+    };
+    const proposals: Proposal[] = [
+      {
+        ...base,
+        id: 'p1',
+        kind: 'rename',
+        new_value: 'ספק חדש',
+        status: 'pending',
+        decision_note: null,
+        mine: true,
+      },
+      {
+        ...base,
+        id: 'p2',
+        kind: 'contact',
+        contact_kind: 'phone',
+        new_value: '026290000',
+        status: 'rejected',
+        decision_note: 'לא נכון',
+        mine: false,
+      },
+    ];
+    page({ me: me(), step: 'file', file: FILE, proposals });
+    const list = screen.getByRole('region', { name: 'הבקשות שלי' });
+    expect(within(list).getByText(/ממתין לבדיקה/)).toBeDefined();
+    expect(within(list).getByText(/נדחה · .*הסיבה: לא נכון/)).toBeDefined();
+    await userEvent.click(within(list).getByRole('button', { name: 'ביטול הבקשה' }));
+    expect(call).toHaveBeenCalledWith(
+      'cancel_supplier_change',
+      { request_id: 'p1' },
+      expect.anything(),
+    );
   });
 });
