@@ -14,29 +14,16 @@ export interface ErrorReport {
   boundary: 'root' | 'route' | 'bootstrap' | 'action';
   /** error-handling-spec-he.md section 3; fixed values only. */
   kind?: FailureKind;
-  /** The first part of the screen's address, from a fixed list; never ids or queries. */
-  screen?: Screen;
+  /** The rest is added after the first screen (error-details-spec-he.md section 3). */
+  screen?: string;
+  cause?: ErrorCause;
+  request?: string;
+  device?: 'desktop' | 'mobile';
+  site_version?: string;
 }
-export const SCREENS = [
-  'catalog',
-  'supplier',
-  'categories',
-  'identifiers',
-  'admin',
-  'route-check',
-  'engagement',
-  'addresses',
-  'load-control',
-  'users',
-  'thresholds',
-  'auth',
-] as const;
-export type Screen = (typeof SCREENS)[number] | 'other';
-/** '#/supplier/<id>?x' -> 'supplier'; anything not in the list -> 'other'. */
-export function screenOf(hash: string): Screen {
-  const first = hash.replace(/^#?\/?/, '').split(/[/?#]/)[0] ?? '';
-  return (SCREENS as readonly string[]).includes(first) ? (first as Screen) : 'other';
-}
+/** What failed, from a fixed list (error-details-spec-he.md section 3). */
+export type ErrorCause =
+  'superseded' | 'bad_answer' | 'http' | 'network' | 'render' | 'stale_files' | 'rule' | 'unknown';
 export type TelemetryEvent = VitalReport | ErrorReport;
 const MAX_INTERACTIONS = 10;
 const EVENT_THRESHOLD = 16;

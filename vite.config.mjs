@@ -39,6 +39,10 @@ function securityPolicy() {
 
 export default defineConfig({
   root: 'web',
+  // The release in error reports (error-details-spec-he.md section 3); empty outside CI.
+  define: {
+    'import.meta.env.VITE_SITE_VERSION': JSON.stringify((process.env.GITHUB_SHA ?? '').slice(0, 7)),
+  },
   base: './',
   build: {
     outDir: '../dist',

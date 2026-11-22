@@ -27,9 +27,10 @@ const batcher = new EventBatcher<TelemetryEvent>(window, (events) => {
     ? eventRpcRequest('record_web_telemetry', session.token, events)
     : null;
 });
-setTelemetryReporter((event) => {
+// Errors wait for the monitoring chunk, which adds their details; without it they go as is.
+const plain = (event: TelemetryEvent) => {
   batcher.add(event);
-});
+};
 const mounted = createRoot(root, {
   onUncaughtError: (error) => {
     reportBoundaryError(error, 'root');
@@ -53,15 +54,21 @@ try {
   const router = createAdminRouter();
   watchSession(keeper, router);
   // Speed and usage tracking load after the first screen, outside the initial bundle.
-  void import('./data/monitoring.ts').then((m) => {
-    m.startMonitoring({ win: window, router, telemetry: batcher });
-  });
+  void import('./data/monitoring.ts').then(
+    (m) => {
+      m.startMonitoring({ win: window, router, telemetry: batcher });
+    },
+    () => {
+      setTelemetryReporter(plain);
+    },
+  );
   mounted.render(
     <StrictMode>
       <AppRouter router={router} />
     </StrictMode>,
   );
 } catch (error) {
+  setTelemetryReporter(plain);
   reportBoundaryError(error, 'bootstrap');
   mounted.render(<p role="alert">לא ניתן לפתוח את האתר. יש לטעון מחדש ולנסות שוב.</p>);
 }

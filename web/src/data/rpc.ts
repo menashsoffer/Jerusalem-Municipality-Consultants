@@ -8,6 +8,7 @@ import { SessionKeeper } from './auth-session.ts';
 import { MemoryStorage } from './memory-storage.ts';
 import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
+import { tagRequest } from '../lib/telemetry.ts';
 import type { SupplierChange } from './supplier-changes.ts';
 
 interface AdminRpc {
@@ -273,7 +274,9 @@ export async function rpc<K extends keyof AdminRpc, T>(
   args: AdminRpc[K],
   schema: ZodType<T>,
 ): Promise<T> {
-  return validated((token) => data(token).rpc(name, args), schema);
+  return validated((token) => data(token).rpc(name, args), schema).catch((error: unknown) => {
+    throw tagRequest(error, name);
+  });
 }
 /** A signed-in person's own access request (RLS policy profiles_signup). */
 export async function insertProfile(row: PublicSchema['profiles']['Insert']): Promise<void> {

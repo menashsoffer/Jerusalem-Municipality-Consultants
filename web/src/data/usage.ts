@@ -29,7 +29,7 @@ interface Options {
 }
 type Extra = Pick<UsageEvent, 'action' | 'step' | 'duration_ms'>;
 
-const screenOf = (state: RouterState) => screenName(state.matches.map((m) => m.route.path));
+export const screenOf = (state: RouterState) => screenName(state.matches.map((m) => m.route.path));
 
 export class UsageSession {
   private readonly options: Options;
