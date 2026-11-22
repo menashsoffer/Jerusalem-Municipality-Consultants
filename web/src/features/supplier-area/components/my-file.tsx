@@ -1,6 +1,8 @@
 import { dayOf } from '../../../lib/dates.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
+import { missingTasks, orderedMemberships } from '../model/missing.ts';
 import { CONTACT_LABELS, SCHEME_LABELS, validity } from '../model/portal-model.ts';
+import { MissingTasks } from './missing-tasks.tsx';
 import { MyRequests } from './my-requests.tsx';
 import { ProposeFix } from './propose-fix.tsx';
 import styles from './area.module.css';
@@ -43,7 +45,9 @@ function Contacts({ file }: { file: SupplierFile }) {
 function Details({ file, proposals }: { file: SupplierFile; proposals: Proposal[] }) {
   return (
     <section className={styles.panel} aria-labelledby="details-title">
-      <h2 id="details-title">הפרטים שלי</h2>
+      <h2 id="details-title" tabIndex={-1}>
+        הפרטים שלי
+      </h2>
       <dl className={styles.facts}>
         <div>
           <dt>שם</dt>
@@ -83,12 +87,14 @@ function Details({ file, proposals }: { file: SupplierFile; proposals: Proposal[
 function Memberships({ file, today }: { file: SupplierFile; today: string }) {
   return (
     <section className={styles.panel} aria-labelledby="registries-title">
-      <h2 id="registries-title">המאגרים שלי</h2>
+      <h2 id="registries-title" tabIndex={-1}>
+        המאגרים שלי
+      </h2>
       {file.memberships.length === 0 ? (
         <p>הספק לא רשום כרגע באף מאגר של העירייה.</p>
       ) : (
         <ul className={styles.list}>
-          {file.memberships.map((m) => {
+          {orderedMemberships(file.memberships, today).map((m) => {
             const state = validity(m.registered_until, today);
             return (
               <li key={`${m.registry}-${m.field ?? ''}`} data-state={state}>
@@ -124,6 +130,7 @@ export function MyFile({ file, proposals, today }: Props) {
         <h1 tabIndex={-1}>{file.name}</h1>
         <p className={styles.muted}>{file.role === 'owner' ? 'מורשה ספק' : 'עובד ספק'}</p>
       </header>
+      <MissingTasks tasks={missingTasks(file, proposals, today)} />
       <Details file={file} proposals={proposals} />
       <Memberships file={file} today={today} />
     </>

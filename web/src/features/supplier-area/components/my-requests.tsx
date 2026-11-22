@@ -34,7 +34,9 @@ export function MyRequests({ proposals }: { proposals: Proposal[] }) {
   if (proposals.length === 0) return null;
   return (
     <section aria-labelledby="requests-title">
-      <h3 id="requests-title">הבקשות שלי</h3>
+      <h3 id="requests-title" tabIndex={-1}>
+        הבקשות שלי
+      </h3>
       <ul className={styles.list}>
         {proposals.map((p) => (
           <li key={p.id}>
