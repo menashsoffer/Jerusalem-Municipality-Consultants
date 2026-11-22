@@ -4,10 +4,12 @@ import { after, before, describe, it } from 'node:test';
 
 import type { PGlite } from '@electric-sql/pglite';
 
-import { applyMigrations, count, migratedDatabase } from './pglite.ts';
+import { applyMigrations, count, migratedDatabase, migrationNames } from './pglite.ts';
 
-const PRIOR = '20261122230100_usage_summary.sql';
 const FIX = '20261123130000_remaining_field_categories.sql';
+// The migration just before FIX, so the tests run only FIX however many come before it.
+const names = await migrationNames();
+const PRIOR = names[names.indexOf(FIX) - 1] ?? '';
 const REGISTRY = '5b070406-1c75-4c34-a587-7c9631325a26';
 const VERSION = '71000000-0000-0000-0000-000000000001';
 const TRUNCATED = '4a507601-3355-49a6-9096-8d86639ddad4';
