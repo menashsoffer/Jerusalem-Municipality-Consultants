@@ -31,7 +31,7 @@ function History({
 }) {
   if (!changes.length) return null;
   return (
-    <>
+    <div className={styles.requests}>
       <h3>הבקשות שלי</h3>
       <ul className={styles.history}>
         {changes.map((c) => (
@@ -47,7 +47,7 @@ function History({
           </li>
         ))}
       </ul>
-    </>
+    </div>
   );
 }
 
