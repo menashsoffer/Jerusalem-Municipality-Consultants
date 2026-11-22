@@ -85,11 +85,10 @@ export function formatShare(value: number): string {
   return percent.format(value);
 }
 
-/** "1 דק׳ 20 שנ׳" or "45 שנ׳". */
+/** "1:20 דק׳" or "45 שנ׳". */
 export function formatDuration(ms: number): string {
   const seconds = Math.round(ms / 1000);
-  const minutes = Math.floor(seconds / 60);
-  const rest = seconds % 60;
-  if (minutes === 0) return `${String(rest)} שנ׳`;
-  return rest ? `${String(minutes)} דק׳ ${String(rest)} שנ׳` : `${String(minutes)} דק׳`;
+  if (seconds < 60) return `${String(seconds)} שנ׳`;
+  const rest = String(seconds % 60).padStart(2, '0');
+  return `${String(Math.floor(seconds / 60))}:${rest} דק׳`;
 }

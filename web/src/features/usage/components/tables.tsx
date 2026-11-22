@@ -5,14 +5,8 @@ import type { UsageSummary } from '../api/usage.ts';
 import { actionLabel, screenLabel } from '../model/labels.ts';
 import type { DayRow, Funnel, ScreenRow } from '../model/summary.ts';
 import { formatCount, formatDuration, formatShare } from '../model/summary.ts';
+import { DaysChart, dayName } from './days-chart.tsx';
 import styles from './usage.module.css';
-
-const dayName = new Intl.DateTimeFormat('he-IL', {
-  timeZone: 'UTC',
-  weekday: 'short',
-  day: 'numeric',
-  month: 'numeric',
-});
 
 function Bar({ value, max, children }: { value: number; max: number; children: ReactNode }) {
   return (
@@ -33,29 +27,30 @@ function Section({ id, title, children }: { id: string; title: string; children:
 }
 
 export function DaysTable({ rows }: { rows: DayRow[] }) {
-  const max = Math.max(...rows.map((r) => r.visits), 0);
   return (
     <Section id="usage-days" title="כניסות לפי יום">
-      <DataTable
-        caption="ביקורים ומשתמשים בכל יום, מהישן לחדש"
-        columns={[
-          { id: 'day', label: 'יום' },
-          { id: 'visits', label: 'ביקורים' },
-          { id: 'visitors', label: 'משתמשים' },
-        ]}
-        rows={rows.map((r) => ({
-          id: r.day,
-          cells: {
-            day: dayName.format(new Date(`${r.day}T00:00:00Z`)),
-            visits: (
-              <Bar value={r.visits} max={max}>
-                {formatCount(r.visits)}
-              </Bar>
-            ),
-            visitors: formatCount(r.visitors),
-          },
-        }))}
-      />
+      <div className={styles.card}>
+        <DaysChart rows={rows} />
+        <details className={styles.more}>
+          <summary>הצגה כטבלה</summary>
+          <DataTable
+            caption="ביקורים ומשתמשים בכל יום, מהישן לחדש"
+            columns={[
+              { id: 'day', label: 'יום' },
+              { id: 'visits', label: 'ביקורים' },
+              { id: 'visitors', label: 'משתמשים' },
+            ]}
+            rows={rows.map((r) => ({
+              id: r.day,
+              cells: {
+                day: dayName.format(new Date(`${r.day}T00:00:00Z`)),
+                visits: formatCount(r.visits),
+                visitors: formatCount(r.visitors),
+              },
+            }))}
+          />
+        </details>
+      </div>
     </Section>
   );
 }

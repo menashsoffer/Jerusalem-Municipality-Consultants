@@ -38,7 +38,7 @@ export function Filters({ range }: { range: Range }) {
           ),
         }}
       />
-      <Button type="submit" variant="secondary">
+      <Button type="submit" variant="secondary" className={styles.apply}>
         הצגה
       </Button>
     </Form>

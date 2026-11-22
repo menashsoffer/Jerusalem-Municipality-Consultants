@@ -59,6 +59,18 @@ const ACTIONS: Record<string, string> = {
 };
 
 const FILTER = /^catalog\.(filter|toggle)\.(.+)$/;
+const FILTER_NAMES: Record<string, string> = {
+  registry: 'מאגר',
+  field: 'תחום',
+  category: 'קטגוריה',
+  subcategory: 'תת־קטגוריה',
+  unit: 'יחידה',
+  validity: 'תוקף',
+  identifier: 'ח.פ.',
+  venue: 'מתקנים ואולמות',
+  showInactive: 'כולל לא פעילים',
+  showClosed: 'כולל מאגרים סגורים',
+};
 
 export function screenLabel(screen: string): string {
   const known = SCREENS[screen];
@@ -72,7 +84,10 @@ export function screenLabel(screen: string): string {
 
 export function actionLabel(action: string): string {
   const filter = FILTER.exec(action);
-  if (filter) return `${filter[1] === 'filter' ? 'סינון' : 'מתג'}: ${filter[2] ?? ''}`;
+  if (filter) {
+    const name = filter[2] ?? '';
+    return `${filter[1] === 'filter' ? 'סינון' : 'הצגה'}: ${FILTER_NAMES[name] ?? name}`;
+  }
   return ACTIONS[action] ?? action;
 }
 

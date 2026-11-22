@@ -50,7 +50,7 @@ describe('usage dashboard', () => {
   it('starts with four numbers', () => {
     show({ range, summary });
     const stats = within(screen.getByRole('list', { name: 'סיכום' })).getAllByRole('listitem');
-    expect(stats.map((s) => s.firstChild?.textContent)).toEqual(['6', '0.6', '1 דק׳ 40 שנ׳', '5']);
+    expect(stats.map((s) => s.firstChild?.textContent)).toEqual(['6', '0.6', '1:40 דק׳', '5']);
   });
 
   it('shows every day of the period, screens with exits, actions and the wizard funnel', () => {
@@ -61,7 +61,7 @@ describe('usage dashboard', () => {
     expect(within(screens).getByText('איתור ספקים')).toBeDefined();
     expect(within(screens).getByText('75%')).toBeDefined();
     expect(screen.getByText('חיפוש ספקים')).toBeDefined();
-    expect(screen.getByText('סינון: category')).toBeDefined();
+    expect(screen.getByText('סינון: קטגוריה')).toBeDefined();
     expect(screen.getByRole('table', { name: /בקשות התקשרות: כמה ביקורים/u })).toBeDefined();
   });
 
@@ -100,7 +100,8 @@ describe('usage model', () => {
   it('labels slugs in Hebrew and keeps unknown ones as they are', () => {
     expect(screenLabel('supplier-area-login')).toBe('אזור אישי לספקים (login)');
     expect(screenLabel('mystery')).toBe('mystery');
-    expect(actionLabel('catalog.toggle.verified')).toBe('מתג: verified');
+    expect(actionLabel('catalog.toggle.showClosed')).toBe('הצגה: כולל מאגרים סגורים');
+    expect(actionLabel('catalog.filter.new')).toBe('סינון: new');
     expect(actionLabel('x.y')).toBe('x.y');
     expect(roleLabel('supplier')).toBe('ספק');
     expect(roleLabel('robot')).toBe('robot');
@@ -108,7 +109,7 @@ describe('usage model', () => {
 
   it('formats durations and handles a period without ended visits', () => {
     expect(formatDuration(45_000)).toBe('45 שנ׳');
-    expect(formatDuration(120_000)).toBe('2 דק׳');
+    expect(formatDuration(120_000)).toBe('2:00 דק׳');
     const empty = { ...summary, ended_visits: 0, days: [] };
     expect(totals(empty, range).averageVisitMs).toBe(0);
     expect(funnels(summary)[0]?.steps.map((s) => s.share)).toEqual([1, 0.25]);
