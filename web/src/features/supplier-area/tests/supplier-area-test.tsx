@@ -54,7 +54,7 @@ function page(value: {
   proposals?: Proposal[];
   documents?: KindRow[];
 }) {
-  const data = { proposals: [], documents: [], ...value, today: '2026-11-22' };
+  const data = { proposals: [], documents: [], approaches: [], ...value, today: '2026-11-22' };
   const router = createMemoryRouter(
     [{ id: 'area', path: '/', Component: SupplierAreaPage, loader: () => data }],
     { hydrationData: { loaderData: { area: data } } },
@@ -101,6 +101,7 @@ describe('the supplier area', () => {
       if (name === 'portal_me') return me({ accounts: [account] as never });
       if (name === 'portal_documents') return { kinds: ['insurance'], documents: [] };
       if (name === 'portal_members') return { members: [], invites: [] };
+      if (name === 'portal_approaches') return [];
       return name === 'portal_changes' ? [] : FILE;
     });
     const result = await loader();
@@ -109,6 +110,7 @@ describe('the supplier area', () => {
       file: { name: 'ספק בע"מ' },
       documents: [{ kind: 'insurance', state: 'missing' }],
       members: { members: [], invites: [] },
+      approaches: [],
     });
   });
 

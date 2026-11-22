@@ -1,8 +1,8 @@
 // The approaches of a saved request and their answers (supplier-approaches-spec-he.md 6.2).
 // The database keeps an offer's amount, note and file out until the deadline has passed.
 import { z, rpc } from '../../../data/rpc.ts';
-import '../../../lib/errors/approach-reasons.ts';
 import { CHANNELS } from '../model/approaches.ts';
+import '../model/approach-reasons.ts';
 
 const answerSchema = z.object({
   id: z.string(),
