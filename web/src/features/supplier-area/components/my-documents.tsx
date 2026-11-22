@@ -81,7 +81,7 @@ function Upload({ supplierId, row, today }: { supplierId: string; row: KindRow; 
             }}
           />
           <FormActions>
-            <Button type="submit" pending={pending} pendingLabel="מעלה…">
+            <Button type="submit" pending={pending} pendingLabel="מעלה…" data-usage="portal.upload">
               שליחה לבדיקה
             </Button>
           </FormActions>

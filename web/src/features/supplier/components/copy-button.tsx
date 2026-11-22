@@ -30,6 +30,7 @@ export function CopyButton({ value, label }: { value: string; label: string }) {
       <IconButton
         icon={message === 'הועתק' ? 'check' : 'copy'}
         label={`העתקת ${label}`}
+        data-usage="supplier.copy"
         note={message || undefined}
         onClick={() => {
           void copy();

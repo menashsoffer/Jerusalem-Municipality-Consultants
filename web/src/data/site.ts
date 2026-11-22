@@ -1,5 +1,3 @@
-import type { TelemetryEvent } from '../lib/vitals-model.ts';
-import type { PublicSchema } from '../database.types.ts';
 import { supplierDetail, type SupplierDetail } from './supplier-detail.ts';
 import { loadWriteContext, writableVersions, type WriteContext } from './write-context.ts';
 import { DataClient, REQUEST_TIMEOUT_MS } from './client.ts';
@@ -11,8 +9,6 @@ import { clearScreenData } from './screen-data.ts';
 
 export const BASE = SUPABASE_URL;
 const PUBLIC_KEY = SUPABASE_PUBLISHABLE_KEY;
-
-type EventInsert = PublicSchema['activity_events']['Insert'];
 
 type Unauthorized = (token: string) => Promise<void>;
 let unauthorized: Unauthorized = () => clearCatalog();
@@ -176,22 +172,10 @@ export function saveMembership(token: string, payload: Record<string, string>): 
   return data(token).supplierWrite('save_supplier_membership', payload);
 }
 
-/** The request that stores a batch of usage events; the tracker decides when it is sent. */
-export function eventRequest(token: string, events: EventInsert[]): EventRequest {
+/** A batch of monitoring or usage events, sent to a function that checks every field. */
+export function eventRpcRequest(name: string, token: string, events: unknown[]): EventRequest {
   return {
-    url: `${BASE}/rest/v1/activity_events`,
-    init: {
-      method: 'POST',
-      headers: { ...authHeaders(token), Prefer: 'return=minimal' },
-      body: JSON.stringify(events),
-    },
-  };
-}
-
-/** The anonymous monitoring endpoint has no actor, user, session or route identifier. */
-export function telemetryRequest(token: string, events: TelemetryEvent[]): EventRequest {
-  return {
-    url: `${BASE}/rest/v1/rpc/record_web_telemetry`,
+    url: `${BASE}/rest/v1/rpc/${name}`,
     init: { method: 'POST', headers: authHeaders(token), body: JSON.stringify({ events }) },
   };
 }

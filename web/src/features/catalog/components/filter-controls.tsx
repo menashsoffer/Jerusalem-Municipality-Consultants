@@ -18,6 +18,7 @@ import {
   type Options,
 } from '../model/filter-groups.ts';
 import styles from './catalog.module.css';
+import { usage } from '../../../lib/usage-signal.ts';
 
 interface Props {
   filters: Filters;
@@ -38,6 +39,7 @@ function Control({ name, options, ...props }: Props & { name: FilterKey; options
     <SelectField
       field={{ label: LABELS[name] }}
       select={{
+        ...usage(`catalog.filter.${name}`),
         value: filters[name],
         disabled,
         onChange: (e) => {
@@ -73,6 +75,7 @@ function Toggles({ filters, replace }: Pick<Props, 'filters' | 'replace'>) {
       {TOGGLES.map(({ key, label }) => (
         <label key={key} className={styles.toggle}>
           <input
+            data-usage={`catalog.toggle.${key}`}
             type="checkbox"
             checked={filters[key]}
             onChange={(e) => {
@@ -96,10 +99,13 @@ function SheetActions({ keys, ...props }: Props & { keys: readonly FilterKey[] }
   const set = countSet(props.filters, keys, true);
   return (
     <div className={styles.sheetActions}>
-      <Button command={{ target: SHEET, action: 'close' }}>{showLabel(props.count)}</Button>
+      <Button data-usage="catalog.filters-apply" command={{ target: SHEET, action: 'close' }}>
+        {showLabel(props.count)}
+      </Button>
       {set > 0 && (
         <Button
           variant="quiet"
+          data-usage="catalog.filters-clear"
           onClick={() => {
             props.replace(clearKeys(props.filters, keys));
           }}
@@ -128,6 +134,7 @@ function Opener({ label, count }: { label: string; count: number }) {
     <Button
       variant="secondary"
       className={styles.moreButton}
+      data-usage="catalog.filters-open"
       command={{ target: SHEET, action: 'show-modal' }}
     >
       {label}

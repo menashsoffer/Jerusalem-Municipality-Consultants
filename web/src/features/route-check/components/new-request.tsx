@@ -16,6 +16,7 @@ import { ResultPanel } from './result-panel.tsx';
 import { ShortlistTools } from './shortlist-tools.tsx';
 import { STEPS, Steps, type Step } from './steps.tsx';
 import styles from './route-check.module.css';
+import { reportStep } from '../../../lib/usage-signal.ts';
 
 interface Checked {
   result: CheckResult;
@@ -29,6 +30,7 @@ function useWizard() {
   const heading = useRef<HTMLHeadingElement>(null);
   function move(next: Step): void {
     setStep(next);
+    reportStep(Object.keys(STEPS).indexOf(next) + 1);
     requestAnimationFrame(() => heading.current?.focus());
   }
   return { step, move, heading };
@@ -80,7 +82,9 @@ function SupplierStep({ data, next }: { data: EngagementData; next: () => void }
         }}
       />
       <FormActions>
-        <Button onClick={next}>המשך</Button>
+        <Button onClick={next} data-usage="request.next">
+          המשך
+        </Button>
         <Link to="/catalog" className={controls.quiet}>
           להמשך איתור ספקים
         </Link>
