@@ -1,7 +1,5 @@
 // The admin's queue of supplier-area links (supplier-portal-spec-he.md 6.10).
-import { z, rpc, requireRoles, freshToken } from '../../../data/rpc.ts';
-import { failedResponse } from '../../../data/client.ts';
-import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../../../data/environment.ts';
+import { z, rpc, requireRoles } from '../../../data/rpc.ts';
 import { errorText } from '../../../data/errors.ts';
 import { refreshScreen } from '../../../data/screen-data.ts';
 
@@ -50,19 +48,5 @@ export const rejectLink = (id: string, note: string) =>
 export const revokeLink = (id: string, note: string) =>
   decided(() => rpc('revoke_supplier_account', { account_id: id, note }, z.null()));
 
-const signedSchema = z.object({ signedURL: z.string() });
 /** A link to the proof file that works for 5 minutes (the bucket is private). */
-export async function proofUrl(path: string, send: typeof fetch = fetch): Promise<string> {
-  const response = await send(`${SUPABASE_URL}/storage/v1/object/sign/supplier-documents/${path}`, {
-    method: 'POST',
-    headers: {
-      apikey: SUPABASE_PUBLISHABLE_KEY,
-      Authorization: `Bearer ${await freshToken()}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ expiresIn: 300 }),
-  });
-  if (!response.ok) throw await failedResponse(response);
-  const { signedURL } = signedSchema.parse(await response.json());
-  return `${SUPABASE_URL}/storage/v1${signedURL}`;
-}
+export { signedFileUrl as proofUrl } from '../../../data/files.ts';

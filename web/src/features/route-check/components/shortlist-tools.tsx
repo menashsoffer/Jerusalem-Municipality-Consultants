@@ -1,11 +1,10 @@
 import { useState } from 'react';
 import { Button } from '../../../ui/button.tsx';
+import { Dialog } from '../../../ui/dialog.tsx';
 import { FormActions } from '../../../ui/form-actions.tsx';
-import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
-import { errorText } from '../../../data/errors.ts';
-import { recordApproaches } from '../api/engagement.ts';
 import { bccLine, bccMessage, shareLink, type PickedSupplier } from '../model/engagement.ts';
+import { APPROACH_DIALOG, ApproachForm } from './approach-form.tsx';
 
 interface Props {
   suppliers: readonly PickedSupplier[];
@@ -23,14 +22,11 @@ async function copy(text: string): Promise<boolean> {
 }
 
 /** The clipboard can be refused; the message then says so instead of claiming a copy. */
-function useTools({ suppliers, today, requestId }: Props) {
+function useTools({ suppliers, today }: Props) {
   const [message, setMessage] = useState('');
-  const [error, setError] = useState('');
-  const [recording, setRecording] = useState(false);
   return {
     message,
-    error,
-    recording,
+    setMessage,
     async bcc() {
       const line = bccLine(suppliers);
       if (!line.count) {
@@ -48,36 +44,20 @@ function useTools({ suppliers, today, requestId }: Props) {
       downloadCsv(suppliers, today);
       setMessage('הקובץ הורד, בלי מספרי זהות.');
     },
-    async approach() {
-      if (!requestId) return;
-      const active = suppliers.filter((s) => !s.inactive).map((s) => s.id);
-      setRecording(true);
-      try {
-        const added = await recordApproaches(requestId, active);
-        setError('');
-        setMessage(`נרשמו ${String(added)} פניות להיום.`);
-      } catch (cause) {
-        setError(errorText(cause));
-      } finally {
-        setRecording(false);
-      }
-    },
   };
 }
 
 /** Step 3 actions: recording the approach is the main one, and only for a saved request. */
 export function ShortlistTools(props: Props) {
   const tools = useTools(props);
+  const active = props.suppliers.filter((s) => !s.inactive).map((s) => s.id);
   return (
     <section aria-label="פעולות על הבקשה">
-      {tools.error && <Notice tone="error" title={tools.error} />}
       <FormActions>
         {props.requestId && (
           <Button
-            pending={tools.recording}
-            pendingLabel="רושם פנייה…"
+            command={{ target: APPROACH_DIALOG, action: 'show-modal' }}
             data-usage="request.approach"
-            onClick={() => void tools.approach()}
           >
             רישום פנייה לספקים
           </Button>
@@ -93,6 +73,16 @@ export function ShortlistTools(props: Props) {
         </Button>
       </FormActions>
       <StatusMessage>{tools.message}</StatusMessage>
+      {props.requestId && (
+        <Dialog id={APPROACH_DIALOG} title="רישום פנייה לספקים">
+          <ApproachForm
+            requestId={props.requestId}
+            suppliers={active}
+            today={props.today}
+            done={tools.setMessage}
+          />
+        </Dialog>
+      )}
     </section>
   );
 }

@@ -10,6 +10,7 @@ import * as engagement from '../api/engagement.ts';
 import type { CheckResult } from '../model/result.ts';
 import type { loader } from '../engagement-page.tsx';
 import * as savedApi from '../api/saved.ts';
+import * as approachesApi from '../api/approaches.ts';
 import type { SavedRequest } from '../api/saved.ts';
 import * as rpc from '../../../data/rpc.ts';
 import { replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
@@ -122,9 +123,25 @@ describe('engagement request page', () => {
     expect(run).toHaveBeenCalledWith({ request_id: REQUEST, on: '2026-11-17' });
     // The catalog tray closes: the picked suppliers now belong to the saved request.
     expect(shortlistIds()).toEqual([]);
-    await userEvent.click(await screen.findByRole('button', { name: 'רישום פנייה לספקים' }));
-    expect(record).toHaveBeenCalledWith(REQUEST, [supplier.id]);
-    expect(await screen.findByText('נרשמו 1 פניות להיום.')).toBeDefined();
+    await screen.findByRole('button', { name: 'רישום פנייה לספקים' });
+    // jsdom has no dialog commands: open the dialog the button opens.
+    const dialog = document.getElementById('approach-suppliers');
+    if (!(dialog instanceof HTMLDialogElement)) throw new Error('approach dialog expected');
+    dialog.setAttribute('open', '');
+    Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+      configurable: true,
+      value(this: HTMLDialogElement) {
+        this.open = false;
+      },
+    });
+    await userEvent.click(within(dialog).getByRole('button', { name: 'רישום הפנייה' }));
+    expect(record).toHaveBeenCalledWith({
+      request: REQUEST,
+      suppliers: [supplier.id],
+      channel: 'email',
+      respondBy: '2026-11-24',
+    });
+    expect(await screen.findByText(/נרשמו 1 פניות, עם מועד לתשובה 24\.11\.2026/u)).toBeDefined();
   });
 
   // 18.11.2026: a saved request reached "בקשות שמורות" only after a page refresh.
@@ -327,6 +344,14 @@ describe('engagement request page', () => {
     expect(run).toHaveBeenCalledWith({ request_id: REQUEST, on: '2026-12-01' });
     expect(await screen.findByText('8(ד)(1)')).toBeDefined();
   });
+  it('shows the approaches and answers of a saved request', async () => {
+    const load = vi.spyOn(approachesApi, 'loadRequestApproaches').mockResolvedValue([]);
+    page([{ id: 'u1', name: 'אגף 1' }], { saved: [savedRow()] });
+    await userEvent.click(screen.getByRole('button', { name: 'פניות ותשובות: ייעוץ ארגוני' }));
+    expect(await screen.findByText('עוד לא נרשמו פניות')).toBeDefined();
+    expect(load).toHaveBeenCalledWith(REQUEST);
+  });
+
   // 18.11.2026: the owner asked to edit a saved request in the details form, not a dialog.
   it('edits a saved request in the details form and checks it again', async () => {
     const row = savedRow();

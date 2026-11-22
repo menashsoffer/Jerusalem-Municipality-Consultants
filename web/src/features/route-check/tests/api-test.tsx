@@ -162,7 +162,8 @@ describe('engagement writes', () => {
     vi.mocked(rpc.rpc).mockResolvedValueOnce('req-1').mockResolvedValueOnce(2);
     const draft = { ...DRAFT_INPUT.draft, unit_id: 'u1', subject: 'ייעוץ' };
     expect(await saveRequest(draft)).toBe('req-1');
-    expect(await recordApproaches('req-1', [A, B])).toBe(2);
+    const approaching = { request: 'req-1', suppliers: [A, B], channel: 'portal' as const };
+    expect(await recordApproaches({ ...approaching, respondBy: '2026-11-24' })).toBe(2);
     expect(rpc.rpc).toHaveBeenNthCalledWith(
       1,
       'create_engagement_request',
@@ -172,7 +173,7 @@ describe('engagement writes', () => {
     expect(rpc.rpc).toHaveBeenNthCalledWith(
       2,
       'record_supplier_approaches',
-      { request: 'req-1', suppliers: [A, B], channel: 'email' },
+      { ...approaching, respond_by: '2026-11-24' },
       expect.anything(),
     );
   });

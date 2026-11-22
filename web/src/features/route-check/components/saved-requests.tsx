@@ -15,6 +15,7 @@ import { checkRoute } from '../api/check.ts';
 import type { SavedRequest } from '../api/saved.ts';
 import { money, STATUS_LABELS, type CheckResult } from '../model/result.ts';
 import { CANCEL_REQUEST, CancelRequest, editable } from './request-changes.tsx';
+import { REQUEST_APPROACHES, RequestApproaches } from './request-approaches.tsx';
 import { ResultPanel } from './result-panel.tsx';
 import styles from './route-check.module.css';
 
@@ -81,10 +82,11 @@ function statusText(request: SavedRequest): string {
   return request.changedSinceCheck ? `${label} (הפרטים שונו מאז, כדאי לבדוק שוב)` : label;
 }
 
-type Mode = 'recheck' | 'edit' | 'cancel';
+type Mode = 'recheck' | 'approaches' | 'edit' | 'cancel';
 /** Edit has no dialog: it opens the details form (owner's request, 18.11). */
 const DIALOGS: Record<Mode, { id: string | null; title: string; icon: IconName }> = {
   recheck: { id: RECHECK, title: 'בדיקה מחדש', icon: 'refresh' },
+  approaches: { id: REQUEST_APPROACHES, title: 'פניות ותשובות', icon: 'mail' },
   edit: { id: null, title: 'עריכת הבקשה', icon: 'pencil' },
   cancel: { id: CANCEL_REQUEST, title: 'ביטול הבקשה', icon: 'trash' },
 };
@@ -95,7 +97,9 @@ function commandFor(target: string | null) {
 
 /** Icon buttons: the full name for screen readers, the short one in the bubble (DESIGN.md 6.2). */
 function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mode) => void }) {
-  const modes: Mode[] = editable(request) ? ['recheck', 'edit', 'cancel'] : ['recheck', 'cancel'];
+  const modes: Mode[] = editable(request)
+    ? ['recheck', 'approaches', 'edit', 'cancel']
+    : ['recheck', 'approaches', 'cancel'];
   return (
     <div className={styles.rowActions}>
       {modes.map((mode) => (
@@ -137,6 +141,11 @@ function RequestDialogs({
       <Dialog id={RECHECK} title={titled('recheck', chosen)}>
         {request && chosen.mode === 'recheck' && (
           <Recheck key={request.id} request={request} unit={unitName(request)} today={today} />
+        )}
+      </Dialog>
+      <Dialog id={REQUEST_APPROACHES} title={titled('approaches', chosen)}>
+        {request && chosen.mode === 'approaches' && (
+          <RequestApproaches key={request.id} requestId={request.id} />
         )}
       </Dialog>
       <Dialog id={CANCEL_REQUEST} title={titled('cancel', chosen)}>

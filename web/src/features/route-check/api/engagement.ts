@@ -7,6 +7,8 @@ import { israelToday } from '../../../lib/dates.ts';
 import { cleanIds, replaceShortlist, shortlistIds } from '../../../lib/shortlist.ts';
 import { pickedSupplier, type PickedSupplier } from '../model/engagement.ts';
 import type { Draft } from '../model/result.ts';
+import type { Channel } from '../model/approaches.ts';
+import '../../../lib/errors/approach-reasons.ts';
 import { savedChanged } from './saved.ts';
 
 const lastSchema = z.array(z.object({ supplier_id: z.string(), last_on: z.iso.date() }));
@@ -59,10 +61,15 @@ export async function saveRequest(draft: SavedDraft): Promise<string> {
   return id;
 }
 
-export function recordApproaches(request: string, suppliers: string[]): Promise<number> {
-  return rpc(
-    'record_supplier_approaches',
-    { request, suppliers, channel: 'email' },
-    z.number().int(),
-  );
+export interface Approaching {
+  request: string;
+  suppliers: string[];
+  channel: Channel;
+  /** YYYY-MM-DD, or null for a channel that needs no deadline. */
+  respondBy: string | null;
+}
+
+/** Records the approaches; the database checks the deadline and who may record them. */
+export function recordApproaches({ respondBy, ...rest }: Approaching): Promise<number> {
+  return rpc('record_supplier_approaches', { ...rest, respond_by: respondBy }, z.number().int());
 }
