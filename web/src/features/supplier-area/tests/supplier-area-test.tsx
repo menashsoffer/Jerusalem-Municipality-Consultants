@@ -212,6 +212,32 @@ describe('the supplier area', () => {
     expect(screen.getByText('הסתיים ב-01.01.2025')).toBeDefined();
     expect(screen.getByRole('link', { name: 'מסמך המאגר' })).toBeDefined();
   });
+
+  it('lists what is missing and moves to that section', async () => {
+    page({ me: me(), step: 'file', file: FILE });
+    const missing = screen.getByRole('region', { name: 'מה חסר לי' });
+    const cards = within(missing).getAllByRole('listitem');
+    expect(cards.map((c) => c.firstChild?.textContent)).toEqual([
+      'רישום אחד מסתיים ב-01.12.2026',
+      'חסר דוא"ל ליצירת קשר',
+    ]);
+    const [ending, contact] = within(missing).getAllByRole('button', { name: 'מעבר' });
+    if (!ending || !contact) throw new Error('two cards expected');
+    await userEvent.click(ending);
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'המאגרים שלי' }));
+    await userEvent.click(contact);
+    expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'הפרטים שלי' }));
+  });
+
+  it('shows no missing card when nothing is missing', () => {
+    const full = {
+      ...FILE,
+      contacts: [...FILE.contacts, { id: 'c2', kind: 'email', value: 'a@b.co.il' }],
+      memberships: [],
+    };
+    page({ me: me(), step: 'file', file: full });
+    expect(screen.queryByRole('region', { name: 'מה חסר לי' })).toBeNull();
+  });
 });
 
 describe('proposing a fix', () => {
