@@ -7,7 +7,7 @@ import type { PGlite } from '@electric-sql/pglite';
 import { applyMigrations, count, migratedDatabase } from './pglite.ts';
 
 const PRIOR = '20261122230100_usage_summary.sql';
-const FIX = '20261123100000_remaining_field_categories.sql';
+const FIX = '20261123130000_remaining_field_categories.sql';
 const REGISTRY = '5b070406-1c75-4c34-a587-7c9631325a26';
 const VERSION = '71000000-0000-0000-0000-000000000001';
 const TRUNCATED = '4a507601-3355-49a6-9096-8d86639ddad4';
