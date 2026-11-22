@@ -5,11 +5,12 @@ import { it } from 'node:test';
 import { requests, served } from './deno-stub.ts';
 import '../address-check/index.ts';
 import '../route-check/index.ts';
+import '../supplier-change-check/index.ts';
 import '../supplier-identifiers/index.ts';
 import '../threshold-index/index.ts';
 
 it('registers one handler per function, started with the Edge Runtime settings', async () => {
-  assert.equal(served.length, 4);
+  assert.equal(served.length, 5);
   const statuses = [];
   for (const handler of served) {
     const response = await handler(new Request('https://fn.test', { method: 'POST', body: '{}' }));
@@ -17,7 +18,7 @@ it('registers one handler per function, started with the Edge Runtime settings',
   }
   // The caller-facing functions refuse a request without a token; the scheduled jobs reach
   // the stubbed database and report it as unavailable.
-  assert.deepEqual(statuses, [502, 401, 401, 502]);
+  assert.deepEqual(statuses, [502, 401, 401, 401, 502]);
   assert.deepEqual(requests, [
     'https://db.test/rest/v1/rpc/job_start',
     'https://db.test/rest/v1/rpc/job_start',

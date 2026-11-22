@@ -35,6 +35,8 @@ describe('supplier change checks in the edit dialog', () => {
       [{ check: 'registrar_name', outcome: 'green' }, /זהה לשם ברשם/],
       [{ check: 'registrar_name', outcome: 'yellow', name: 'א בע"מ' }, /ברשם: א בע"מ/],
       [{ check: 'no_registry', outcome: 'yellow' }, /אין מרשם פתוח/],
+      [{ check: 'registry_status', outcome: 'green', name: 'פעילה' }, /במצב: פעילה/],
+      [{ check: 'registry_status', outcome: 'yellow', name: 'מחוקה' }, /מחוקה. אפשר לשמור עם סיבה/],
       [{ check: 'change_size', outcome: 'green' }, /כתיב קטן/],
       [{ check: 'change_size', outcome: 'yellow' }, /השתנה לגמרי/],
       [{ check: 'identifier_kind', outcome: 'green' }, /מתאים למספר המזהה/],
