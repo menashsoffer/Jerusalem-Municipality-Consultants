@@ -1,6 +1,8 @@
 @layer features {
   /* The personal area (screens-spec 4.2): who, three action tiles, details, roles. */
   .page {
+    /* One column grid for the dates and for my details, so they line up under each other. */
+    --fact-columns: repeat(4, minmax(0, 1fr));
     display: grid;
     gap: var(--space-lg);
   }
@@ -47,8 +49,8 @@
     grid-column: 1 / -1;
     justify-self: stretch;
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(11rem, 1fr));
-    gap: var(--space-md);
+    grid-template-columns: var(--fact-columns);
+    gap: var(--space-md) var(--space-lg);
     margin: 0;
     padding-block-start: var(--space-lg);
     border-block-start: var(--border-width) solid var(--color-border);
@@ -98,8 +100,10 @@
       background: var(--color-brand-soft);
     }
   }
+  /* Centred on the tile's height, beside both the title and the text. */
   .tileIcon {
     grid-row: span 2;
+    align-self: center;
     display: grid;
     place-items: center;
     inline-size: 2.5rem;
@@ -127,6 +131,9 @@
     background: var(--color-subtle);
   }
   @media (max-width: 40rem) {
+    .page {
+      --fact-columns: repeat(2, minmax(0, 1fr));
+    }
     .profile {
       grid-template-columns: 1fr;
       justify-items: start;
@@ -156,10 +163,10 @@
       margin-block: 0;
     }
   }
-  /* Label above value, as many columns as fit (the same look as the dates in the profile card). */
+  /* Label above value, on the same columns as the dates in the profile card. */
   .facts {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 9rem), 1fr));
+    grid-template-columns: var(--fact-columns);
     gap: var(--space-md) var(--space-lg);
     inline-size: 100%;
     margin: 0;
