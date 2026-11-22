@@ -334,14 +334,22 @@
     }
   }
   /* A contact in the edit dialog with its trash can, level with the input (below the label). */
+  /* A contact in the edit dialog: the kind icon on the label's line, the input at full width
+     and its trash can right beside it, level with the input. */
   .contactRow {
+    position: relative;
     display: grid;
-    grid-template-columns: auto 1fr auto;
-    column-gap: var(--space-sm);
+    grid-template-columns: 1fr auto;
+    column-gap: var(--space-xs);
     align-items: start;
     & > svg {
-      margin-block-start: 0.15em;
+      position: absolute;
+      inset-block-start: calc(var(--space-lg) + (1lh - 20px) / 2);
+      inset-inline-start: 0;
       color: var(--color-muted);
+    }
+    & label {
+      padding-inline-start: calc(20px + var(--space-sm));
     }
     & > :nth-child(3) {
       margin-block-start: calc(var(--space-lg) + 1lh + var(--space-sm));
