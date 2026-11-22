@@ -1,7 +1,7 @@
 @layer features {
   /* The personal area (screens-spec 4.2): who, three action tiles, details, roles. */
   .page {
-    /* One column grid for the dates and for my details, so they line up under each other. */
+    /* My details: four columns on a wide screen, two on a phone. */
     --fact-columns: repeat(4, minmax(0, 1fr));
     display: grid;
     gap: var(--space-lg);
@@ -45,19 +45,30 @@
     text-align: end;
     justify-self: start;
   }
+  /* The two dates are centred on the card's thirds: six equal tracks, each date on two of them. */
   .dates {
     grid-column: 1 / -1;
     justify-self: stretch;
     display: grid;
-    grid-template-columns: var(--fact-columns);
-    gap: var(--space-md) var(--space-lg);
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: var(--space-md);
     margin: 0;
     padding-block-start: var(--space-lg);
     border-block-start: var(--border-width) solid var(--color-border);
+    text-align: center;
+    & > div {
+      display: grid;
+      gap: var(--space-xs);
+      grid-column: span 2;
+      &:first-child {
+        grid-column: 2 / span 2;
+      }
+    }
     & dt {
       display: flex;
       gap: var(--space-xs);
       align-items: center;
+      justify-content: center;
       color: var(--color-muted);
       font-size: var(--font-small);
     }
@@ -66,7 +77,6 @@
       font-weight: var(--font-weight-strong);
     }
   }
-  /* Each tile spans two shared rows (title, text), so titles and texts line up across tiles. */
   .tiles {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
@@ -134,6 +144,11 @@
     .page {
       --fact-columns: repeat(2, minmax(0, 1fr));
     }
+    /* On a phone the thirds are too narrow: each date takes half the card. */
+    .dates > div,
+    .dates > div:first-child {
+      grid-column: span 3;
+    }
     .profile {
       grid-template-columns: 1fr;
       justify-items: start;
@@ -163,7 +178,7 @@
       margin-block: 0;
     }
   }
-  /* Label above value, on the same columns as the dates in the profile card. */
+  /* Label above value, in columns. */
   .facts {
     display: grid;
     grid-template-columns: var(--fact-columns);
