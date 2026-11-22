@@ -102,9 +102,11 @@ describe('the supplier area invite', () => {
     expect(await screen.findByRole('alert')).toBeDefined();
   });
 
-  it('invites a chosen email and says that no email is sent', async () => {
+  it('shows the only email without a list, and invites it', async () => {
     const call = answer((name) => (name === 'supplier_area_accounts' ? [] : 'i1'));
     render(<AreaInvite data={await detail(['office@example.co.il'])} />);
+    expect(screen.queryByRole('combobox')).toBeNull();
+    expect(screen.getByText(/ההזמנה תישמר לדוא"ל/).textContent).toContain('office@example.co.il');
     await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
     expect(call).toHaveBeenCalledWith(
       'invite_supplier_account',
@@ -112,6 +114,19 @@ describe('the supplier area invite', () => {
       expect.anything(),
     );
     expect(await screen.findByText(/המערכת לא שולחת דוא"ל/)).toBeDefined();
+  });
+
+  it('lets the user choose when the supplier has several emails', async () => {
+    const call = answer((name) => (name === 'supplier_area_accounts' ? [] : 'i1'));
+    render(<AreaInvite data={await detail(['a@example.co.il', 'b@example.co.il'])} />);
+    const list = screen.getByRole('combobox', { name: /דוא"ל להזמנה/ });
+    await userEvent.selectOptions(list, 'b@example.co.il');
+    await userEvent.click(screen.getByRole('button', { name: 'הזמנה לאזור האישי' }));
+    expect(call).toHaveBeenCalledWith(
+      'invite_supplier_account',
+      { supplier_id: SUPPLIER, email: 'b@example.co.il' },
+      expect.anything(),
+    );
   });
 
   it('shows the refusal when the invite fails', async () => {

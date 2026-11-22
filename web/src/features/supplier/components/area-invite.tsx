@@ -52,21 +52,41 @@ interface FormProps {
 function InviteForm({ emails, action, pending }: FormProps) {
   return (
     <form action={action} aria-label="הזמנה לאזור האישי">
-      <SelectField
-        field={{ label: 'דוא"ל להזמנה', hint: 'רק דוא"ל שכבר רשום לספק' }}
-        select={{
-          name: 'email',
-          required: true,
-          children: emails.map((email) => (
-            <option key={email} value={email}>
-              {email}
-            </option>
-          )),
-        }}
-      />
+      {emails.length === 1 ? (
+        <OnlyEmail email={emails[0] ?? ''} />
+      ) : (
+        <EmailChoice emails={emails} />
+      )}
       <Button type="submit" variant="secondary" pending={pending} pendingLabel="שומר…">
         הזמנה לאזור האישי
       </Button>
     </form>
+  );
+}
+
+/** One email needs no choice: show it, and send it with the form. */
+function OnlyEmail({ email }: { email: string }) {
+  return (
+    <p>
+      ההזמנה תישמר לדוא"ל <bdi>{email}</bdi>
+      <input type="hidden" name="email" value={email} />
+    </p>
+  );
+}
+
+function EmailChoice({ emails }: { emails: string[] }) {
+  return (
+    <SelectField
+      field={{ label: 'דוא"ל להזמנה', hint: 'רק דוא"ל שכבר רשום לספק' }}
+      select={{
+        name: 'email',
+        required: true,
+        children: emails.map((email) => (
+          <option key={email} value={email}>
+            {email}
+          </option>
+        )),
+      }}
+    />
   );
 }
