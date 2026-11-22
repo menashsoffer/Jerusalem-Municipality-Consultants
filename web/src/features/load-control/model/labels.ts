@@ -6,6 +6,7 @@ const REGISTRY_STATUS: Record<string, string> = {
 };
 const SOURCES: Record<string, string> = {
   companies_registrar: 'רשם החברות',
+  nonprofits_registrar: 'רשם העמותות',
   guidestar: 'גיידסטאר',
 };
 

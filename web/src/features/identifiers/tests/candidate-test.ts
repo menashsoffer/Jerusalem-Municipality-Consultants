@@ -23,6 +23,8 @@ describe('identifier evidence', () => {
     assert.equal(candidateSchema.safeParse(row).success, true);
     assert.equal(candidateSchema.safeParse({ ...row, value: '<script>' }).success, false);
     assert.equal(candidateSchema.safeParse({ ...row, source: 'untrusted' }).success, false);
+    const nonprofit = { ...row, scheme: 'nonprofit', source: 'nonprofits_registrar' };
+    assert.equal(candidateSchema.safeParse(nonprofit).success, true);
   });
   it('asks for a registrar check on a number taken from a pool file', () => {
     const row = candidateSchema.parse({
