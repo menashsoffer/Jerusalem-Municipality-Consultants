@@ -335,6 +335,20 @@
     display: grid;
     gap: var(--space-lg);
   }
+  /* The save outcome stays in view while the long form scrolls under it. */
+  .feedback {
+    position: sticky;
+    inset-block-start: var(--space-sm);
+    z-index: var(--layer-raised);
+    display: grid;
+    &:empty {
+      display: none;
+    }
+    & > * {
+      margin-block: 0;
+      box-shadow: var(--shadow-overlay);
+    }
+  }
   .group {
     display: grid;
     gap: var(--space-sm);
