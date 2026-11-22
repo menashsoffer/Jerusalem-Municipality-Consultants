@@ -22,6 +22,17 @@ export const REASON_MESSAGES = {
   change_reason_required: 'צריך לכתוב סיבה לשינוי, לפחות 3 תווים.',
   change_outdated: 'פרטי הספק השתנו מאז שהבקשה נשלחה. רעננו את הדף ובדקו את הבקשה מחדש.',
   self_approval: 'אי אפשר לאשר בקשה ששלחתם בעצמכם. עורך אחר או מנהל מערכת צריך להחליט עליה.',
+  bad_choice: 'לא נבחרה החלטה. בחרו אישור או דחייה.',
+  // The supplier personal area (supplier-portal-spec-he.md, section 5).
+  sign_in_required: 'צריך להיכנס עם Google או עם קישור בדוא"ל כדי להמשיך.',
+  identifier_invalid: 'המספר לא תקין. הקלידו את כל 9 הספרות של ח"פ או של מספר העמותה.',
+  too_many_attempts: 'היו יותר מדי ניסיונות בשעה האחרונה. נסו שוב בעוד שעה.',
+  person_required: 'קודם מלאו את השם שלכם, ואז שייכו את עצמכם לספק.',
+  already_linked: 'כבר יש לכם שיוך לספק הזה, פעיל או ממתין. פתחו את התיק שלכם.',
+  proof_required:
+    'הדוא"ל שאיתו נכנסתם לא רשום אצלנו לספק הזה. צרפו תדפיס רשם או ייפוי כוח, או היכנסו עם הדוא"ל הרשום.',
+  invite_unavailable: 'ההזמנה כבר התקבלה, פגה, או נשלחה לדוא"ל אחר. בקשו מהעירייה הזמנה חדשה.',
+  invite_email_unknown: 'אפשר להזמין רק דוא"ל שכבר רשום לספק. הוסיפו אותו קודם לפרטי הספק.',
 } as const;
 
 export type ReasonKey = keyof typeof REASON_MESSAGES;

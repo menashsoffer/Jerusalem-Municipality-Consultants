@@ -1,4 +1,5 @@
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
+import { AreaInvite } from './area-invite.tsx';
 import { ContactCard } from './contact-card.tsx';
 import { EditDialog } from './edit-dialog.tsx';
 import { SupplierHeader } from './header.tsx';
@@ -25,6 +26,9 @@ export function SupplierDetails({ data, today, editor = false, admin = false }: 
           <ContactCard contacts={data.contacts} />
           <IdentityCard data={data} />
           <Sources data={data} />
+          {(editor || admin) && data.supplier.status === 'active' && (
+            <AreaInvite data={data} admin={admin} />
+          )}
         </div>
       </div>
       <History audit={data.audit} />

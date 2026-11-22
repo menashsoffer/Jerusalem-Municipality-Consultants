@@ -43,7 +43,21 @@ export default defineConfig({
   build: {
     outDir: '../dist',
     emptyOutDir: true,
-    rolldownOptions: { input: { main: page('index.html') } },
+    rolldownOptions: {
+      input: { main: page('index.html') },
+      // React and the router load on every page, so they stay one chunk. Without this group
+      // a new lazy screen can split them into smaller shared chunks and grow the first load.
+      output: {
+        codeSplitting: {
+          groups: [
+            {
+              name: 'react',
+              test: /node_modules[\\/](react|react-dom|react-router|scheduler)[\\/]/,
+            },
+          ],
+        },
+      },
+    },
   },
   // React Compiler memoizes components, so code has no manual useMemo (decision 0006).
   plugins: [react(), babel({ presets: [reactCompilerPreset()] }), securityPolicy()],

@@ -185,6 +185,14 @@
     min-inline-size: 0;
     overflow-wrap: anywhere;
   }
+  .accounts {
+    display: grid;
+    gap: var(--space-md);
+    margin: 0 0 var(--space-lg);
+    padding: 0;
+    list-style: none;
+    overflow-wrap: anywhere;
+  }
   .missing,
   .muted {
     color: var(--color-muted);

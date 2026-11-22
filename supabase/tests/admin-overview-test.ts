@@ -40,6 +40,7 @@ describe('admin overview counters', () => {
       categories_pending: 0,
       thresholds_pending: 0,
       addresses_not_found: 0,
+      supplier_links_pending: 0,
     });
   });
 
