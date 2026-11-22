@@ -69,16 +69,24 @@ function DetailsForm({
 function Facts({ profile, unit }: Pick<Props, 'profile' | 'unit'>) {
   return (
     <dl className={styles.facts}>
-      <dt>שם</dt>
-      <dd>
-        {profile.first_name} {profile.last_name}
-      </dd>
-      <dt>תפקיד בעירייה</dt>
-      <dd>{profile.job_title}</dd>
-      <dt>טלפון</dt>
-      <dd>{profile.phone ? <bdi>{profile.phone}</bdi> : 'לא נמסר'}</dd>
-      <dt>יחידה</dt>
-      <dd>{unit}</dd>
+      <div>
+        <dt>שם</dt>
+        <dd>
+          {profile.first_name} {profile.last_name}
+        </dd>
+      </div>
+      <div>
+        <dt>תפקיד בעירייה</dt>
+        <dd>{profile.job_title}</dd>
+      </div>
+      <div>
+        <dt>טלפון</dt>
+        <dd>{profile.phone ? <bdi>{profile.phone}</bdi> : 'לא נמסר'}</dd>
+      </div>
+      <div>
+        <dt>יחידה</dt>
+        <dd>{unit}</dd>
+      </div>
     </dl>
   );
 }
