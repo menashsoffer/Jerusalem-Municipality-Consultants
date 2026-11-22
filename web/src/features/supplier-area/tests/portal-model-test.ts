@@ -6,6 +6,8 @@ import {
   activeAccounts,
   areaStep,
   proofProblem,
+  proposalLabel,
+  proposalProblem,
   readIdentifier,
   validity,
 } from '../model/portal-model.ts';
@@ -79,5 +81,20 @@ describe('supplier area model', () => {
     assert.equal(validity('2026-11-01', '2026-11-22'), 'ended');
     assert.equal(validity('2027-01-21', '2026-11-22'), 'soon');
     assert.equal(validity('2027-01-22', '2026-11-22'), 'valid');
+  });
+
+  it('checks a fix with the database rules, and asks a reason only for a rename', () => {
+    const fix = { kind: 'contact' as const, contact_kind: 'phone', value: '026291111', reason: '' };
+    assert.equal(proposalProblem(fix), null);
+    assert.match(proposalProblem({ ...fix, value: 'abc' }) ?? '', /טלפון/);
+    assert.equal(proposalProblem({ ...fix, contact_kind: 'fax' }), 'יש לבחור אחת מהאפשרויות.');
+    assert.match(proposalProblem({ ...fix, reason: 'א' }) ?? '', /סיבה/);
+    const rename = { kind: 'rename' as const, value: 'ספק חדש', reason: '' };
+    assert.match(proposalProblem(rename) ?? '', /סיבה/);
+    assert.equal(proposalProblem({ ...rename, reason: 'שינוי ברשם' }), null);
+    assert.equal(proposalLabel('rename', null), 'שם הספק');
+    assert.equal(proposalLabel('entity_kind', null), 'סוג הספק');
+    assert.equal(proposalLabel('contact', 'email'), 'דוא"ל');
+    assert.equal(proposalLabel('contact', 'fax'), 'פרט קשר');
   });
 });

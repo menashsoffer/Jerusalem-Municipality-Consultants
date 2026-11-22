@@ -46,5 +46,7 @@ export const changeRequestSchema = z.object({
   checks: z.array(checkSchema),
   created_at: z.string(),
   created_by: z.string().nullable(),
+  /** Who proposed it: staff, or the supplier from its personal area (supplier-portal spec). */
+  origin: z.enum(['staff', 'supplier']).optional(),
 });
 export type ChangeRequest = z.infer<typeof changeRequestSchema>;

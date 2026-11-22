@@ -30,6 +30,18 @@ function request(extra: Partial<ChangeRequest> = {}): ChangeRequest {
 }
 
 describe('waiting supplier changes', () => {
+  it('says when the supplier proposed the change from its personal area', () => {
+    render(
+      <PendingChanges
+        changes={[request({ origin: 'supplier' })]}
+        userId={ME}
+        admin={false}
+        editor
+      />,
+    );
+    expect(screen.getByText(/הספק הציע ב-/)).toBeDefined();
+  });
+
   it('shows nothing when no change waits', () => {
     const { container } = render(<PendingChanges changes={[]} userId={ME} admin={false} editor />);
     expect(container.textContent).toBe('');

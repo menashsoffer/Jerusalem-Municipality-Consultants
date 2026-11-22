@@ -47,7 +47,7 @@ const fileSchema = z.object({
   role: z.enum(['owner', 'member']),
   other_names: z.array(z.string()),
   identifiers: z.array(z.object({ scheme: z.string(), value: z.string(), verified: z.boolean() })),
-  contacts: z.array(z.object({ kind: z.string(), value: z.string() })),
+  contacts: z.array(z.object({ id: z.string(), kind: z.string(), value: z.string() })),
   memberships: z.array(
     z.object({
       registry: z.string(),
@@ -77,6 +77,43 @@ export const requestLink = (supplierId: string, proofPath: string | null) =>
     { request: { supplier_id: supplierId, proof_path: proofPath } },
     linkSchema,
   );
+
+const proposalSchema = z.object({
+  id: z.string(),
+  kind: z.enum(['rename', 'entity_kind', 'contact']),
+  contact_kind: z.string().nullable(),
+  old_value: z.string().nullable(),
+  new_value: z.string(),
+  status: z.enum(['pending', 'applied', 'approved', 'rejected', 'cancelled']),
+  decision_note: z.string().nullable(),
+  created_at: z.string(),
+  decided_at: z.string().nullable(),
+  mine: z.boolean(),
+});
+export type Proposal = z.infer<typeof proposalSchema>;
+
+/** The supplier's proposed fixes, newest first, without the checks (spec 6.3). */
+export const loadProposals = (supplierId: string) =>
+  rpc('portal_changes', { supplier_id: supplierId }, z.array(proposalSchema));
+
+export interface ProposalInput {
+  supplier_id: string;
+  kind: 'rename' | 'contact';
+  value: string;
+  contact_kind?: string;
+  contact_id?: string;
+  reason?: string;
+}
+/** Sends a fix; it always waits for the municipality (decision 4). */
+export const proposeChange = (change: ProposalInput) =>
+  rpc(
+    'portal_propose_change',
+    { change },
+    z.object({ request_id: z.string(), status: z.literal('pending') }),
+  );
+
+export const cancelProposal = (id: string) =>
+  rpc('cancel_supplier_change', { request_id: id }, z.null());
 
 export const acceptInvite = (inviteId: string) =>
   rpc('portal_accept_invite', { invite_id: inviteId }, linkSchema);

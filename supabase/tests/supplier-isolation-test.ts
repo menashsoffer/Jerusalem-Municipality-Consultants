@@ -68,6 +68,8 @@ const REJECT = new Set([
   'route_check_preview_input(jsonb,date)',
   'set_supplier_status(uuid,jsonb)',
   'submit_supplier_change(jsonb)',
+  // A linked supplier may propose; null input fails on its shape first.
+  'portal_propose_change(jsonb)',
 ]);
 
 // Calls that need real arguments: with nulls they would fail on input before the access check.
@@ -100,6 +102,12 @@ const CALLS: Record<string, [string, Expect]> = {
     '',
     (v) => {
       assert.equal(((v as Json).accounts as Json[]).length, 1);
+    },
+  ],
+  'portal_changes(uuid)': [
+    `'${SUPPLIER}'`,
+    (v) => {
+      assert.deepEqual(v, []);
     },
   ],
   'portal_supplier(uuid)': [
