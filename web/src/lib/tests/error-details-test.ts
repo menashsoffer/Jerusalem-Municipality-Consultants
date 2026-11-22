@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { z } from 'zod';
 import { causeOf, withDetails } from '../error-details.ts';
+import { kindLabel } from '../errors/kind-labels.ts';
 import { reportBoundaryError, setTelemetryReporter, tagRequest } from '../telemetry.ts';
 import type { ErrorReport, TelemetryEvent } from '../vitals-model.ts';
 
@@ -76,5 +77,10 @@ describe('what an error was', () => {
     } finally {
       setTelemetryReporter(() => undefined);
     }
+  });
+
+  it('names the kinds in Hebrew, and shows an unknown one as it is', () => {
+    assert.equal(kindLabel('system'), 'תקלה במערכת');
+    assert.equal(kindLabel('mystery'), 'mystery');
   });
 });

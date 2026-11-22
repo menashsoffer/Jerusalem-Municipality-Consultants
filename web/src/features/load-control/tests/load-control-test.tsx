@@ -3,10 +3,10 @@ import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 import { createMemoryRouter, RouterProvider } from 'react-router';
 import { LoadControlPage } from '../load-control-page.tsx';
-import type { ErrorRow, LoadControl } from '../api/control.ts';
+import type { LoadControl } from '../api/control.ts';
 
 const registry = { status: 'active', memberships: 52, needs_review: 0, verified: 52 };
-const value = (): LoadControl & { errors: ErrorRow[] | null } => ({
+const value = (): LoadControl => ({
   jobs: [
     { job: 'cbs-index', status: 'failed', started_at: '2026-11-16T05:00:00Z', finished_at: null },
     { job: 'cbs-index', status: 'ok', started_at: '2026-11-15T05:00:00Z', finished_at: null },
@@ -21,7 +21,6 @@ const value = (): LoadControl & { errors: ErrorRow[] | null } => ({
   identifiers_pending: 7,
   same_names: 2,
   venues: 98,
-  errors: null,
 });
 afterEach(cleanup);
 function page(data = value()) {
@@ -61,22 +60,5 @@ describe('load control page', () => {
     expect(details?.open).toBe(false);
     expect(within(details as HTMLElement).getByText('נכשל')).toBeDefined();
     expect(within(details as HTMLElement).getByText('אין טעינות קבצים רשומות.')).toBeDefined();
-  });
-  it('shows administrators the errors of the week, faults in the system first', () => {
-    page({
-      ...value(),
-      errors: [
-        { kind: 'offline', screen: 'catalog', failures: 9, last_at: '2026-11-18T08:00:00Z' },
-        { kind: 'system', screen: 'engagement', failures: 2, last_at: '2026-11-18T08:34:55Z' },
-      ],
-    });
-    const table = screen.getByRole('table', { name: /דורשות טיפול \(1 שורות\)/ });
-    const rows = within(table).getAllByRole('row').slice(1);
-    expect(rows[0]?.textContent).toMatch(/תקלה במערכת.*בקשות התקשרות.*2/u);
-    expect(rows[1]?.textContent).toMatch(/אין חיבור לאינטרנט.*איתור ספקים.*9/u);
-  });
-  it('shows no error section to an auditor', () => {
-    page();
-    expect(screen.queryByRole('heading', { name: /שגיאות שהוצגו/ })).toBeNull();
   });
 });

@@ -96,6 +96,13 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     group: 'tools',
   },
   {
+    to: '/errors',
+    title: 'שגיאות באתר',
+    description: 'איזו שגיאה ראו, איפה ולמה',
+    roles: [],
+    group: 'tools',
+  },
+  {
     to: '/load-control',
     title: 'בקרת טעינה',
     description: 'מה נטען מהמאגרים ומה חסר',

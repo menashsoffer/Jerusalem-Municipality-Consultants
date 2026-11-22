@@ -52,6 +52,7 @@ interface AdminRpc {
   last_approaches: { suppliers: string[] };
   load_control: Record<string, never>;
   error_summary: Record<string, never>;
+  error_cases: { days: number | null };
   usage_summary: { from_day: string; to_day: string; only_role: string | null };
   addresses_to_check: Record<string, never>;
   admin_overview: Record<string, never>;
@@ -133,6 +134,7 @@ declare module '../database.types.ts' {
     record_supplier_approaches: { Args: AdminRpc['record_supplier_approaches']; Returns: number };
     load_control: { Args: AdminRpc['load_control']; Returns: unknown };
     error_summary: { Args: AdminRpc['error_summary']; Returns: unknown };
+    error_cases: { Args: AdminRpc['error_cases']; Returns: unknown };
     usage_summary: { Args: AdminRpc['usage_summary']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     admin_overview: { Args: AdminRpc['admin_overview']; Returns: unknown };
@@ -248,10 +250,7 @@ async function validated<T>(
 }
 /** All roles come from the existing server access loader, never from JWT app_metadata. */
 let pendingIdentity: Promise<Identity> | null = null;
-/**
- * Checks that start together share one catalog load: a second load would supersede the first
- * and fail it (error-details-spec-he.md section 7).
- */
+// Checks that start together share one load; a second would fail the first (error-details 7).
 export function identity(): Promise<Identity> {
   return (pendingIdentity ??= loadIdentity().finally(() => (pendingIdentity = null)));
 }

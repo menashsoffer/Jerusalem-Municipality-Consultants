@@ -166,6 +166,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'errors',
+        handle: { title: 'שגיאות באתר' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/errors/errors-page.tsx');
+          return { Component: m.ErrorsPage, loader: m.loader };
+        },
+      },
+      {
         path: 'auth',
         handle: { title: 'כניסה והרשאות' },
         errorElement: <ScreenError />,
