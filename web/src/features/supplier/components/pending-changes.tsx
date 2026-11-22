@@ -5,7 +5,7 @@ import { dayOf } from '../../../lib/dates.ts';
 import { Button } from '../../../ui/button.tsx';
 import { FormField } from '../../../ui/form-field.tsx';
 import { cancelChange, decideChange } from '../api/changes.ts';
-import { changeLabel, changeValue, checkText } from '../model/change-checks.ts';
+import { changeLabel, changeValue, checkText, isRemoval } from '../model/change-checks.ts';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -81,8 +81,9 @@ function PendingChange({ change, props }: { change: ChangeRequest; props: Props 
   return (
     <article className={styles.card} aria-label={`שינוי ${label} ממתין`}>
       <h3>
-        {label}: {changeValue(change.change_kind, change.old_value)} ←{' '}
-        {changeValue(change.change_kind, change.new_value)}
+        {isRemoval(change.change_kind, change.new_value)
+          ? `מחיקת ${label}: ${changeValue(change.change_kind, change.old_value)}`
+          : `${label}: ${changeValue(change.change_kind, change.old_value)} ← ${changeValue(change.change_kind, change.new_value)}`}
       </h3>
       <p>
         {own ? 'הבקשה שלך' : change.origin === 'supplier' ? 'הספק הציע' : 'נשלחה'} ב-
