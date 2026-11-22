@@ -130,6 +130,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'supplier-links',
+        handle: { title: 'שיוכים לאזור האישי' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/supplier-links/links-page.tsx');
+          return { Component: m.SupplierLinksPage, loader: m.loader };
+        },
+      },
+      {
         path: 'thresholds',
         handle: { title: 'אישור הסף החודשי' },
         errorElement: <ScreenError />,
@@ -151,6 +160,33 @@ export const routes: RouteObject[] = [
         path: '*',
         handle: { title: 'הדף לא נמצא' } satisfies RouteHandle,
         lazy: async () => ({ Component: (await import('./not-found-page.tsx')).NotFoundPage }),
+      },
+    ],
+  },
+  // The supplier personal area has its own frame, without the staff tabs (supplier-portal spec 6).
+  {
+    path: '/supplier-area',
+    errorElement: <RouteError />,
+    hydrateFallbackElement: <PageLoader />,
+    lazy: async () => ({
+      Component: (await import('./supplier-area-layout.tsx')).SupplierAreaLayout,
+    }),
+    children: [
+      {
+        index: true,
+        handle: { title: 'האזור האישי לספקים' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/supplier-area/supplier-area-page.tsx');
+          return { Component: m.SupplierAreaPage, loader: m.loader };
+        },
+      },
+      {
+        path: 'login',
+        handle: { title: 'כניסה לספקים' },
+        lazy: async () => ({
+          Component: (await import('./supplier-area-login.tsx')).SupplierAreaLogin,
+        }),
       },
     ],
   },

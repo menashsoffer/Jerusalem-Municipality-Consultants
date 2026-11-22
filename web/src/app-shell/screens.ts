@@ -66,6 +66,13 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     waiting: { key: 'addresses_not_found', one: 'כתובת אחת לבדיקה', many: 'כתובות לבדיקה' },
   },
   {
+    to: '/supplier-links',
+    title: 'שיוכים לאזור האישי',
+    description: 'ספקים שביקשו להיכנס לאזור האישי',
+    roles: [],
+    group: 'work',
+  },
+  {
     to: '/supplier/new',
     title: 'הוספת ספק למאגר',
     description: 'רישום ספק חדש באחד המאגרים',

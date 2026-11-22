@@ -26,7 +26,7 @@ describe('admin screens by role', () => {
     assert.deepEqual(paths(access(['editor'])), ['/supplier/new']);
     assert.deepEqual(paths(access(['auditor'])), ['/load-control']);
     assert.ok(paths(access(['unit_manager'])).includes('/users'));
-    assert.equal(paths(access(['admin'])).length, 7);
+    assert.equal(paths(access(['admin'])).length, 8);
   });
 
   it('gives nothing to someone whose access is not active', () => {
@@ -37,6 +37,7 @@ describe('admin screens by role', () => {
     assert.equal(audienceOf('/users'), 'מנהל יחידה או מנהל מערכת');
     assert.equal(audienceOf('/identifiers'), 'מנהל מערכת');
     assert.equal(audienceOf('/thresholds'), 'מנהל מערכת');
+    assert.equal(audienceOf('/supplier-links'), 'מנהל מערכת');
     assert.equal(audienceOf('/catalog'), null);
     assert.equal(mainRole(access(['viewer', 'editor'])), 'עורך');
     assert.equal(mainRole(access(['admin'])), 'מנהל מערכת');

@@ -66,6 +66,16 @@ interface AdminRpc {
     note: string;
     category_id: string | null;
   };
+  // The supplier personal area (supplier-portal-spec-he.md 7.2).
+  portal_me: Record<string, never>;
+  portal_find_supplier: { scheme: 'company' | 'nonprofit'; value: string };
+  portal_request_link: { request: { supplier_id: string; proof_path: string | null } };
+  portal_accept_invite: { invite_id: string };
+  portal_supplier: { supplier_id: string };
+  supplier_link_queue: Record<string, never>;
+  decide_supplier_account: { account_id: string; approve: boolean; note: string | null };
+  revoke_supplier_account: { account_id: string; note: string };
+  invite_supplier_account: { supplier_id: string; email: string };
 }
 // Existing SQL RPCs not yet covered by the snapshot-only generator.
 declare module '../database.types.ts' {
@@ -99,6 +109,15 @@ declare module '../database.types.ts' {
       Args: AdminRpc['last_approaches'];
       Returns: { supplier_id: string; last_on: string }[];
     };
+    portal_me: { Args: AdminRpc['portal_me']; Returns: unknown };
+    portal_find_supplier: { Args: AdminRpc['portal_find_supplier']; Returns: unknown };
+    portal_request_link: { Args: AdminRpc['portal_request_link']; Returns: unknown };
+    portal_accept_invite: { Args: AdminRpc['portal_accept_invite']; Returns: unknown };
+    portal_supplier: { Args: AdminRpc['portal_supplier']; Returns: unknown };
+    supplier_link_queue: { Args: AdminRpc['supplier_link_queue']; Returns: unknown };
+    invite_supplier_account: { Args: AdminRpc['invite_supplier_account']; Returns: string };
+    decide_supplier_account: { Args: AdminRpc['decide_supplier_account']; Returns: null };
+    revoke_supplier_account: { Args: AdminRpc['revoke_supplier_account']; Returns: null };
   }
 }
 const accessSchema = z.object({
@@ -207,4 +226,14 @@ export async function rows<T>(
   schema: ZodType<T>,
 ): Promise<T> {
   return validated((token) => data(token).list(table, filters), schema);
+}
+type PortalPerson = PublicSchema['portal_people']['Insert'];
+/** The signed-in person's own supplier-side details (RLS portal_people_*_own). */
+export async function savePortalPerson(row: PortalPerson, exists: boolean): Promise<void> {
+  const { user_id: userId, ...details } = row;
+  await authorized((token) =>
+    exists
+      ? data(token).update('portal_people', { user_id: `eq.${userId}` }, details)
+      : data(token).insert('portal_people', row),
+  );
 }
