@@ -1,4 +1,4 @@
-// Removing a supplier's contact through the edit checks (migration 20261122220000).
+// Removing a supplier's contact through the edit checks (migration 20261123000000).
 import assert from 'node:assert/strict';
 import { after, before, describe, it } from 'node:test';
 
