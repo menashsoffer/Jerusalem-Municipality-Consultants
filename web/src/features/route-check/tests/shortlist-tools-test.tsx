@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it, vi } from 'vitest';
-import { cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { cleanup, render, screen, within } from '@testing-library/react';
 import { userEvent } from '@testing-library/user-event';
 
 import { DataError } from '../../../data/client.ts';
@@ -34,6 +34,22 @@ afterEach(() => {
   cleanup();
   vi.useRealTimers();
 });
+
+beforeAll(() => {
+  Object.defineProperty(HTMLDialogElement.prototype, 'close', {
+    configurable: true,
+    value(this: HTMLDialogElement) {
+      this.open = false;
+    },
+  });
+});
+
+/** jsdom has no dialog commands: the test opens the dialog the button would open. */
+function openApproach(): HTMLDialogElement {
+  const dialog = screen.getByRole<HTMLDialogElement>('dialog', { hidden: true });
+  dialog.setAttribute('open', '');
+  return dialog;
+}
 
 describe('shortlist tools', () => {
   it('copies one address per active supplier for BCC', async () => {
@@ -94,20 +110,30 @@ describe('shortlist tools', () => {
     cleanup();
     const record = vi.spyOn(engagement, 'recordApproaches').mockResolvedValue(1);
     tools([active, inactive], 'req-1');
-    await userEvent.click(screen.getByRole('button', { name: /רישום פנייה/u }));
-    expect(record).toHaveBeenCalledWith('req-1', [A]);
-    expect(await screen.findByText('נרשמו 1 פניות להיום.')).toBeDefined();
+    const dialog = openApproach();
+    expect(within(dialog).getByLabelText<HTMLInputElement>(/עד מתי לענות/u).min).toBe('2026-11-18');
+    await userEvent.selectOptions(within(dialog).getByLabelText(/איך פניתם/u), 'portal');
+    await userEvent.click(within(dialog).getByRole('button', { name: 'רישום הפנייה' }));
+    expect(record).toHaveBeenCalledWith({
+      request: 'req-1',
+      suppliers: [A],
+      channel: 'portal',
+      respondBy: '2026-11-24',
+    });
+    expect(await screen.findByText('נרשמו 1 פניות, עם מועד לתשובה 24.11.2026.')).toBeDefined();
+    expect(dialog.open).toBe(false);
   });
 
   it('shows the server message or a general one when recording fails', async () => {
     const record = vi.spyOn(engagement, 'recordApproaches');
     record.mockRejectedValueOnce(new DataError(403)).mockRejectedValueOnce(new Error('x'));
     tools([active], 'req-1');
-    const button = screen.getByRole('button', { name: /רישום פנייה/u });
+    const dialog = openApproach();
+    const button = within(dialog).getByRole('button', { name: 'רישום הפנייה' });
     await userEvent.click(button);
-    expect((await screen.findByRole('alert')).textContent).toBe(new DataError(403).message);
+    expect((await within(dialog).findByRole('alert')).textContent).toBe(new DataError(403).message);
     await userEvent.click(button);
-    expect((await screen.findByRole('alert')).textContent).toMatch(/תקלה במערכת/u);
+    expect((await within(dialog).findByRole('alert')).textContent).toMatch(/תקלה במערכת/u);
   });
 });
 

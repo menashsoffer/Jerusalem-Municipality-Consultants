@@ -7,8 +7,8 @@ import { REASON_MESSAGES, reasonMessage } from '../reasons.ts';
 import { serverKeys } from './server-keys.ts';
 
 it('has Hebrew text for every reason the server sends, and no text without a reason', async () => {
-  // The import screen registers its own texts; features/excel-import/tests checks those.
-  const raised = [...(await serverKeys())].filter((key) => !key.startsWith('import_')).sort();
+  // The import and approach screens register their own texts; their own tests check those.
+  const raised = [...(await serverKeys())].filter((key) => !/^(import|approach)_/.test(key)).sort();
   assert.deepEqual(raised, Object.keys(REASON_MESSAGES).sort());
 });
 

@@ -84,6 +84,13 @@ const REJECT = new Set([
   'portal_invite_member(jsonb)',
   'portal_cancel_invite(uuid)',
   'portal_remove_member(uuid)',
+  // Approaches: null input finds no approach; staff functions refuse a supplier.
+  'portal_answer_approach(jsonb)',
+  'portal_withdraw_answer(uuid)',
+  'record_supplier_approaches(uuid,uuid[],text,text)',
+  'request_approaches(uuid)',
+  'record_approach_answer(jsonb)',
+  'extend_approach_deadline(uuid,text,text)',
 ]);
 
 // Calls that need real arguments: with nulls they would fail on input before the access check.
@@ -140,6 +147,12 @@ const CALLS: Record<string, [string, Expect]> = {
     `'${SUPPLIER}'`,
     (v) => {
       assert.equal((v as Json).name, 'ספק');
+    },
+  ],
+  'portal_approaches(uuid)': [
+    `'${SUPPLIER}'`,
+    (v) => {
+      assert.deepEqual(v, []);
     },
   ],
   'my_access()': [

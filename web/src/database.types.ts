@@ -107,6 +107,59 @@ export interface PublicSchema {
       "checked_at"?: string;
     };
   };
+  "approach_responses": {
+    Row: {
+      "id": string;
+      "approach_id": string;
+      "answer": string;
+      "offer_amount": number | null;
+      "offer_includes_vat": boolean | null;
+      "decline_reason": string | null;
+      "note": string | null;
+      "file_path": string | null;
+      "source": string;
+      "account_id": string | null;
+      "received_on": string | null;
+      "withdrawn_at": string | null;
+      "created_at": string;
+      "created_by": string | null;
+      "updated_at": string;
+    };
+    Insert: {
+      "id"?: string;
+      "approach_id": string;
+      "answer": string;
+      "offer_amount"?: number | null;
+      "offer_includes_vat"?: boolean | null;
+      "decline_reason"?: string | null;
+      "note"?: string | null;
+      "file_path"?: string | null;
+      "source": string;
+      "account_id"?: string | null;
+      "received_on"?: string | null;
+      "withdrawn_at"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+    Update: {
+      "id"?: string;
+      "approach_id"?: string;
+      "answer"?: string;
+      "offer_amount"?: number | null;
+      "offer_includes_vat"?: boolean | null;
+      "decline_reason"?: string | null;
+      "note"?: string | null;
+      "file_path"?: string | null;
+      "source"?: string;
+      "account_id"?: string | null;
+      "received_on"?: string | null;
+      "withdrawn_at"?: string | null;
+      "created_at"?: string;
+      "created_by"?: string | null;
+      "updated_at"?: string;
+    };
+  };
   "audit_log": {
     Row: {
       "id": number;
@@ -1191,6 +1244,8 @@ export interface PublicSchema {
       "created_at": string;
       "created_by": string | null;
       "updated_at": string;
+      "respond_by": string | null;
+      "deadline_note": string | null;
     };
     Insert: {
       "id"?: string;
@@ -1205,6 +1260,8 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "respond_by"?: string | null;
+      "deadline_note"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -1219,6 +1276,8 @@ export interface PublicSchema {
       "created_at"?: string;
       "created_by"?: string | null;
       "updated_at"?: string;
+      "respond_by"?: string | null;
+      "deadline_note"?: string | null;
     };
   };
   "supplier_change_requests": {
