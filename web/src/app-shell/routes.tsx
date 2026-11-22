@@ -148,6 +148,15 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'import',
+        handle: { title: 'קליטת ספקים מאקסל' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('../features/excel-import/import-page.tsx');
+          return { Component: m.ImportPage, loader: m.loader };
+        },
+      },
+      {
         path: 'usage',
         handle: { title: 'שימוש באתר' },
         errorElement: <ScreenError />,

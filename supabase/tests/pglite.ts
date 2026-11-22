@@ -10,7 +10,7 @@ import { pg_trgm } from '@electric-sql/pglite/contrib/pg_trgm';
 
 const MIGRATIONS_DIR = resolve(dirname(fileURLToPath(import.meta.url)), '..', 'migrations');
 
-const SUPABASE_STUB = `
+export const SUPABASE_STUB = `
   create role anon nologin;
   create role authenticated nologin;
   create role service_role nologin bypassrls;
@@ -44,6 +44,7 @@ const SUPABASE_STUB = `
     bucket_id text references storage.buckets (id),
     name text not null,
     owner uuid,
+    metadata jsonb not null default '{}',
     created_at timestamptz not null default now(),
     unique (bucket_id, name)
   );

@@ -41,8 +41,16 @@ export const REASON_MESSAGES = {
 
 export type ReasonKey = keyof typeof REASON_MESSAGES;
 
+const featureReasons = new Map<string, string>();
+
+/** Adds the texts of a lazy-loaded screen, so the main bundle carries only the shared ones. */
+export function registerReasons(texts: Readonly<Record<string, string>>): void {
+  for (const [key, text] of Object.entries(texts)) featureReasons.set(key, text);
+}
+
 /** The Hebrew text for a server message `reason:<key>`, or null for any other message. */
 export function reasonMessage(message: string): string | null {
   const key = /^reason:([a-z_]+)$/.exec(message.trim())?.[1] ?? '';
-  return Object.hasOwn(REASON_MESSAGES, key) ? REASON_MESSAGES[key as ReasonKey] : null;
+  if (Object.hasOwn(REASON_MESSAGES, key)) return REASON_MESSAGES[key as ReasonKey];
+  return featureReasons.get(key) ?? null;
 }
