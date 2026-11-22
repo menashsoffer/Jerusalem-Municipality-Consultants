@@ -1167,7 +1167,7 @@ export interface PublicSchema {
       "contact_kind": string | null;
       "contact_id": string | null;
       "old_value": string | null;
-      "new_value": string;
+      "new_value": string | null;
       "reason": string | null;
       "checks": Json;
       "outcome": string;
@@ -1188,7 +1188,7 @@ export interface PublicSchema {
       "contact_kind"?: string | null;
       "contact_id"?: string | null;
       "old_value"?: string | null;
-      "new_value": string;
+      "new_value"?: string | null;
       "reason"?: string | null;
       "checks": Json;
       "outcome": string;
@@ -1209,7 +1209,7 @@ export interface PublicSchema {
       "contact_kind"?: string | null;
       "contact_id"?: string | null;
       "old_value"?: string | null;
-      "new_value"?: string;
+      "new_value"?: string | null;
       "reason"?: string | null;
       "checks"?: Json;
       "outcome"?: string;
