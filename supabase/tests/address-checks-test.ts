@@ -79,7 +79,7 @@ describe('address checks', () => {
     await db.exec(ACCESS_FIXTURE);
     await db.exec(`
       insert into public.suppliers (id, display_name, entity_kind)
-        values ('${PERSON}', 'אדם פרטי', 'individual');
+        values ('${PERSON}', 'אדם פרטי', 'sole_trader');
       insert into public.supplier_contacts (id, supplier_id, kind, value) values
         ('${ADDRESS}', '${SUPPLIER}', 'address', 'יפו 216, ירושלים'),
         ('${SECOND}', '${SUPPLIER}', 'address', 'אין רחוב כזה 9, ירושלים'),

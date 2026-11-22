@@ -8,7 +8,7 @@ export const ENTITY_KINDS: Record<string, string> = {
   nonprofit: 'עמותה',
   partnership: 'שותפות',
   public_body: 'גוף ציבורי',
-  individual: 'אדם פרטי',
+  cooperative: 'אגודה שיתופית',
 };
 export const NAME_KINDS: Record<string, string> = {
   as_published: 'כפי שפורסם',
