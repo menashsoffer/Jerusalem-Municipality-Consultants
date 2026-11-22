@@ -8,6 +8,7 @@ import { StatusMessage } from '../../../ui/status-message.tsx';
 import { runEdit, START, type EditState } from '../api/edit-flow.ts';
 import { reasonNeeded, waitsForDecision } from '../model/change-checks.ts';
 import { CONTACT_KINDS, ENTITY_KINDS } from '../model/labels.ts';
+import { sortContacts } from '../model/contact-order.ts';
 import { contactField, KIND, NAME, NEW_KIND, NEW_VALUE, REASON } from '../model/edit-form.ts';
 import { ChangeResults } from './change-results.tsx';
 import { ContactRow } from './contact-row.tsx';
@@ -27,7 +28,8 @@ interface ContactsProps {
   typed: Record<string, string>;
 }
 function Contacts({ data, errors, typed }: ContactsProps) {
-  const current = data.contacts.filter((item) => item.status === 'current');
+  // Same order as the card: email, address, phones, mobiles (Menash, 22.11).
+  const current = sortContacts(data.contacts.filter((item) => item.status === 'current'));
   return (
     <fieldset className={styles.fieldset}>
       <legend>פרטי קשר</legend>

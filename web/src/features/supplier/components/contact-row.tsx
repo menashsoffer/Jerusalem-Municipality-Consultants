@@ -2,8 +2,9 @@ import { useState } from 'react';
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { FormField } from '../../../ui/form-field.tsx';
 import { IconButton } from '../../../ui/icon-button.tsx';
-import { CONTACT_KINDS } from '../model/labels.ts';
+import { contactLabel } from '../model/contact-order.ts';
 import { contactField, removeField } from '../model/edit-form.ts';
+import { KindIcon } from './kind-icon.tsx';
 import styles from './supplier.module.css';
 
 interface Props {
@@ -20,10 +21,12 @@ interface Props {
  */
 export function ContactRow({ item, error, typed }: Props) {
   const [removed, setRemoved] = useState(typed[removeField(item.id)] === '1');
-  const label = CONTACT_KINDS[item.kind] ?? 'פרט קשר';
+  const label = contactLabel(item.kind, item.value);
   const note = `${removeField(item.id)}-note`;
   return (
+    // The icon sits beside the label: a phone, a mobile, an envelope (Menash, 22.11).
     <div className={styles.contactRow} data-removed={removed ? '' : undefined}>
+      <KindIcon kind={item.kind} value={item.value} />
       <FormField
         field={{ label, error }}
         input={{

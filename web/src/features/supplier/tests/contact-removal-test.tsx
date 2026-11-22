@@ -61,7 +61,7 @@ describe('deleting a contact in the edit dialog', () => {
   it('marks a row with the trash can, shows the check and saves a deletion', async () => {
     const spy = mockDatabase();
     await dialogWith(PHONES);
-    const trash = await screen.findByRole('button', { name: 'מחיקת טלפון: 054-2244973' });
+    const trash = await screen.findByRole('button', { name: 'מחיקת טלפון נייד: 054-2244973' });
     expect(trash.getAttribute('aria-pressed')).toBe('false');
     await userEvent.click(trash);
     expect(trash.getAttribute('aria-pressed')).toBe('true');
@@ -83,7 +83,7 @@ describe('deleting a contact in the edit dialog', () => {
   it('takes a deletion back with a second press, so nothing is saved', async () => {
     const spy = mockDatabase();
     await dialogWith(PHONES);
-    const trash = await screen.findByRole('button', { name: 'מחיקת טלפון: 054-5990250' });
+    const trash = await screen.findByRole('button', { name: 'מחיקת טלפון נייד: 054-5990250' });
     await userEvent.click(trash);
     await userEvent.click(trash);
     expect(screen.queryByText(/יימחק בשמירה/)).toBeNull();

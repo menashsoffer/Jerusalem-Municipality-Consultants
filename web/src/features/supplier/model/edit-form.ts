@@ -21,7 +21,7 @@ export type EditResult =
 
 const removed = (form: FormData, item: Contact) => formText(form, removeField(item.id)) === '1';
 
-/** A deletion is a contact change with an empty value (migration 20261122190000). */
+/** A deletion is a contact change with an empty value (migration 20261122220000). */
 function removals(form: FormData, supplierId: string, current: readonly Contact[]) {
   return current
     .filter((item) => removed(form, item))

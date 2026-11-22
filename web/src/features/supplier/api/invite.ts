@@ -1,4 +1,4 @@
-import { z, rpc } from '../../../data/rpc.ts';
+import { z, rows, rpc } from '../../../data/rpc.ts';
 import { errorText } from '../../../data/errors.ts';
 
 /** The supplier area's address, sent to the supplier by hand: version 1 sends no email. */
@@ -44,3 +44,19 @@ export async function revokeAreaAccount(id: string, note: string): Promise<strin
     return errorText(error);
   }
 }
+
+const inviteSchema = z.object({
+  id: z.string(),
+  email: z.string(),
+  created_at: z.string(),
+  expires_at: z.string(),
+  accepted_at: z.string().nullable(),
+});
+
+/** The supplier's invites, newest first (RLS supplier_invites_read: staff only). */
+export const loadInvites = (supplierId: string) =>
+  rows(
+    'supplier_invites',
+    { supplier_id: `eq.${supplierId}`, order: 'created_at.desc' },
+    z.array(inviteSchema),
+  );

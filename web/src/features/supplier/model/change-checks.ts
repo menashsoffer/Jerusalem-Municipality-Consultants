@@ -15,7 +15,7 @@ export function changeLabel(kind: ChangeKind, contactKind?: string | null): stri
   return CONTACT_KINDS[contactKind ?? ''] ?? 'פרט קשר';
 }
 
-/** A contact change with no value deletes the contact (migration 20261122190000). */
+/** A contact change with no value deletes the contact (migration 20261122220000). */
 export const isRemoval = (kind: ChangeKind, value: string | null) => kind === 'contact' && !value;
 
 /** The value as a person reads it: a kind by its Hebrew name. */

@@ -90,4 +90,16 @@ describe('add-supplier draft', () => {
     expect((await name()).value).toBe('');
     expect(pool().value).toBe('');
   });
+
+  // Menash, 22.11: the error must be seen wherever the page is scrolled, not only at the top.
+  it('shows a refused save in the floating message area', async () => {
+    mockWrites();
+    vi.spyOn(site, 'saveMembership').mockRejectedValue(new Error('השרת סירב.'));
+    show();
+    await fillAll();
+    await userEvent.click(screen.getByRole('button', { name: 'הוספת הספק' }));
+    const alert = await screen.findByRole('alert');
+    expect(alert.textContent).toContain('השרת סירב.');
+    expect(alert.closest('[data-floating]')).not.toBeNull();
+  });
 });

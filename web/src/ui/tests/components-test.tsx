@@ -54,6 +54,23 @@ describe('shared accessible controls', () => {
     await userEvent.type(input, 'valid@example.test');
     expect(input.getAttribute('aria-invalid')).toBe('false');
   });
+  it('shows field info behind an icon on hover and keeps it as the field description', async () => {
+    const text = '5 עד 9 ספרות, בלי מקפים.';
+    render(<FormField field={{ label: 'מזהה רשמי', info: text }} input={{ name: 'identifier' }} />);
+    const input = screen.getByRole('textbox', { name: 'מזהה רשמי' });
+    const id = input.getAttribute('aria-describedby') ?? '';
+    expect(document.getElementById(id)?.textContent).toBe(text);
+    const icon = screen.getByRole('button', { name: 'הסבר על השדה מזהה רשמי' });
+    expect(icon.getAttribute('aria-describedby')).toBe(id);
+    const bubble = icon.parentElement?.querySelector('[aria-hidden="true"]:not(svg)');
+    expect(bubble?.hasAttribute('hidden')).toBe(true);
+    await userEvent.hover(icon);
+    expect(bubble?.hasAttribute('hidden')).toBe(false);
+    expect(bubble?.textContent).toBe(text);
+    await userEvent.unhover(icon);
+    await userEvent.click(icon);
+    expect(bubble?.hasAttribute('hidden')).toBe(false);
+  });
   it('associates a supplied server error with the input', () => {
     render(<FormField field={{ label: 'שם', error: 'יש להזין שם' }} input={{ name: 'name' }} />);
     const input = screen.getByRole('textbox', { name: 'שם' });
