@@ -1,4 +1,4 @@
-import { useActionState } from 'react';
+import { useActionState, useState } from 'react';
 import { Button } from '../../../ui/button.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { decide, INITIAL_DECISION } from '../api/decision.ts';
@@ -21,14 +21,20 @@ function Decision({ id, supplier }: { id: string; supplier: string }) {
     (_: typeof INITIAL_DECISION, form: FormData) => decide(id, form),
     INITIAL_DECISION,
   );
+  // Only the pressed button says "שומר…"; the other one waits, disabled, until the answer.
+  const [pressed, setPressed] = useState('');
+  const press = (event: { currentTarget: HTMLButtonElement }) => {
+    setPressed(event.currentTarget.value);
+  };
   return (
     <form action={action} aria-label={`החלטה על מועמד עבור ${supplier}`} className={styles.actions}>
       <Button
         name="decision"
         value="accept"
         type="submit"
-        pending={pending}
-        disabled={result.committed}
+        onClick={press}
+        pending={pending && pressed === 'accept'}
+        disabled={result.committed || (pending && pressed !== 'accept')}
       >
         קבלה לבדיקה נוספת
       </Button>
@@ -37,8 +43,9 @@ function Decision({ id, supplier }: { id: string; supplier: string }) {
         value="dismiss"
         type="submit"
         variant="secondary"
-        pending={pending}
-        disabled={result.committed}
+        onClick={press}
+        pending={pending && pressed === 'dismiss'}
+        disabled={result.committed || (pending && pressed !== 'dismiss')}
       >
         דחיית המועמד
       </Button>
@@ -55,9 +62,14 @@ export function CandidateRow({ candidate, supplier, level }: Listed) {
     <details className={styles.row}>
       <summary>
         <strong>{supplier}</strong>
-        <bdi dir="ltr">{candidate.value}</bdi>
-        <span className={`${styles.tag ?? ''} ${styles[level] ?? ''}`}>{MATCH_LABELS[level]}</span>
-        <span className={styles.source}>{SOURCES[candidate.source]}</span>
+        {/* Always a line of its own under the name, in the same order, short name or long. */}
+        <span className={styles.meta}>
+          <bdi dir="ltr">{candidate.value}</bdi>
+          <span className={`${styles.tag ?? ''} ${styles[level] ?? ''}`}>
+            {MATCH_LABELS[level]}
+          </span>
+          <span className={styles.source}>{SOURCES[candidate.source]}</span>
+        </span>
       </summary>
       <dl className={styles.names}>
         <dt>באתר</dt>

@@ -338,14 +338,14 @@ describe('status panel and verification mark', () => {
     expect(screen.queryByRole('textbox', { name: /שם הספק/ })).toBeNull();
   });
 
-  it('says when nothing changed and keeps the typed values after a refused save', async () => {
+  it('keeps save off until something changes, and keeps typed values after a refused save', async () => {
     mockWrites();
     vi.spyOn(rpc, 'rpc').mockRejectedValue(new Error('נדחה.'));
     const data = await detail();
     data.contacts = [];
     await openDialog(data);
-    await userEvent.click(await screen.findByRole('button', { name: 'שמירה' }));
-    expect(await screen.findByText('אין שינויים לשמירה.')).toBeDefined();
+    const save = await screen.findByRole<HTMLButtonElement>('button', { name: 'שמירה' });
+    expect(save.disabled).toBe(true);
     const name = screen.getByRole<HTMLInputElement>('textbox', { name: /שם הספק/ });
     await userEvent.type(name, ' נוסף');
     await userEvent.click(screen.getByRole('button', { name: 'שמירה' }));

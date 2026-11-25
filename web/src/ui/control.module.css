@@ -205,13 +205,18 @@
       position: sticky;
       inset-block-end: 0;
       padding-block: var(--space-md);
-      background: var(--color-surface);
+      background: var(--actions-surface, var(--color-surface));
       border-block-start: var(--border-width) solid var(--color-border);
     }
+    /* The primary button takes the row; a secondary one such as "ביטול" sits beside it. */
     .actionGroup {
       flex: 1 1 100%;
+      flex-wrap: nowrap;
       & > :first-child {
-        flex: 1 1 100%;
+        flex: 1 1 auto;
+      }
+      & > :not(:first-child) {
+        flex: none;
       }
     }
   }

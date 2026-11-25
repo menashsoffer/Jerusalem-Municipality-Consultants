@@ -100,6 +100,10 @@ describe('manual identifier candidates', () => {
     );
     await userEvent.click(await screen.findByRole('button', { name: 'קבלה לבדיקה נוספת' }));
     expect(screen.getByText('מצב במרשם')).toBeDefined();
+    // Only the pressed button saves; the other keeps its label, off (25.11.2026).
+    expect(screen.getAllByRole('button', { name: 'שומר…' })).toHaveLength(1);
+    const other = screen.getByRole<HTMLButtonElement>('button', { name: 'דחיית המועמד' });
+    expect(other.disabled).toBe(true);
     finish();
     expect(await screen.findByRole('heading', { name: 'אין מועמדים ממתינים' })).toBeDefined();
     expect(decide).toHaveBeenCalledWith('candidate', true);

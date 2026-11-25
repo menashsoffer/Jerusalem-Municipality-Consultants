@@ -16,15 +16,17 @@ interface Props {
 }
 
 /**
- * Spec section 4.5: one save for the details, and beside it the administrator's status
- * button in its own colour. The dialog closes with the X, Escape or a click outside it.
+ * Spec section 4.5: one save for the details. The administrator's status action sits apart,
+ * under a line and as a quiet link, so it is not pressed instead of save (Menash, 25.11.2026).
+ * The dialog closes with the X, Escape or a click outside it.
  */
 export function EditDialog({ data, editor, admin, today }: Props) {
   const [confirming, setConfirming] = useState(false);
   const inactive = data.supplier.status === 'inactive';
   const statusButton = admin && (
     <Button
-      variant={inactive ? 'secondary' : 'danger'}
+      variant="quiet"
+      className={inactive ? '' : (styles.dangerQuiet ?? '')}
       aria-expanded={confirming}
       onClick={() => {
         setConfirming(true);
@@ -41,11 +43,8 @@ export function EditDialog({ data, editor, admin, today }: Props) {
         setConfirming(false);
       }}
     >
-      {editor ? (
-        <EditForm data={data} admin={admin} aside={statusButton} />
-      ) : (
-        <div className={styles.dialogActions}>{statusButton}</div>
-      )}
+      {editor && <EditForm data={data} admin={admin} />}
+      {statusButton && <div className={styles.statusZone}>{statusButton}</div>}
       {admin && confirming && (
         <StatusPanel
           data={data}

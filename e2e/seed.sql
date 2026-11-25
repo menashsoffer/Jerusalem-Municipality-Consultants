@@ -43,3 +43,19 @@ on conflict do nothing;
 insert into public.portal_people (user_id, first_name, last_name) values
   ('e2e00000-0000-0000-0000-0000000000a1', 'דנה', 'ספקית')
 on conflict (user_id) do nothing;
+
+-- Two supplier ID candidates for the screen checks (e2e/screens): a short name and a long one,
+-- so the list shows that both keep the same line layout.
+insert into public.suppliers (id, display_name, entity_kind) values
+  ('e2e00000-0000-0000-0000-0000000000b1',
+    'חברת דמה למערכות ניהול נוכחות, מצוקה ובקרת עובדים מהשטח בע"מ', 'company')
+on conflict (id) do nothing;
+insert into public.identifier_candidates (id, supplier_id, scheme, value, source,
+  registrar_name, registrar_status, searched_name) values
+  ('e2e00000-0000-0000-0000-0000000000c1', 'd6000000-0000-0000-0000-000000000003', 'company',
+    '512345678', 'companies_registrar', 'יועץ דמה בע"מ', 'פעילה', 'יועץ דמה'),
+  ('e2e00000-0000-0000-0000-0000000000c2', 'e2e00000-0000-0000-0000-0000000000b1', 'company',
+    '513396234', 'companies_registrar',
+    'חברת דמה למערכות ניהול נוכחות, מצוקה ובקרת עובדים מהשטח בע"מ', 'פעילה',
+    'חברת דמה למערכות ניהול נוכחות')
+on conflict (id) do nothing;
