@@ -1,6 +1,7 @@
 // What a candidate supplier already has, so the review shows existing and new values side by
 // side before the admin approves (spec section 8).
-import { z, rows } from '../../../data/rpc.ts';
+import { rows } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 
 const supplierSchema = z.object({
   id: z.string(),

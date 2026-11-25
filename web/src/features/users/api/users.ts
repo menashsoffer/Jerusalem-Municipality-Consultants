@@ -1,5 +1,6 @@
 import { DataError } from '../../../data/client.ts';
-import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { loadChanges } from './changes.ts';
 import { invalidate } from '../../../data/screen-data.ts';
 const role = z.enum(['viewer', 'editor', 'unit_manager', 'admin', 'auditor']);

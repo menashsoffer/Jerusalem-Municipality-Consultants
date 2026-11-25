@@ -1,5 +1,6 @@
 // The admin's queue of supplier documents (supplier-portal-spec-he.md 6.5, decision 3).
-import { z, rpc, requireRoles } from '../../../data/rpc.ts';
+import { rpc, requireRoles } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { errorText } from '../../../data/errors.ts';
 import { refreshScreen } from '../../../data/screen-data.ts';
 import { DOCUMENT_KINDS } from './document-kinds.ts';

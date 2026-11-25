@@ -120,6 +120,13 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        // The list, or one registry when a version is given.
+        path: 'registries/:version?',
+        handle: { title: 'אימות מאגרים' },
+        errorElement: <ScreenError />,
+        lazy: () => import('../features/registries/registries-route.tsx'),
+      },
+      {
         path: 'load-control',
         handle: { title: 'בקרת טעינה' },
         errorElement: <ScreenError />,

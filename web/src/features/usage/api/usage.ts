@@ -1,5 +1,6 @@
 // The admin usage dashboard reads one summary function (usage-analytics-spec-he.md 4.3).
-import { z, requireRoles, rpc } from '../../../data/rpc.ts';
+import { requireRoles, rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { israelToday } from '../../../lib/dates.ts';
 import { rangeOf, type Range } from '../model/range.ts';
 

@@ -1,5 +1,6 @@
 // Saved engagement requests with the state of their latest route check (screens-spec 2.ב).
-import { z, rows, rpc, permitted, type Identity } from '../../../data/rpc.ts';
+import { rows, rpc, permitted, type Identity } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { invalidate } from '../../../data/screen-data.ts';
 
 const requestSchema = z.object({

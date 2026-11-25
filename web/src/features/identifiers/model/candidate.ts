@@ -1,4 +1,4 @@
-import { z } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 export const candidateSchema = z.object({
   id: z.string(),
   supplier_id: z.string(),

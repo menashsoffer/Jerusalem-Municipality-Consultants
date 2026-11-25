@@ -1,6 +1,7 @@
 // Calls behind the import screen (supplier-excel-import-spec-he.md, sections 4 and 6). Every call
 // is checked again in the database: admin only, sizes, field rules.
-import { z, rpc, requireRoles, rows, freshToken } from '../../../data/rpc.ts';
+import { rpc, requireRoles, rows, freshToken } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { failedResponse } from '../../../data/client.ts';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../../../data/environment.ts';
 import type { Candidate, Choice } from '../model/decisions.ts';

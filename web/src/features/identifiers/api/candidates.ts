@@ -1,4 +1,5 @@
-import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { candidateSchema } from '../model/candidate.ts';
 import { kindSuggestionSchema } from '../model/kinds.ts';
 /** The screen's key in the screen data (state-management-spec-he.md 5.3). */

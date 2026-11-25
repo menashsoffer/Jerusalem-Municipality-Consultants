@@ -1,4 +1,5 @@
-import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { requestSchema, parseDecision, type DecisionField } from '../model/decision.ts';
 import { errorText } from '../../../data/errors.ts';
 import { DataError } from '../../../data/client.ts';

@@ -1,4 +1,5 @@
-import { z, rows, rpc } from '../../../data/rpc.ts';
+import { rows, rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { errorText } from '../../../data/errors.ts';
 
 /** The supplier area's address, sent to the supplier by hand: version 1 sends no email. */

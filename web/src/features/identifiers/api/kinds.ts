@@ -1,4 +1,5 @@
-import { z, rpc } from '../../../data/rpc.ts';
+import { rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { DataError } from '../../../data/client.ts';
 import { errorText } from '../../../data/errors.ts';
 import { refreshScreen } from '../../../data/screen-data.ts';

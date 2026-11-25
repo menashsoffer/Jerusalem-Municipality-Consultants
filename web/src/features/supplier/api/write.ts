@@ -1,4 +1,5 @@
-import { rpc, freshToken, z } from '../../../data/rpc.ts';
+import { rpc, freshToken } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { loadSnapshot, saveMembership, writeContext } from '../../../data/site.ts';
 import type { WriteContext } from '../../../data/write-context.ts';
 import { refreshScreen, type Key } from '../../../data/screen-data.ts';

@@ -1,5 +1,6 @@
 // "המשתמשים שלנו" (supplier-portal-spec-he.md 6.8): an owner's view of the supplier's people.
-import { z, rpc } from '../../../data/rpc.ts';
+import { rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 
 const roleSchema = z.enum(['owner', 'member']);
 const memberSchema = z.object({

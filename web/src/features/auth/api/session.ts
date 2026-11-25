@@ -1,4 +1,5 @@
-import { z, getAdminSession, getKeeper } from '../../../data/rpc.ts';
+import { getAdminSession, getKeeper } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { sendLink, BASE, clearCatalog, logout } from '../../../data/site.ts';
 import {
   googleAuthorizeUrl,

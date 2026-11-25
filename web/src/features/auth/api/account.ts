@@ -1,4 +1,5 @@
-import { insertProfile, rows, rpc, sessionToken, z, type Identity } from '../../../data/rpc.ts';
+import { insertProfile, rows, rpc, sessionToken, type Identity } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { tokenEmail } from '../../../data/snapshot.ts';
 import { authUser } from '../../../data/site.ts';
 import { changeSchema, type ChangeRequest } from '../../../data/access-changes.ts';

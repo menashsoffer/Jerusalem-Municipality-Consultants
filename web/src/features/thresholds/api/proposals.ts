@@ -1,4 +1,5 @@
-import { z, rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { rows, rpc, requireRoles } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { DataError } from '../../../data/client.ts';
 import { invalidate } from '../../../data/screen-data.ts';
 /** The screen's key in the screen data (state-management-spec-he.md 5.3). */

@@ -1,7 +1,8 @@
 import { Link, useLoaderData } from 'react-router';
 
 import { useCatalogSnapshot } from '../data/react-catalog.ts';
-import { identity, rpc, z } from '../data/rpc.ts';
+import { identity, rpc } from '../data/rpc.ts';
+import { z } from '../data/zod.ts';
 import { Notice } from '../ui/notice.tsx';
 import { PageHeader } from '../ui/page-header.tsx';
 import { allowedScreens, waitingText, type AdminScreen, type OverviewKey } from './screens.ts';
