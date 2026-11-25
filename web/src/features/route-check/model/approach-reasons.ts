@@ -8,6 +8,8 @@ export const STAFF_APPROACH_REASONS = {
   approach_deadline: 'בחרו מועד מחר ועד 90 יום, ולא מוקדם מהמועד הקיים.',
   approach_answered: 'לפנייה הזו כבר יש תשובה.',
   approach_amount: 'כתבו סכום חיובי עם עד שתי ספרות אחרי הנקודה, ובחרו אם הוא כולל מע״מ.',
+  approach_award_offer: 'אפשר לבחור רק ספק שהגיש הצעה, ורק אחרי שהמועד להגשה עבר.',
+  approach_award_note: 'הנימוק ארוך מדי. כתבו עד 2,000 תווים.',
 } as const;
 
 registerReasons(STAFF_APPROACH_REASONS);
