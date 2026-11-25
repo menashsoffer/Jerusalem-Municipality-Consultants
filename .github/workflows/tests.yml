@@ -66,7 +66,7 @@ jobs:
       # TEMPORARY (PR #175): where the CI phone pictures differ from the approved ones.
       - if: failure()
         run: |
-          cat > /tmp/diff-rows.cjs <<'JS'
+          cat > ./diff-rows.cjs <<'JS'
           // Prints where two PNGs differ: size, and runs of differing rows with x-range.
           const { PNG } = require('playwright-core/lib/utilsBundle');
           const fs = require('fs');
@@ -86,7 +86,7 @@ jobs:
           JS
           for f in $(find test-results -name '*-actual.png' -not -path '*retry*'); do
             n=$(basename "$f" -actual.png)
-            echo "== $f"; node /tmp/diff-rows.cjs "$f" e2e/screens/baseline/screens-phone/$n.png || true
+            echo "== $f"; node ./diff-rows.cjs "$f" e2e/screens/baseline/screens-phone/$n.png || true
           done
       - if: failure()
         uses: actions/upload-artifact@v4
