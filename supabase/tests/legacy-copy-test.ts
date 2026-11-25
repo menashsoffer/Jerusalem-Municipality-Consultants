@@ -32,7 +32,11 @@ describe('copy of the legacy suppliers table', () => {
   before(async () => {
     db = await migratedDatabase({ until: '20261112000100_harden_baseline.sql' });
     await db.exec(FIXTURE);
-    await applyMigrations(db, { after: '20261112000100_harden_baseline.sql' });
+    // Stops before the legacy table was dropped (25.11), so the copy can be checked.
+    await applyMigrations(db, {
+      after: '20261112000100_harden_baseline.sql',
+      until: '20261125090000_revoke_stray_table_grants.sql',
+    });
   });
   after(async () => {
     await db.close();
