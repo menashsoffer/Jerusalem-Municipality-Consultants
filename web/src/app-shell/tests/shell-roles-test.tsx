@@ -56,7 +56,7 @@ describe('top bar', () => {
     expect([...nav.querySelectorAll('a')].map((a) => a.textContent)).toEqual([
       'בית',
       'איתור ספקים',
-      'בקשות התקשרות',
+      'בקשות',
     ]);
     const personal = screen.getByRole('link', { name: 'האזור האישי' });
     expect(personal.textContent).toBe('D');

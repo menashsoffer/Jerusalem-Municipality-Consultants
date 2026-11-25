@@ -1,12 +1,14 @@
 @layer features {
   .search {
     display: flex;
-    flex-wrap: wrap;
-    align-items: end;
     gap: var(--space-sm);
-    margin-block-end: var(--space-2xl);
-    & > :first-child {
-      flex: 1 1 20rem;
+    max-inline-size: 40rem;
+    margin-block-end: var(--space-xl);
+    & > input {
+      flex: 1 1 auto;
+    }
+    & > button {
+      flex: none;
     }
   }
   .columns {

@@ -4,7 +4,7 @@ import { overview as adminOverview } from '../home-page.tsx';
 import { allowedScreens } from '../screens.ts';
 import { getAdminSession, identity, rpc, type Identity } from '../../data/rpc.ts';
 import { Button } from '../../ui/button.tsx';
-import { FormField } from '../../ui/form-field.tsx';
+import controls from '../../ui/control.module.css';
 import { Notice } from '../../ui/notice.tsx';
 import { PageHeader } from '../../ui/page-header.tsx';
 import { QuickActions } from './components/quick-actions.tsx';
@@ -47,15 +47,17 @@ function SupplierSearch() {
   };
   return (
     <search>
+      {/* One row, the example inside the box (Menash, 25.11.2026), so "מחכה לך" shows on a
+          phone's first screen. */}
       <form className={styles.search} onSubmit={submit}>
-        <FormField
-          field={{ label: 'חיפוש ספק', hint: 'שם ספק, שם קודם או תחום, למשל: הדרכה' }}
-          input={{
-            type: 'search',
-            value: query,
-            onChange: (e) => {
-              setQuery(e.currentTarget.value);
-            },
+        <input
+          type="search"
+          aria-label="חיפוש ספק"
+          placeholder="שם ספק, שם קודם או תחום, למשל: הדרכה"
+          className={controls.control}
+          value={query}
+          onChange={(e) => {
+            setQuery(e.currentTarget.value);
           }}
         />
         <Button type="submit">חיפוש</Button>

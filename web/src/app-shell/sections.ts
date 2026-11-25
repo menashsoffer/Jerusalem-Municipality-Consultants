@@ -11,7 +11,8 @@ export interface Section {
 export const SECTIONS: readonly Section[] = [
   { key: 'home', label: 'בית', to: '/' },
   { key: 'catalog', label: 'איתור ספקים', to: '/catalog' },
-  { key: 'requests', label: 'בקשות התקשרות', to: '/engagement' },
+  // Short enough for one line in the phone's bottom bar (Menash, 25.11.2026).
+  { key: 'requests', label: 'בקשות', to: '/engagement' },
   { key: 'admin', label: 'ניהול', to: '/admin' },
 ];
 

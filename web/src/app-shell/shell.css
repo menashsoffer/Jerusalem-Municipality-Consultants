@@ -225,6 +225,7 @@
         padding-inline: var(--space-xs);
         border-radius: 0;
         font-size: var(--font-xs);
+        white-space: nowrap;
         box-shadow: inset 0 0.1875rem 0 transparent;
         &[aria-current='page'] {
           background: transparent;
@@ -234,6 +235,10 @@
       & .shell-icon {
         display: block;
       }
+    }
+    /* A focused field is scrolled clear of the bottom bar, not under it. */
+    :root {
+      scroll-padding-block-end: calc(3.5rem + env(safe-area-inset-bottom, 0px));
     }
     .shell-main {
       padding: var(--space-xl) var(--space-lg)
