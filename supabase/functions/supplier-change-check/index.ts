@@ -2,7 +2,8 @@ import { serverEnv, type ServerEnv } from '../_shared/http/env.ts';
 import { bearerToken, failure, json, preflight, readObject } from '../_shared/http/respond.ts';
 import { failedStatus, rest } from '../_shared/http/rest.ts';
 import { guidestarCredentials, type Credentials } from '../supplier-identifiers/sources.ts';
-import { checkGuidestar, checkRegistrar, type Identifier } from './registry.ts';
+import { checkAll } from './checks.ts';
+import type { Identifier } from './registry.ts';
 
 // POST { supplier_id } with the caller's token, before an edit of the supplier is checked
 // (documentation/supplier-edit-checks-spec-he.md, 6.3). Asks the registries about the
@@ -64,12 +65,7 @@ async function check(job: Accepted, ctx: Context): Promise<Response> {
   }
   const items = (loaded.body as { identifiers: Identifier[] }).identifiers;
   if (items.length === 0) return json({ checked: 0, sources: {} });
-  const [registrar, guidestar] = await Promise.all([
-    checkRegistrar(items, ctx.fetcher),
-    checkGuidestar(items, ctx.guidestar, ctx.fetcher),
-  ]);
-  const results = [...registrar.results, ...guidestar.results];
-  const sources = { companies_registrar: registrar.state, guidestar: guidestar.state };
+  const { results, sources } = await checkAll(items, ctx.guidestar, ctx.fetcher);
   if (results.length === 0) return json({ checked: 0, sources });
   const saved = await rest(
     env,
