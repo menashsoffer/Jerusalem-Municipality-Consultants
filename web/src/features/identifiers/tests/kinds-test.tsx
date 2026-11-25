@@ -52,6 +52,25 @@ describe('kind suggestions', () => {
     );
   });
 
+  it('shows "שומר…" only on the pressed button while it saves', async () => {
+    let finish: (value: string) => void = () => undefined;
+    vi.spyOn(rpc, 'rpc').mockImplementation(
+      () =>
+        new Promise((resolve) => {
+          finish = resolve;
+        }),
+    );
+    vi.spyOn(screenData, 'refreshScreen').mockResolvedValue(undefined);
+    render(<KindSuggestions rows={[row]} />);
+    await userEvent.click(screen.getByText('אור לציון'));
+    await userEvent.click(screen.getByRole('button', { name: 'דחיית ההצעה' }));
+    expect(screen.getAllByRole('button', { name: 'שומר…' })).toHaveLength(1);
+    expect(screen.getByRole<HTMLButtonElement>('button', { name: 'קבלת הסוג' }).disabled).toBe(
+      true,
+    );
+    finish('rejected');
+  });
+
   it('treats a suggestion someone else decided as done, and shows other errors', async () => {
     vi.spyOn(rpc, 'rpc').mockRejectedValueOnce(new DataError(404));
     vi.spyOn(screenData, 'refreshScreen').mockRejectedValue(new Error('offline'));
