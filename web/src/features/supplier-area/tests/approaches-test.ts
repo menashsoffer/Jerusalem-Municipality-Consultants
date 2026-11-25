@@ -7,6 +7,7 @@ import {
   amountProblem,
   cleanAmount,
   dueText,
+  groupOf,
   grouped,
   offerSummary,
   stateText,
@@ -70,6 +71,14 @@ describe('supplier approaches', () => {
     );
     assert.equal(stateText(approach({ open: false })), 'המועד עבר בלי תשובה');
     assert.equal(stateText(approach({ cancelled: true })), 'היחידה ביטלה את הבקשה');
+  });
+
+  it('tells a bidder whether its offer was chosen (stage C, 25.11)', () => {
+    const won = approach({ answer: answer(), result: 'selected' });
+    assert.equal(groupOf(won), 'closed');
+    assert.equal(stateText(won), 'ההצעה שלכם נבחרה');
+    const lost = approach({ answer: answer(), result: 'not_selected' });
+    assert.match(stateText(lost), /^ההצעה שלכם לא נבחרה/u);
   });
 
   it('checks the amount the way the database does', () => {

@@ -26,6 +26,8 @@ const approachSchema = z.object({
   needed_by: z.iso.date().nullable(),
   cancelled: z.boolean(),
   open: z.boolean(),
+  /** After a winner is chosen: whether this supplier's offer was the one (stage C, 25.11). */
+  result: z.enum(['selected', 'not_selected']).nullish(),
   answer: answerSchema.nullable(),
 });
 export type Approach = z.infer<typeof approachSchema>;

@@ -77,6 +77,7 @@ function Recheck({ request, unit, today }: { request: SavedRequest; unit: string
 }
 
 function statusText(request: SavedRequest): string {
+  if (request.status === 'awarded') return 'נבחר זוכה';
   if (!request.lastStatus) return 'טרם נבדקה';
   const label = STATUS_LABELS[request.lastStatus];
   return request.changedSinceCheck ? `${label} (הפרטים שונו מאז, כדאי לבדוק שוב)` : label;
@@ -97,9 +98,12 @@ function commandFor(target: string | null) {
 
 /** Icon buttons: the full name for screen readers, the short one in the bubble (DESIGN.md 6.2). */
 function RowActions({ request, choose }: { request: SavedRequest; choose: (m: Mode) => void }) {
-  const modes: Mode[] = editable(request)
-    ? ['recheck', 'approaches', 'edit', 'cancel']
-    : ['recheck', 'approaches', 'cancel'];
+  const modes: Mode[] =
+    request.status === 'awarded'
+      ? ['approaches']
+      : editable(request)
+        ? ['recheck', 'approaches', 'edit', 'cancel']
+        : ['recheck', 'approaches', 'cancel'];
   return (
     <div className={styles.rowActions}>
       {modes.map((mode) => (
@@ -145,7 +149,12 @@ function RequestDialogs({
       </Dialog>
       <Dialog id={REQUEST_APPROACHES} title={titled('approaches', chosen)}>
         {request && chosen.mode === 'approaches' && (
-          <RequestApproaches key={request.id} requestId={request.id} today={today} />
+          <RequestApproaches
+            key={request.id}
+            requestId={request.id}
+            today={today}
+            status={request.status}
+          />
         )}
       </Dialog>
       <Dialog id={CANCEL_REQUEST} title={titled('cancel', chosen)}>

@@ -34,7 +34,7 @@ const declined = {
 
 function show(list: RequestApproach[]) {
   const load = vi.spyOn(api, 'loadRequestApproaches').mockResolvedValue(list);
-  render(<RequestApproaches requestId="r1" today={TODAY} />);
+  render(<RequestApproaches requestId="r1" today={TODAY} status="submitted" />);
   return load;
 }
 const submit = (name: string) => userEvent.click(screen.getByRole('button', { name }));

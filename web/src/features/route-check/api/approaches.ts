@@ -4,6 +4,7 @@ import { rpc } from '../../../data/rpc.ts';
 import { z } from '../../../data/zod.ts';
 import { CHANNELS } from '../model/approaches.ts';
 import '../model/approach-reasons.ts';
+import { savedChanged } from './saved.ts';
 
 const answerSchema = z.object({
   id: z.string(),
@@ -62,4 +63,10 @@ export async function recordAnswer(input: StaffAnswer): Promise<void> {
 /** Moves every open deadline of the request forward; returns how many moved. */
 export function extendDeadline(request: string, respondBy: string, reason: string) {
   return rpc('extend_approach_deadline', { request, respond_by: respondBy, reason }, z.number());
+}
+
+/** Picks the winner and closes the request (stage C, 25.11); the database checks the offer. */
+export async function awardRequest(request: string, approach: string, note: string) {
+  await rpc('award_engagement_request', { request, approach, note: note.trim() || null }, z.null());
+  void savedChanged();
 }
