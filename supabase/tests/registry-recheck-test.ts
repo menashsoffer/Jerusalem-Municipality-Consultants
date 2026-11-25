@@ -54,7 +54,9 @@ describe('registry re-check', () => {
     await db.exec(
       `update public.suppliers set review_status = 'verified' where id = '${VERIFIED}'`,
     );
-    const remaining = await save(db, [{ id: item.id, found: true, status: 'בפירוק' }]);
+    const checks = { checks: { registrar: 'ok', events: 'ok' } };
+    const answer = { id: item.id, found: true, status: 'בפירוק', details: checks };
+    const remaining = await save(db, [answer]);
     assert.equal(remaining, 0);
     assert.deepEqual(await queue(db), []);
     const { rows } = await db.query<{ review_status: string }>(
@@ -67,6 +69,17 @@ describe('registry re-check', () => {
        where id = '${item.id}'`,
     );
     assert.equal((await queue(db)).length, 1);
+  });
+
+  it('asks at once about an approved number whose last answer predates the new checks', async () => {
+    await db.exec(
+      `update public.supplier_identifiers set checked_at = now(), registry_details = '{}'
+       where supplier_id = '${VERIFIED}'`,
+    );
+    assert.deepEqual(
+      (await queue(db)).map((q) => q.value),
+      ['513000001'],
+    );
   });
 
   it('is for the scheduled function only', async () => {
