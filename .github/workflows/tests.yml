@@ -63,11 +63,30 @@ jobs:
             | sed -E 's/^([A-Z_]+)="?([^"]*)"?$/E2E_\1=\2/' >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
-      # TEMPORARY (PR #175): prints the CI-rendered screen pictures so they can be compared.
+      # TEMPORARY (PR #175): where the CI phone pictures differ from the approved ones.
       - if: failure()
         run: |
+          cat > /tmp/diff-rows.cjs <<'JS'
+          // Prints where two PNGs differ: size, and runs of differing rows with x-range.
+          const { PNG } = require('playwright-core/lib/utilsBundle');
+          const fs = require('fs');
+          const [a, b] = process.argv.slice(2).map((f) => PNG.sync.read(fs.readFileSync(f)));
+          console.log('size', a.width, a.height, 'vs', b.width, b.height);
+          const h = Math.min(a.height, b.height), w = Math.min(a.width, b.width);
+          let run = null; const runs = [];
+          for (let y = 0; y < h; y++) {
+            let minx = w, maxx = -1, n = 0;
+            for (let x = 0; x < w; x++) {
+              const i = (y * a.width + x) * 4, j = (y * b.width + x) * 4;
+              if (Math.abs(a.data[i] - b.data[j]) + Math.abs(a.data[i+1] - b.data[j+1]) + Math.abs(a.data[i+2] - b.data[j+2]) > 30) { n++; minx = Math.min(minx, x); maxx = x; }
+            }
+            if (n) { if (run && run.y2 === y - 1) { run.y2 = y; run.n += n; run.x1 = Math.min(run.x1, minx); run.x2 = Math.max(run.x2, maxx); } else { run = { y1: y, y2: y, n, x1: minx, x2: maxx }; runs.push(run); } }
+          }
+          console.log(JSON.stringify(runs.slice(0, 40)));
+          JS
           for f in $(find test-results -name '*-actual.png' -not -path '*retry*'); do
-            echo "PNG-BEGIN $f"; base64 -w0 "$f"; echo; echo "PNG-END"
+            n=$(basename "$f" -actual.png)
+            echo "== $f"; node /tmp/diff-rows.cjs "$f" e2e/screens/baseline/screens-phone/$n.png || true
           done
       - if: failure()
         uses: actions/upload-artifact@v4
