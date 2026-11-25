@@ -37,3 +37,28 @@ export function restoreFilters(entry: string, fresh: Filters): Filters | null {
     return null;
   }
 }
+
+const LINKED_VALIDITY = ['valid', 'expired', 'undated', 'future'] as const;
+type LinkedValidity = (typeof LINKED_VALIDITY)[number];
+
+function isValidity(value: unknown): value is LinkedValidity {
+  return LINKED_VALIDITY.some((v) => v === value);
+}
+
+function textOf(value: unknown): string {
+  return typeof value === 'string' ? value.slice(0, 200) : '';
+}
+
+/**
+ * A search handed over by a link from another screen (the home screen's search box, or "who
+ * lapsed in this registry"), as navigation state. Anything else in the state is ignored.
+ */
+export function linkedFilters(state: unknown, fresh: Filters): Filters | null {
+  if (typeof state !== 'object' || state === null) return null;
+  const given = state as Record<string, unknown>;
+  const query = textOf(given.query).trim();
+  const registry = textOf(given.registry);
+  const validity = isValidity(given.validity) ? given.validity : '';
+  if (!query && !registry && !validity) return null;
+  return { ...fresh, query, registry, validity };
+}

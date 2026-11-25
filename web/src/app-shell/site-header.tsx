@@ -5,8 +5,9 @@ import { AccountMenu } from './account-menu.tsx';
 import { allowedScreens } from './screens.ts';
 import { SECTIONS, sectionOf, type Section } from './sections.ts';
 
-// Icon outlines follow Lucide (ISC license): search, clipboard-check, settings-2, user.
+// Icon outlines follow Lucide (ISC license): house, search, clipboard-check, settings-2, user.
 const ICONS: Record<Section['key'], string> = {
+  home: 'M3 10l9-7 9 7v10a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z',
   catalog: 'M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM20 20l-4-4',
   requests: 'M9 4h6v3H9zM7 5H5v15h14V5h-2M9 13l2 2 4-4',
   admin: 'M14 17H5M19 7h-9M17 20a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM7 10a3 3 0 1 0 0-6 3 3 0 0 0 0 6z',
@@ -23,7 +24,7 @@ function Icon({ path }: { path: string }) {
 /** The logo dots and the site name. Not the municipality emblem, which needs approval. */
 function Brand() {
   return (
-    <Link to="/catalog" className="shell-brand">
+    <Link to="/" className="shell-brand">
       <span className="shell-dots" aria-hidden="true">
         <i />
         <i />

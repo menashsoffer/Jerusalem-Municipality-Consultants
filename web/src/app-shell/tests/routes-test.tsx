@@ -35,7 +35,7 @@ afterEach(() => {
 });
 
 describe('admin routes', () => {
-  it('opens the catalog at the site root', async () => {
+  it('sends a visitor without a session from the site root to the catalog', async () => {
     const router = createMemoryRouter(routes, { initialEntries: ['/'] });
     render(<RouterProvider router={router} />);
     await waitFor(() => {

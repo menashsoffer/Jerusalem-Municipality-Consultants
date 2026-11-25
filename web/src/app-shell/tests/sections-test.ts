@@ -26,3 +26,8 @@ it('selects no tab on sign-in or unknown paths, and does not match on a shared p
   assert.equal(sectionOf('/no-such-screen'), null);
   assert.equal(sectionOf('/catalogue'), null);
 });
+
+it('selects the home tab only on the home screen', () => {
+  assert.equal(sectionOf('/'), 'home');
+  assert.equal(sectionOf('/home'), null);
+});

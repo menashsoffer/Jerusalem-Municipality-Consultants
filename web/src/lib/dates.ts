@@ -27,3 +27,9 @@ export function dayOf(value: string): string {
     year: 'numeric',
   }).format(new Date(value));
 }
+
+/** A `YYYY-MM-DD` date as "24.12.2026". */
+export function dateLabel(day: string): string {
+  const [year, month, date] = day.split('-');
+  return `${date ?? ''}.${month ?? ''}.${year ?? ''}`;
+}

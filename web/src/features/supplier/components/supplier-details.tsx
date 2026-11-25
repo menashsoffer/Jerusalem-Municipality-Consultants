@@ -7,6 +7,7 @@ import { History } from './history.tsx';
 import { IdentityCard, Sources } from './identity-card.tsx';
 import { Listings } from './listings.tsx';
 import { PendingChanges } from './pending-changes.tsx';
+import { VerdictBand } from './verdict-band.tsx';
 import type { ChangeRequest } from '../../../data/supplier-changes.ts';
 import styles from './supplier.module.css';
 
@@ -24,6 +25,7 @@ export function SupplierDetails({ data, today, editor = false, admin = false, pe
   return (
     <>
       <SupplierHeader data={data} editor={editor || admin} />
+      <VerdictBand data={data} today={today} />
       {/* Two columns on a computer (DESIGN.md 6.5): the registries, waiting changes and history on
           the wide side, the short cards beside them, so neither column is left half empty. On a
           phone the DOM order is the reading order of spec section 5. */}

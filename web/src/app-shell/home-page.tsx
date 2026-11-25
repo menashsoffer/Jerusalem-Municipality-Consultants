@@ -51,7 +51,7 @@ function Waiting({ text }: { text: string | null }) {
 }
 
 /** Counters are a convenience: if they cannot be read, the cards show without them. */
-async function overview(): Promise<Counts> {
+export async function overview(): Promise<Counts> {
   try {
     return await rpc('admin_overview', {}, overviewSchema);
   } catch {

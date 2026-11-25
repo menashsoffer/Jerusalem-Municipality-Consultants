@@ -76,8 +76,16 @@ export const routes: RouteObject[] = [
           return { Component: m.IdentifiersPage, loader: m.loader };
         },
       },
-      // The catalog is the site's main screen; the admin menu has its own address.
-      { index: true, element: <Navigate to="/catalog" replace /> },
+      // Staff start at the home screen; anyone else is sent on to the catalog's explanation.
+      {
+        index: true,
+        handle: { title: 'בית' },
+        errorElement: <ScreenError />,
+        lazy: async () => {
+          const m = await import('./home/home-page.tsx');
+          return { Component: m.HomePage, loader: m.loader };
+        },
+      },
       {
         path: 'admin',
         handle: { title: 'ניהול' } satisfies RouteHandle,

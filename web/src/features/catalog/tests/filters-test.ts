@@ -2,7 +2,7 @@ import { suppliers } from './fixture.ts';
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { optionsFor, emptyFilters, changeFilter, reconcile } from '../model/filters.ts';
-import { restoreFilters, saveFilters } from '../model/saved-filters.ts';
+import { linkedFilters, restoreFilters, saveFilters } from '../model/saved-filters.ts';
 import { clearKeys } from '../model/filter-groups.ts';
 describe('catalog filter choices', () => {
   it('deduplicates roots and offers children only under the selected root', () => {
@@ -56,6 +56,25 @@ describe('saved catalog search', () => {
     assert.equal(restoreFilters('c', fresh), null);
     values.set('catalog-filters:d', '{broken');
     assert.equal(restoreFilters('d', fresh), null);
+  });
+});
+
+describe('a search handed over by a link', () => {
+  const fresh = emptyFilters('2026-11-25');
+  it('takes the query, registry and validity and nothing else', () => {
+    const state = { query: '  הדרכה ', registry: 'r1', validity: 'expired', showInactive: true };
+    assert.deepEqual(linkedFilters(state, fresh), {
+      ...fresh,
+      query: 'הדרכה',
+      registry: 'r1',
+      validity: 'expired',
+    });
+  });
+  it('ignores missing, empty or unknown values', () => {
+    assert.equal(linkedFilters(null, fresh), null);
+    assert.equal(linkedFilters('text', fresh), null);
+    assert.equal(linkedFilters({ query: ' ', validity: 'soon' }, fresh), null);
+    assert.equal(linkedFilters({ registry: 7 }, fresh), null);
   });
 });
 
