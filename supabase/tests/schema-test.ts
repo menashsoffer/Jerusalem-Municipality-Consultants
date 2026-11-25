@@ -29,6 +29,24 @@ describe('migrations on an empty database', () => {
     assert.equal(await count(db, grants), 0);
   });
 
+  it('gives signed-in users no truncate, trigger or references rights', async () => {
+    const grants = await db.query<{ grant: string }>(`
+      select table_name || ':' || grantee || ':' || privilege_type as grant
+      from information_schema.role_table_grants
+      where table_schema = 'public' and grantee in ('anon', 'authenticated')
+        and privilege_type not in ('SELECT', 'INSERT', 'UPDATE', 'DELETE')`);
+    assert.deepEqual(grants.rows, []);
+  });
+
+  it('gives a new public table no rights by default', async () => {
+    await db.exec('create table public.default_grants_probe (id int)');
+    const grants = `
+      select 1 from information_schema.role_table_grants
+      where table_name = 'default_grants_probe' and grantee in ('anon', 'authenticated')`;
+    assert.equal(await count(db, grants), 0);
+    await db.exec('drop table public.default_grants_probe');
+  });
+
   it('indexes every foreign key', async () => {
     const missing = await db.query<{ fk: string }>(`
       select c.conrelid::regclass || '.' || c.conname as fk
