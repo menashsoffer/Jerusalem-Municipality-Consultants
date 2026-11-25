@@ -59,3 +59,9 @@ insert into public.identifier_candidates (id, supplier_id, scheme, value, source
     'חברת דמה למערכות ניהול נוכחות, מצוקה ובקרת עובדים מהשטח בע"מ', 'פעילה',
     'חברת דמה למערכות ניהול נוכחות')
 on conflict (id) do nothing;
+
+-- A kind suggestion, so the screen checks cover that list too.
+insert into public.kind_suggestions (id, supplier_id, suggested_kind, strength, reasons) values
+  ('e2e00000-0000-0000-0000-0000000000d1', 'e2e00000-0000-0000-0000-0000000000b1', 'company',
+    'medium', '[{"source": "name", "kind": "company"}]')
+on conflict (id) do nothing;

@@ -18,14 +18,20 @@ function Decision({ id, supplier }: { id: string; supplier: string }) {
     (_: typeof INITIAL_KIND, form: FormData) => decideKind(id, form),
     INITIAL_KIND,
   );
+  // Only the pressed button says "שומר…"; the other one waits, disabled (25.11.2026).
+  const [pressed, setPressed] = useState('');
+  const press = (event: { currentTarget: HTMLButtonElement }) => {
+    setPressed(event.currentTarget.value);
+  };
   return (
     <form action={action} aria-label={`החלטה על הסוג של ${supplier}`} className={styles.actions}>
       <Button
         name="decision"
         value="accept"
         type="submit"
-        pending={pending}
-        disabled={result.committed}
+        onClick={press}
+        pending={pending && pressed === 'accept'}
+        disabled={result.committed || (pending && pressed !== 'accept')}
       >
         קבלת הסוג
       </Button>
@@ -34,8 +40,9 @@ function Decision({ id, supplier }: { id: string; supplier: string }) {
         value="reject"
         type="submit"
         variant="secondary"
-        pending={pending}
-        disabled={result.committed}
+        onClick={press}
+        pending={pending && pressed === 'reject'}
+        disabled={result.committed || (pending && pressed !== 'reject')}
       >
         דחיית ההצעה
       </Button>
@@ -51,9 +58,11 @@ function Row({ suggestion, supplier }: KindRow) {
     <details className={styles.row}>
       <summary>
         <strong>{supplier}</strong>
-        <span>{kindLabel(suggestion.suggested_kind)}</span>
-        <span className={`${styles.tag ?? ''} ${(strong ? styles.same : styles.similar) ?? ''}`}>
-          {STRENGTHS[suggestion.strength]}
+        <span className={styles.meta}>
+          <span>{kindLabel(suggestion.suggested_kind)}</span>
+          <span className={`${styles.tag ?? ''} ${(strong ? styles.same : styles.similar) ?? ''}`}>
+            {STRENGTHS[suggestion.strength]}
+          </span>
         </span>
       </summary>
       <ul className={styles.hint}>
