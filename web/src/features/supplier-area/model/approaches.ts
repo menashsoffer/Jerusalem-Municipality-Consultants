@@ -24,7 +24,7 @@ export const currentAnswer = (approach: Approach) =>
   approach.answer && !approach.answer.withdrawn_at ? approach.answer : null;
 
 export function groupOf(approach: Approach): ApproachGroup {
-  if (approach.cancelled) return 'closed';
+  if (approach.cancelled || approach.result) return 'closed';
   if (currentAnswer(approach)) return 'answered';
   return approach.open ? 'waiting' : 'closed';
 }
@@ -57,6 +57,8 @@ export function shortDay(value: string): string {
 /** What the group "עניתם" or "נסגרו" says about the approach. */
 export function stateText(approach: Approach): string {
   if (approach.cancelled) return 'היחידה ביטלה את הבקשה';
+  if (approach.result === 'selected') return 'ההצעה שלכם נבחרה';
+  if (approach.result === 'not_selected') return 'ההצעה שלכם לא נבחרה. היחידה בחרה הצעה אחרת';
   const answer = currentAnswer(approach);
   if (!answer) return 'המועד עבר בלי תשובה';
   if (answer.answer === 'declined') return 'השבתם שאינכם מעוניינים';

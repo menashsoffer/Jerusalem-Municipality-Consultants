@@ -13,6 +13,7 @@ export const homeSchema = z.object({
   memberships_verified: count,
   suppliers_identified: count,
   my_open_requests: count,
+  requests_to_award: count.optional(),
   lapsed: z.array(
     z.object({ registry_id: z.string(), name: z.string(), count, ended_on: z.string() }),
   ),
@@ -99,13 +100,33 @@ function adminItems(overview: HomeOverview): WaitingItem[] {
   return items;
 }
 
+/** Requests whose offers are all open, waiting for the unit to choose (stage C, 25.11). */
+function awardItems(overview: HomeOverview): WaitingItem[] {
+  const n = overview.requests_to_award ?? 0;
+  if (n === 0) return [];
+  return [
+    {
+      id: 'award',
+      tone: 'warning',
+      badge: 'לבחירה',
+      title:
+        n === 1
+          ? 'בקשה אחת מחכה לבחירת זוכה'
+          : `${n.toLocaleString('he-IL')} בקשות מחכות לבחירת זוכה`,
+      detail: 'המועד להגשת ההצעות עבר וההצעות נפתחו.',
+      action: 'לבקשות',
+      to: '/engagement',
+    },
+  ];
+}
+
 /** Lapsed registrations first, then approvals, then gaps to fill. */
 export function waitingItems(
   overview: HomeOverview | null,
   screens: readonly AdminScreen[],
   counts: AdminCounts,
 ): WaitingItem[] {
-  const fromOverview = overview ? [...lapsedItems(overview)] : [];
+  const fromOverview = overview ? [...lapsedItems(overview), ...awardItems(overview)] : [];
   const later = overview ? adminItems(overview) : [];
   const order: Record<Tone, number> = { danger: 0, warning: 1, info: 2 };
   return [...fromOverview, ...screenItems(screens, counts), ...later].sort(

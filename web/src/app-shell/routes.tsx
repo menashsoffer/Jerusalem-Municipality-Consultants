@@ -120,6 +120,12 @@ export const routes: RouteObject[] = [
         },
       },
       {
+        path: 'start',
+        handle: { title: 'איך מתחילים' },
+        errorElement: <ScreenError />,
+        lazy: () => import('../features/start/start-page.tsx'),
+      },
+      {
         // The list, or one registry when a version is given.
         path: 'registries/:version?',
         handle: { title: 'אימות מאגרים' },
