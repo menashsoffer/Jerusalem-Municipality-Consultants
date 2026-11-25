@@ -32,7 +32,13 @@ export default defineConfig({
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled', caret: 'hide' },
   },
   projects: [
-    { name: 'screens-phone', ...screens, use: { ...devices['Pixel 7'] } },
+    // A phone at scale 1: the fractional 2.625 of a real Pixel 7 anti-aliases text differently
+    // on the CI runner than on other Linux machines (2% of pixels on 25.11.2026).
+    {
+      name: 'screens-phone',
+      ...screens,
+      use: { ...devices['Pixel 7'], deviceScaleFactor: 1 },
+    },
     { name: 'screens-desktop', ...screens, use: { viewport: { width: 1280, height: 800 } } },
     { name: 'journeys', ...journeys },
   ],
