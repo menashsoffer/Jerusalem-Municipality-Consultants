@@ -430,6 +430,10 @@ export interface PublicSchema {
       "created_by": string | null;
       "updated_at": string;
       "cancel_note": string | null;
+      "awarded_approach_id": string | null;
+      "awarded_at": string | null;
+      "awarded_by": string | null;
+      "award_note": string | null;
     };
     Insert: {
       "id"?: string;
@@ -448,6 +452,10 @@ export interface PublicSchema {
       "created_by"?: string | null;
       "updated_at"?: string;
       "cancel_note"?: string | null;
+      "awarded_approach_id"?: string | null;
+      "awarded_at"?: string | null;
+      "awarded_by"?: string | null;
+      "award_note"?: string | null;
     };
     Update: {
       "id"?: string;
@@ -466,6 +474,10 @@ export interface PublicSchema {
       "created_by"?: string | null;
       "updated_at"?: string;
       "cancel_note"?: string | null;
+      "awarded_approach_id"?: string | null;
+      "awarded_at"?: string | null;
+      "awarded_by"?: string | null;
+      "award_note"?: string | null;
     };
   };
   "identifier_candidates": {

@@ -39,6 +39,7 @@ const REJECT = new Set([
   'registry_review(uuid)',
   'set_registry_validity(uuid,date)',
   'decide_membership(uuid,boolean,text)',
+  'award_engagement_request(uuid,uuid,text)',
   'supplier_link_queue()',
   'supplier_area_accounts(uuid)',
   'supplier_document_queue()',

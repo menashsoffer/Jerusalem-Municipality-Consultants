@@ -108,6 +108,7 @@ describe('approaches and answers', () => {
       'needed_by',
       'open',
       'respond_by',
+      'result',
       'subject',
       'unit_name',
     ]);
