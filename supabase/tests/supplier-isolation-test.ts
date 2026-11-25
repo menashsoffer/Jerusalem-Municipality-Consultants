@@ -34,6 +34,7 @@ const READABLE: Record<string, (rows: Json[]) => void> = {
 };
 
 const REJECT = new Set([
+  'home_overview()',
   'supplier_link_queue()',
   'supplier_area_accounts(uuid)',
   'supplier_document_queue()',
