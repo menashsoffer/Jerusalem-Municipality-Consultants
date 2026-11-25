@@ -63,6 +63,12 @@ jobs:
             | sed -E 's/^([A-Z_]+)="?([^"]*)"?$/E2E_\1=\2/' >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
+      # TEMPORARY (PR #175): prints the CI-rendered screen pictures so they can be compared.
+      - if: failure()
+        run: |
+          for f in $(find test-results -name '*-actual.png' -not -path '*retry*'); do
+            echo "PNG-BEGIN $f"; base64 -w0 "$f"; echo; echo "PNG-END"
+          done
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
