@@ -44,6 +44,13 @@ describe('what waits on the home screen', () => {
     assert.deepEqual(waitingItems({ ...quiet, registries_without_unit: 0 }, [], {}), []);
   });
 
+  it('asks to choose a winner when offers are open (stage C)', () => {
+    const one = waitingItems({ ...OVERVIEW, lapsed: [], requests_to_award: 1 }, [], {});
+    assert.equal(one.find((i) => i.id === 'award')?.title, 'בקשה אחת מחכה לבחירת זוכה');
+    const many = waitingItems({ ...OVERVIEW, lapsed: [], requests_to_award: 3 }, [], {});
+    assert.equal(many.find((i) => i.id === 'award')?.to, '/engagement');
+  });
+
   it('shows dates the Israeli way', () => {
     assert.equal(dateLabel('2026-12-24'), '24.12.2026');
   });

@@ -7,97 +7,15 @@ import { EmptyState } from '../../../ui/empty-state.tsx';
 import { Notice } from '../../../ui/notice.tsx';
 import { StatusMessage } from '../../../ui/status-message.tsx';
 import { errorText } from '../../../data/errors.ts';
-import { signedFileUrl } from '../../../data/files.ts';
 import { loadRequestApproaches, type RequestApproach } from '../api/approaches.ts';
-import {
-  answerText,
-  CHANNEL_LABELS,
-  comparable,
-  extendRange,
-  opensOn,
-  recordable,
-  shortDay,
-  VAT_RATE,
-} from '../model/approaches.ts';
+import { comparable, extendRange, opensOn, VAT_RATE } from '../model/approaches.ts';
 import { ExtendDeadline, RecordAnswer } from './approach-staff.tsx';
+import { COLUMNS, rowsOf } from './approach-rows.tsx';
+import { AwardForm } from './award-form.tsx';
+
+export { ordered } from './approach-rows.tsx';
 
 export const REQUEST_APPROACHES = 'request-approaches';
-
-const COLUMNS = [
-  { id: 'supplier', label: 'ספק' },
-  { id: 'channel', label: 'ערוץ' },
-  { id: 'sent', label: 'נשלחה' },
-  { id: 'due', label: 'מועד' },
-  { id: 'answer', label: 'תשובה' },
-  { id: 'file', label: 'פעולות', actions: true },
-];
-
-/** Opened offers first, cheapest first (compared with VAT); the rest keep their order. */
-export function ordered(rows: readonly RequestApproach[]): RequestApproach[] {
-  const price = (row: RequestApproach) => comparable(row.answer) ?? Number.POSITIVE_INFINITY;
-  return [...rows].sort((a, b) => price(a) - price(b));
-}
-
-function FileButton({ path, supplier }: { path: string; supplier: string }) {
-  const [error, setError] = useState('');
-  return (
-    <>
-      <Button
-        variant="quiet"
-        aria-label={`פתיחת קובץ ההצעה של ${supplier}`}
-        onClick={() => {
-          signedFileUrl(path).then(
-            (url) => window.open(url, '_blank', 'noopener'),
-            (cause: unknown) => {
-              setError(errorText(cause));
-            },
-          );
-        }}
-      >
-        פתיחה
-      </Button>
-      <StatusMessage>{error}</StatusMessage>
-    </>
-  );
-}
-
-interface Rows {
-  list: RequestApproach[];
-  today: string;
-  record: (row: RequestApproach) => void;
-}
-
-function Action({ row, today, record }: Omit<Rows, 'list'> & { row: RequestApproach }) {
-  if (row.answer?.file_path) {
-    return <FileButton path={row.answer.file_path} supplier={row.supplier_name} />;
-  }
-  if (!recordable(row, today)) return null;
-  return (
-    <Button
-      variant="quiet"
-      aria-label={`רישום תשובה של ${row.supplier_name}`}
-      onClick={() => {
-        record(row);
-      }}
-    >
-      רישום תשובה
-    </Button>
-  );
-}
-
-function rowsOf({ list, ...actions }: Rows) {
-  return ordered(list).map((row) => ({
-    id: row.id,
-    cells: {
-      supplier: row.supplier_name,
-      channel: CHANNEL_LABELS[row.channel],
-      sent: shortDay(row.approached_on),
-      due: row.respond_by ? shortDay(row.respond_by) : 'בלי מועד',
-      answer: answerText(row.answer),
-      file: <Action row={row} {...actions} />,
-    },
-  }));
-}
 
 function Notes({ list }: { list: RequestApproach[] }) {
   const sealed = list.find((row) => row.sealed && row.answer?.answer === 'offer');
@@ -136,11 +54,17 @@ function useApproaches(requestId: string, round: number): Loaded {
   return loaded;
 }
 
-type Open = { kind: 'record'; row: RequestApproach } | { kind: 'extend' } | null;
+type Open =
+  | { kind: 'record'; row: RequestApproach }
+  | { kind: 'award'; row: RequestApproach }
+  | { kind: 'extend' }
+  | null;
 
 interface Props {
   requestId: string;
   today: string;
+  /** The request's status; an awarded or cancelled one is shown without actions. */
+  status: string;
 }
 
 function StaffForm({
@@ -150,6 +74,7 @@ function StaffForm({
 }: Props & Done & { open: Open; list: RequestApproach[] }) {
   const range = extendRange(list, props.today);
   if (open?.kind === 'record') return <RecordAnswer key={open.row.id} row={open.row} {...props} />;
+  if (open?.kind === 'award') return <AwardForm key={open.row.id} row={open.row} {...props} />;
   if (open?.kind === 'extend' && range) return <ExtendDeadline range={range} {...props} />;
   return null;
 }
@@ -167,11 +92,28 @@ function ExtendButton({ open }: { open: () => void }) {
   );
 }
 
-function ApproachList({
-  list,
-  reload,
-  ...props
-}: Props & { list: RequestApproach[]; reload: () => void }) {
+interface Head {
+  list: RequestApproach[];
+  today: string;
+  status: string;
+  message: string;
+  /** Opens the extension form; null while another form is open or the request is closed. */
+  extend: (() => void) | null;
+}
+
+function ListHead({ list, today, status, message, extend }: Head) {
+  return (
+    <>
+      <Notes list={list} />
+      <StatusMessage>{message}</StatusMessage>
+      {status === 'awarded' && <Notice tone="success" title="נבחר זוכה, והבקשה נסגרה." />}
+      {extend && extendRange(list, today) && <ExtendButton open={extend} />}
+    </>
+  );
+}
+
+/** Which staff form is open under the table, and the line shown after one is saved. */
+function useOpenForm(reload: () => void) {
   const [open, setOpen] = useState<Open>(null);
   const [message, setMessage] = useState('');
   const choose = (next: Open) => {
@@ -183,24 +125,44 @@ function ApproachList({
     setMessage(text);
     reload();
   };
-  const record = (row: RequestApproach) => {
-    choose({ kind: 'record', row });
+  return { open, message, choose, done };
+}
+
+function ApproachList({
+  list,
+  reload,
+  ...props
+}: Props & { list: RequestApproach[]; reload: () => void }) {
+  const { open, message, choose, done } = useOpenForm(reload);
+  const act = (kind: 'record' | 'award') => (row: RequestApproach) => {
+    choose({ kind, row });
   };
+  const closed = props.status === 'awarded' || props.status === 'cancelled';
   return (
     <>
-      <Notes list={list} />
-      <StatusMessage>{message}</StatusMessage>
-      {!open && extendRange(list, props.today) && (
-        <ExtendButton
-          open={() => {
-            choose({ kind: 'extend' });
-          }}
-        />
-      )}
+      <ListHead
+        list={list}
+        today={props.today}
+        status={props.status}
+        message={message}
+        extend={
+          open || closed
+            ? null
+            : () => {
+                choose({ kind: 'extend' });
+              }
+        }
+      />
       <DataTable
         caption="פניות ותשובות"
         columns={COLUMNS}
-        rows={rowsOf({ list, today: props.today, record })}
+        rows={rowsOf({
+          list,
+          today: props.today,
+          closed,
+          record: act('record'),
+          award: act('award'),
+        })}
       />
       <StaffForm
         open={open}

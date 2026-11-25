@@ -22,6 +22,9 @@ export function QuickActions({ access }: { access: Access }) {
             הוספת ספק למאגר
           </Link>
         )}
+        <Link to="/start" className={controls.secondary}>
+          איך מתחילים
+        </Link>
         {access.admin && (
           <Link to="/import" className={controls.secondary}>
             קליטת ספקים מאקסל

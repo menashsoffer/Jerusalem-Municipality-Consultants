@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import { signIn } from '../support/accounts.ts';
+import { sql } from '../support/db.ts';
 
 const SUPPLIER = 'עמותת דמה לייעוץ';
 
@@ -25,7 +26,36 @@ async function approachInArea(staff: Page): Promise<void> {
   await expect(dialog).toBeHidden();
 }
 
-test('staff open a request and approach a supplier, who answers in the personal area', async ({
+/** Moves the deadline into the past, as if a week went by, so the offers open. */
+function deadlinePassed(subject: string): void {
+  sql(`update public.supplier_approaches a set approached_on = current_date - 10,
+    respond_by = current_date - 1 from public.engagement_requests r
+    where r.id = a.request_id and r.subject = '${subject}'`);
+}
+
+/** Stage C gate (25.11): after the deadline staff see the amount and choose the winner. */
+async function chooseWinner(staff: Page, subject: string): Promise<void> {
+  deadlinePassed(subject);
+  await staff.reload();
+  await staff.getByRole('button', { name: `פניות ותשובות: ${subject}` }).click();
+  const answers = staff.getByRole('dialog', { name: `פניות ותשובות: ${subject}` });
+  await expect(answers.getByRole('row', { name: new RegExp(SUPPLIER) })).toContainText('42,000');
+  await answers.getByRole('button', { name: `בחירת ${SUPPLIER} כזוכה` }).click();
+  const form = answers.getByRole('form', { name: `בחירת ${SUPPLIER} כזוכה` });
+  await form.getByLabel(/נימוק/).fill('ההצעה היחידה שהוגשה');
+  await form.getByRole('button', { name: 'בחירה כזוכה' }).click();
+  await expect(answers.getByText(`${SUPPLIER} נבחר כזוכה, והבקשה נסגרה.`)).toBeVisible();
+}
+
+async function seesResult(supplier: Page, subject: string): Promise<void> {
+  await supplier.reload();
+  const closed = supplier.getByRole('region', { name: 'נסגרו' });
+  await expect(closed.getByRole('listitem').filter({ hasText: subject })).toContainText(
+    'ההצעה שלכם נבחרה',
+  );
+}
+
+test('a request goes from opening to a winner, and the supplier sees it was chosen', async ({
   browser,
 }) => {
   const subject = `ליווי ארגוני ${String(Date.now()).slice(-6)}`;
@@ -61,4 +91,6 @@ test('staff open a request and approach a supplier, who answers in the personal 
   await expect(answers.getByRole('row', { name: new RegExp(SUPPLIER) })).toContainText('הגיש הצעה');
   // The amount stays sealed until the deadline (supplier portal spec).
   await expect(answers).not.toContainText('42,000');
+  await chooseWinner(staff, subject);
+  await seesResult(supplier, subject);
 });
