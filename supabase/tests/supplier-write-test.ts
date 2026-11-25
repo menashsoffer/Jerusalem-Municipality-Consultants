@@ -130,33 +130,12 @@ describe('supplier and membership creation', () => {
     });
   });
 
-  it('blocks even legacy administrators from adding or changing old rows', async () => {
-    await db.exec(`insert into public.legacy_suppliers (name, field, registry)
-      values ('רשומה ישנה', 'תכנון', 'מאגר')`);
-    const claims = JSON.stringify({
-      sub: USERS.admin,
-      role: 'authenticated',
-      app_metadata: { role: 'supplier_admin' },
-    });
-    await db.query("select set_config('request.jwt.claims', $1, false)", [claims]);
-    await db.exec('set role authenticated');
-    try {
-      assert.equal(await count(db, 'select 1 from public.legacy_suppliers'), 1);
-      await assert.rejects(
-        db.query(
-          `insert into public.legacy_suppliers
-        (name, field, registry, created_by) values ('לא מותר', 'תכנון', 'מאגר', $1::uuid)`,
-          [USERS.admin],
-        ),
-      );
-      const updated = await db.query(
-        "update public.legacy_suppliers set name='לא מותר' returning id",
-      );
-      assert.equal(updated.rows.length, 0);
-    } finally {
-      await db.exec('reset role');
-      await db.query("select set_config('request.jwt.claims', '', false)");
-    }
+  it('no longer has the legacy suppliers table or the backup schema', async () => {
+    assert.equal(
+      await count(db, "select 1 where to_regclass('public.legacy_suppliers') is not null"),
+      0,
+    );
+    assert.equal(await count(db, "select 1 from pg_namespace where nspname = 'backup'"), 0);
   });
 
   it('preserves an old name and marks the edited supplier for review', async () => {

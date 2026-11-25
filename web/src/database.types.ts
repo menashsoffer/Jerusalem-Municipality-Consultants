@@ -688,50 +688,6 @@ export interface PublicSchema {
       "decided_at"?: string | null;
     };
   };
-  "legacy_suppliers": {
-    Row: {
-      "id": number;
-      "name": string;
-      "field": string;
-      "registry": string;
-      "source_url": string | null;
-      "source_page": number | null;
-      "email": string | null;
-      "phone": string | null;
-      "note": string | null;
-      "review_status": string;
-      "created_at": string;
-      "created_by": string | null;
-    };
-    Insert: {
-      "id"?: number;
-      "name": string;
-      "field": string;
-      "registry": string;
-      "source_url"?: string | null;
-      "source_page"?: number | null;
-      "email"?: string | null;
-      "phone"?: string | null;
-      "note"?: string | null;
-      "review_status"?: string;
-      "created_at"?: string;
-      "created_by"?: string | null;
-    };
-    Update: {
-      "id"?: number;
-      "name"?: string;
-      "field"?: string;
-      "registry"?: string;
-      "source_url"?: string | null;
-      "source_page"?: number | null;
-      "email"?: string | null;
-      "phone"?: string | null;
-      "note"?: string | null;
-      "review_status"?: string;
-      "created_at"?: string;
-      "created_by"?: string | null;
-    };
-  };
   "memberships": {
     Row: {
       "id": string;
