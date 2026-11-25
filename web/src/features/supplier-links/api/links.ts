@@ -1,5 +1,6 @@
 // The admin's queue of supplier-area links (supplier-portal-spec-he.md 6.10).
-import { z, rpc, requireRoles } from '../../../data/rpc.ts';
+import { rpc, requireRoles } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { errorText } from '../../../data/errors.ts';
 import { refreshScreen } from '../../../data/screen-data.ts';
 

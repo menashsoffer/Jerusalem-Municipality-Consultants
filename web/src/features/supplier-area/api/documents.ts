@@ -1,5 +1,6 @@
 // The supplier's documents (supplier-portal-spec-he.md 6.5, 7.4): list, upload and record.
-import { z, rpc } from '../../../data/rpc.ts';
+import { rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { DOCUMENT_KINDS, type DocumentKind } from '../model/kinds.ts';
 import { fileName, uploadFile } from './portal.ts';
 

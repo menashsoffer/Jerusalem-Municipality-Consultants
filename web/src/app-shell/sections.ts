@@ -27,7 +27,14 @@ export function sectionOf(pathname: string): Section['key'] | null {
   if (pathname === '/') return 'home';
   if (startsWithAny(pathname, CATALOG_PATHS)) return 'catalog';
   if (startsWithAny(pathname, REQUEST_PATHS)) return 'requests';
-  const adminPaths = ['/admin', '/categories', '/identifiers', '/users', '/thresholds'];
+  const adminPaths = [
+    '/admin',
+    '/categories',
+    '/identifiers',
+    '/users',
+    '/thresholds',
+    '/registries',
+  ];
   if (startsWithAny(pathname, [...adminPaths, '/load-control', '/import'])) return 'admin';
   return null;
 }

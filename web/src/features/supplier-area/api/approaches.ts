@@ -1,6 +1,7 @@
 // The municipality's approaches to the supplier and its answers (supplier-approaches-spec 5).
 // The database checks the deadline, the link and the file; an offer stays sealed until then.
-import { z, rpc } from '../../../data/rpc.ts';
+import { rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { fileName, uploadFile } from './portal.ts';
 import '../model/approach-reasons.ts';
 

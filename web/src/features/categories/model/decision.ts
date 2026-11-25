@@ -1,4 +1,4 @@
-import { z } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { check, decisionNote } from '../../../lib/rules/forms.ts';
 export const requestSchema = z.object({
   id: z.string(),

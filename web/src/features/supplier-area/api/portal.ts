@@ -1,6 +1,7 @@
 // The supplier side of the site (supplier-portal-spec-he.md 7.2). Every call goes through a
 // portal_* database function; the browser never reads a staff table for a supplier.
-import { z, rpc, freshToken, sessionToken, savePortalPerson } from '../../../data/rpc.ts';
+import { rpc, freshToken, sessionToken, savePortalPerson } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { tokenUserId } from '../../../data/snapshot.ts';
 import { DataError, failedResponse } from '../../../data/client.ts';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from '../../../data/environment.ts';

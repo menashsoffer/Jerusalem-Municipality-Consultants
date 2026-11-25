@@ -1,6 +1,6 @@
 // What the home screen shows (design approved 25.11.2026): the work waiting for this user and
 // the state of the registries. The counts come from home_overview and admin_overview.
-import { z } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { dateLabel } from '../../../lib/dates.ts';
 import type { AdminScreen, OverviewKey } from '../../screens.ts';
 

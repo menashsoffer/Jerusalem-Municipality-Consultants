@@ -5,6 +5,7 @@ import { afterEach, describe, it, mock } from 'node:test';
 import { DataError } from '../src/data/client.ts';
 import * as rpc from '../src/data/rpc.ts';
 import * as site from '../src/data/site.ts';
+import { z } from '../src/data/zod.ts';
 import { RULE_MESSAGES } from '../src/lib/rules/messages.ts';
 import { access, requestBody, requestUrl, response, SUPPLIER, TOKEN } from './catalog-fixture.ts';
 
@@ -185,17 +186,17 @@ describe('admin RPC helpers', () => {
   it('validates RPC and table answers with the given schema', async () => {
     signIn();
     stubFetch((url) => (url.includes('/rpc/') ? Response.json(3) : Response.json([{ id: 'a' }])));
-    assert.equal(await rpc.rpc('load_control', {}, rpc.z.number()), 3);
-    const rows = await rpc.rows('org_units', {}, rpc.z.array(rpc.z.object({ id: rpc.z.string() })));
+    assert.equal(await rpc.rpc('load_control', {}, z.number()), 3);
+    const rows = await rpc.rows('org_units', {}, z.array(z.object({ id: z.string() })));
     assert.deepEqual(rows, [{ id: 'a' }]);
-    await assert.rejects(rpc.rpc('load_control', {}, rpc.z.string()));
+    await assert.rejects(rpc.rpc('load_control', {}, z.string()));
   });
 
   it('forgets the session and the catalog when the server says it expired', async () => {
     signIn();
     stubFetch(snapshotOr(() => new Response(null, { status: 401 })));
     await site.loadSnapshot(TOKEN);
-    await assert.rejects(rpc.rpc('load_control', {}, rpc.z.unknown()), /פג תוקף/);
+    await assert.rejects(rpc.rpc('load_control', {}, z.unknown()), /פג תוקף/);
     assert.equal(site.getAccess(), null);
     assert.throws(() => rpc.sessionToken(), DataError);
   });

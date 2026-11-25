@@ -35,6 +35,13 @@ export const ADMIN_SCREENS: readonly AdminScreen[] = [
     waiting: { key: 'users_pending', one: 'בקשה ממתינה אחת', many: 'בקשות ממתינות' },
   },
   {
+    to: '/registries',
+    title: 'אימות מאגרים',
+    description: 'כל ספק מול מסמך המאגר',
+    roles: ['unit_manager'],
+    group: 'work',
+  },
+  {
     to: '/identifiers',
     title: 'מועמדי מזהה ספק',
     description: 'אישור ח.פ. שנמצא לספק',

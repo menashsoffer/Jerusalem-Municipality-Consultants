@@ -1,4 +1,4 @@
-import { z } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { SCHEMES } from './candidate.ts';
 
 const reasonSchema = z.object({

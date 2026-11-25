@@ -1,5 +1,6 @@
 import type { LoaderFunctionArgs } from 'react-router';
-import { z, identity, rpc, freshToken, type Identity } from '../../../data/rpc.ts';
+import { identity, rpc, freshToken, type Identity } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { DataError } from '../../../data/client.ts';
 import { mayWriteUnit } from '../../../data/access.ts';
 import { detail, getCatalogState } from '../../../data/site.ts';

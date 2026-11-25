@@ -1,4 +1,5 @@
-import { rows, rpc, z } from '../../../data/rpc.ts';
+import { rows, rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { invalidate } from '../../../data/screen-data.ts';
 import {
   changeRequestSchema,

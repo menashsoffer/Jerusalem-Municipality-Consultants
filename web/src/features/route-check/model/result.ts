@@ -1,4 +1,4 @@
-import { z } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 export const resultSchema = z
   .object({
     id: z.number().int().nullable(),

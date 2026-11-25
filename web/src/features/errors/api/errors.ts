@@ -1,5 +1,6 @@
 // error-details-spec-he.md section 4: every error people saw, administrators only.
-import { z, requireRoles, rpc } from '../../../data/rpc.ts';
+import { requireRoles, rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { groupCases, type ErrorGroup } from '../model/groups.ts';
 import { viewOf, type ErrorView } from '../model/period.ts';
 

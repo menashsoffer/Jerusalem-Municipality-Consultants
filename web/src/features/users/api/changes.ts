@@ -1,6 +1,7 @@
 import { invalidate } from '../../../data/screen-data.ts';
 import { USERS_KEY } from './users.ts';
-import { rows, rpc, z } from '../../../data/rpc.ts';
+import { rows, rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 import { changeSchema, type ChangeRequest } from '../../../data/access-changes.ts';
 
 /**

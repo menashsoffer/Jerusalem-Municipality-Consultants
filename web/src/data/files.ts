@@ -1,6 +1,7 @@
 // Files in the private supplier-documents bucket. Storage policies decide who may read which
 // file; a refused path fails like any other request.
-import { z, freshToken } from './rpc.ts';
+import { freshToken } from './rpc.ts';
+import { z } from './zod.ts';
 import { failedResponse } from './client.ts';
 import { SUPABASE_PUBLISHABLE_KEY, SUPABASE_URL } from './environment.ts';
 

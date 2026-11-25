@@ -1,4 +1,5 @@
-import { z, requireRoles, rpc } from '../../../data/rpc.ts';
+import { requireRoles, rpc } from '../../../data/rpc.ts';
+import { z } from '../../../data/zod.ts';
 
 const count = z.number().int().nonnegative();
 const controlSchema = z.object({

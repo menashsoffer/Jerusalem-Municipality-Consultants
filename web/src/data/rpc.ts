@@ -1,6 +1,7 @@
-import { z, type ZodType } from 'zod';
+// The mini build keeps the first screen small; lazy screens use the full build.
+import * as z from 'zod/mini';
+import type { ZodType } from 'zod';
 z.config({ jitless: true });
-export { z };
 import type { PublicSchema } from '../database.types.ts';
 import type { Session } from './session.ts';
 import { data, loadSnapshot, refreshGrant } from './site.ts';
@@ -10,6 +11,7 @@ import type { Access, Role } from './access.ts';
 import { DataError } from './client.ts';
 import { tagRequest } from '../lib/telemetry.ts';
 import type { SupplierChange } from './supplier-changes.ts';
+import type { RegistryRpc } from './registry-rpc.ts';
 
 /** An approach answer, from the supplier area or recorded by staff. */
 type AnswerParts = Partial<Record<'offer_amount' | 'file_path' | 'decline_reason', string>> & {
@@ -19,7 +21,7 @@ type AnswerParts = Partial<Record<'offer_amount' | 'file_path' | 'decline_reason
   offer_includes_vat?: boolean;
 };
 
-interface AdminRpc {
+interface AdminRpc extends RegistryRpc {
   decide_threshold_proposal: { proposal: string; approve: boolean; note?: string | null };
   decide_profile: { target_user: string; decision: 'active' | 'rejected'; note: string | null };
   approve_profile: {
@@ -67,7 +69,6 @@ interface AdminRpc {
   usage_summary: { from_day: string; to_day: string; only_role: string | null };
   addresses_to_check: Record<string, never>;
   admin_overview: Record<string, never>;
-  home_overview: Record<string, never>;
   request_access_change: {
     change_kind: 'add_role' | 'remove_role' | 'move_unit' | 'details';
     why: string;
@@ -156,7 +157,6 @@ declare module '../database.types.ts' {
     usage_summary: { Args: AdminRpc['usage_summary']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     admin_overview: { Args: AdminRpc['admin_overview']; Returns: unknown };
-    home_overview: { Args: AdminRpc['home_overview']; Returns: unknown };
     request_access_change: { Args: AdminRpc['request_access_change']; Returns: string };
     cancel_access_change: { Args: AdminRpc['cancel_access_change']; Returns: null };
     decide_access_change: { Args: AdminRpc['decide_access_change']; Returns: null };
@@ -205,7 +205,7 @@ const accessSchema = z.object({
   grants: z.array(
     z.object({
       role: z.enum(['viewer', 'editor', 'unit_manager', 'admin', 'auditor']),
-      unitId: z.string().nullable(),
+      unitId: z.nullable(z.string()),
     }),
   ),
 });
