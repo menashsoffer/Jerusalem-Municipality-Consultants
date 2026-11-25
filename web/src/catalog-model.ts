@@ -126,7 +126,8 @@ function member(row: MemberRow, refs: Lookup): Membership | null {
     categories: categoryLabels(row.registry_field_id, refs),
     unitId: registry.owner_unit_id,
     validFrom: row.registered_from,
-    validUntil: row.registered_until,
+    // The supplier's own date wins; otherwise the registry's (Menash, 25.11).
+    validUntil: row.registered_until ?? version.valid_until,
     page: row.source_page,
     reviewStatus: row.review_status,
     registryClosed: registry.status === 'closed',

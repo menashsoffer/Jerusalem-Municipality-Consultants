@@ -249,3 +249,22 @@ describe('status filters', () => {
     assert.throws(() => compactCatalog({ ...wire, suppliers: [hall] }));
   });
 });
+
+describe('registration validity', () => {
+  function withDates(own: string | null, registry: string | null) {
+    const data = compactCatalog(wireCatalog());
+    const [member] = data.memberships;
+    const [version] = data.versions;
+    assert.ok(member && version);
+    data.versions = [{ ...version, valid_until: registry }];
+    data.memberships = [{ ...member, registry_version_id: version.id, registered_until: own }];
+    const [row] = buildCatalog(data);
+    return row?.memberships[0]?.validUntil;
+  }
+
+  it('takes the registry date when the supplier has none, and the supplier date first', () => {
+    assert.equal(withDates(null, '2026-12-24'), '2026-12-24');
+    assert.equal(withDates('2026-06-30', '2026-12-24'), '2026-06-30');
+    assert.equal(withDates(null, null), null);
+  });
+});
