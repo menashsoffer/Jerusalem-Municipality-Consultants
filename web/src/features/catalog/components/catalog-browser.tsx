@@ -6,7 +6,7 @@ import { StatusMessage } from '../../../ui/status-message.tsx';
 import { filterCatalog } from '../../../catalog-filter.ts';
 import type { CatalogState } from '../../../data/snapshot.ts';
 import { emptyFilters, reconcile, changeFilter } from '../model/filters.ts';
-import { restoreFilters, saveFilters } from '../model/saved-filters.ts';
+import { linkedFilters, restoreFilters, saveFilters } from '../model/saved-filters.ts';
 import { clearFilters, withoutTag } from '../model/filter-groups.ts';
 import { FilterControls } from './filter-controls.tsx';
 import { ActiveFilters } from './active-filters.tsx';
@@ -19,8 +19,13 @@ interface Props {
 }
 /** The search survives a visit to a supplier and the way back (supplier page spec, section 3). */
 function useSavedFilters(today: string) {
-  const { key } = useLocation();
-  const state = useState(() => restoreFilters(key, emptyFilters(today)) ?? emptyFilters(today));
+  const location = useLocation();
+  const key = location.key;
+  const linked: unknown = location.state;
+  const state = useState(() => {
+    const fresh = emptyFilters(today);
+    return restoreFilters(key, fresh) ?? linkedFilters(linked, fresh) ?? fresh;
+  });
   const [filters] = state;
   useEffect(() => {
     saveFilters(key, filters);

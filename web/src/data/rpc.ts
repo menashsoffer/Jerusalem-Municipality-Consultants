@@ -67,6 +67,7 @@ interface AdminRpc {
   usage_summary: { from_day: string; to_day: string; only_role: string | null };
   addresses_to_check: Record<string, never>;
   admin_overview: Record<string, never>;
+  home_overview: Record<string, never>;
   request_access_change: {
     change_kind: 'add_role' | 'remove_role' | 'move_unit' | 'details';
     why: string;
@@ -155,6 +156,7 @@ declare module '../database.types.ts' {
     usage_summary: { Args: AdminRpc['usage_summary']; Returns: unknown };
     addresses_to_check: { Args: AdminRpc['addresses_to_check']; Returns: unknown };
     admin_overview: { Args: AdminRpc['admin_overview']; Returns: unknown };
+    home_overview: { Args: AdminRpc['home_overview']; Returns: unknown };
     request_access_change: { Args: AdminRpc['request_access_change']; Returns: string };
     cancel_access_change: { Args: AdminRpc['cancel_access_change']; Returns: null };
     decide_access_change: { Args: AdminRpc['decide_access_change']; Returns: null };

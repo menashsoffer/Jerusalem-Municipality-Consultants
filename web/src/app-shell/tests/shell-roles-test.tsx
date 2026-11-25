@@ -54,6 +54,7 @@ describe('top bar', () => {
     at('/x', <SiteHeader />);
     const nav = await screen.findByRole('navigation', { name: 'ניווט ראשי' });
     expect([...nav.querySelectorAll('a')].map((a) => a.textContent)).toEqual([
+      'בית',
       'איתור ספקים',
       'בקשות התקשרות',
     ]);
