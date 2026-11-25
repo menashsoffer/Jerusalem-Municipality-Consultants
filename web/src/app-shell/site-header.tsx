@@ -3,7 +3,7 @@ import { Link, useLocation } from 'react-router';
 import { useCatalogSnapshot } from '../data/react-catalog.ts';
 import { AccountMenu } from './account-menu.tsx';
 import { allowedScreens } from './screens.ts';
-import { SECTIONS, sectionOf, type Section } from './sections.ts';
+import { sectionOf, visibleSections, type Section } from './sections.ts';
 
 // Icon outlines follow Lucide (ISC license): house, search, clipboard-check, settings-2, user.
 const ICONS: Record<Section['key'], string> = {
@@ -47,8 +47,8 @@ function Brand() {
 export function SiteHeader({ busy = false }: { busy?: boolean }) {
   const current = sectionOf(useLocation().pathname);
   // The admin tab appears only for someone who may open at least one admin screen (spec 8.1).
-  const admin = allowedScreens(useCatalogSnapshot()?.access).length > 0;
-  const sections = SECTIONS.filter((section) => section.key !== 'admin' || admin);
+  const access = useCatalogSnapshot()?.access;
+  const sections = visibleSections(access, allowedScreens(access).length > 0);
   return (
     <header className="shell-header">
       <div className="shell-header-inner">

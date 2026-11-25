@@ -1,7 +1,8 @@
 import assert from 'node:assert/strict';
 import { it } from 'node:test';
 
-import { sectionOf } from '../sections.ts';
+import type { Access } from '../../data/access.ts';
+import { sectionOf, visibleSections } from '../sections.ts';
 
 it('keeps the catalog tab selected on supplier screens', () => {
   assert.equal(sectionOf('/catalog'), 'catalog');
@@ -30,4 +31,23 @@ it('selects no tab on sign-in or unknown paths, and does not match on a shared p
 it('selects the home tab only on the home screen', () => {
   assert.equal(sectionOf('/'), 'home');
   assert.equal(sectionOf('/home'), null);
+});
+
+const keys = (access: Access | null, admin = false) =>
+  visibleSections(access, admin).map((section) => section.key);
+const person = (state: Access['state'], member: boolean): Access => ({
+  state,
+  member,
+  admin: false,
+  editor: false,
+  manager: false,
+  grants: [],
+});
+
+it('shows the home tab only to active staff, whose home it is', () => {
+  assert.deepEqual(keys(null), ['catalog', 'requests']);
+  assert.deepEqual(keys(person('pending', false)), ['catalog', 'requests']);
+  assert.deepEqual(keys(person('active', false)), ['catalog', 'requests']);
+  assert.deepEqual(keys(person('active', true)), ['home', 'catalog', 'requests']);
+  assert.deepEqual(keys(person('active', true), true), ['home', 'catalog', 'requests', 'admin']);
 });
