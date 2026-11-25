@@ -32,8 +32,7 @@ export default defineConfig({
     toHaveScreenshot: { maxDiffPixelRatio: 0.01, animations: 'disabled', caret: 'hide' },
   },
   projects: [
-    // A phone at scale 1: the fractional 2.625 of a real Pixel 7 anti-aliases text differently
-    // on the CI runner than on other Linux machines (2% of pixels on 25.11.2026).
+    // A phone at scale 1, like the desktop: the pictures are compared in CSS pixels anyway.
     {
       name: 'screens-phone',
       ...screens,
