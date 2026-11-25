@@ -27,6 +27,9 @@
     "scripts/schema/**/*.ts",
     "scripts/bundle/**/*.ts",
     "scripts/coverage/**/*.ts",
-    "scripts/lint/**/*.ts"
+    "scripts/lint/**/*.ts",
+    "e2e/**/*.ts",
+    "playwright.config.ts",
+    "playwright.smoke.config.ts"
   ]
 }

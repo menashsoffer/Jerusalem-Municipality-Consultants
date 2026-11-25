@@ -9,3 +9,6 @@ package-lock.json
 
 # Generated database types
 web/src/database.types.ts
+/e2e-dist/
+/test-results/
+/playwright-report/
