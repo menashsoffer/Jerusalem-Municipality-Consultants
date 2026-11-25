@@ -3,6 +3,7 @@
 // was not checked. Never "clean": a check that did not run is listed as not checked.
 import type { SupplierDetail } from '../../../data/supplier-detail.ts';
 import { dateLabel } from '../../../lib/dates.ts';
+import { registrarRows } from './registrar.ts';
 
 export type VerdictKind = 'allowed' | 'blocked' | 'check';
 export type RowState = 'ok' | 'warn' | 'bad' | 'none';
@@ -107,12 +108,6 @@ function identifierRow(data: SupplierDetail): VerdictRow {
   return { state: 'warn', title: 'אין מספר מזהה', detail: 'בלי מספר אי אפשר לבדוק את הספק ברשם' };
 }
 
-const NOT_CHECKED: VerdictRow = {
-  state: 'none',
-  title: 'לא נבדק כאן',
-  detail: 'סטטוס ברשם, סימון מפרה ואירועים אחרונים (שעבודים, פירוק)',
-};
-
 function summaryOf(kind: VerdictKind, rows: VerdictRow[], until: string | null): string {
   if (kind === 'allowed') return until ? `עד ${dateLabel(until)}.` : '';
   const first = rows.find((r) => r.state === (kind === 'blocked' ? 'bad' : 'warn'));
@@ -122,7 +117,7 @@ function summaryOf(kind: VerdictKind, rows: VerdictRow[], until: string | null):
 export function verdict(data: SupplierDetail, today: string): Verdict {
   const items = registrations(data);
   const registration = registrationRow(items, today);
-  const rows = [registration, reviewRow(items), identifierRow(data), NOT_CHECKED];
+  const rows = [registration, reviewRow(items), identifierRow(data), ...registrarRows(data, today)];
   if (data.supplier.status === 'inactive')
     rows.unshift({
       state: 'bad',

@@ -38,19 +38,29 @@ interface Upstream {
   readonly registrar?: Response;
   readonly organization?: Response;
   readonly save?: Response;
+  /** Other data.gov.il datasets by the start of their resource id; empty when not given. */
+  readonly datagov?: Record<string, Response>;
+}
+
+const EMPTY = () => Response.json({ success: true, result: { records: [] } });
+
+function datagov(url: URL, upstream: Upstream): Response {
+  const resource = url.searchParams.get('resource_id')?.slice(0, 8) ?? '';
+  if (resource !== 'f004176c') return upstream.datagov?.[resource] ?? EMPTY();
+  return upstream.registrar ?? Response.json({ success: true, result: { records: [RECORD] } });
+}
+
+function database(path: string, body: Record<string, unknown> | null, upstream: Upstream) {
+  if (path.endsWith('registry_check_input')) {
+    return upstream.input ?? Response.json({ identifiers: [COMPANY, NONPROFIT] });
+  }
+  return upstream.save ?? Response.json((body?.results as unknown[]).length);
 }
 
 function answer(url: URL, body: Record<string, unknown> | null, upstream: Upstream): Response {
   const path = url.pathname;
-  if (path.endsWith('registry_check_input')) {
-    return upstream.input ?? Response.json({ identifiers: [COMPANY, NONPROFIT] });
-  }
-  if (path.endsWith('save_registry_checks')) {
-    return upstream.save ?? Response.json((body?.results as unknown[]).length);
-  }
-  if (url.hostname === 'data.gov.il') {
-    return upstream.registrar ?? Response.json({ success: true, result: { records: [RECORD] } });
-  }
+  if (path.includes('/rpc/')) return database(path, body, upstream);
+  if (url.hostname === 'data.gov.il') return datagov(url, upstream);
   if (path.endsWith('/login')) return Response.json({ sessionId: 'session-1' });
   return upstream.organization ?? Response.json(ORGANIZATION);
 }
@@ -90,7 +100,7 @@ describe('supplier-change-check', () => {
     assert.equal(response.status, 200);
     assert.deepEqual(await response.json(), {
       checked: 2,
-      sources: { companies_registrar: 'ok', guidestar: 'ok' },
+      sources: { companies_registrar: 'ok', guidestar: 'ok', datagov: 'ok' },
     });
     const input = calls.find((c) => c.url.pathname.endsWith('registry_check_input'));
     assert.equal(input?.auth, 'Bearer user-token');
@@ -106,7 +116,7 @@ describe('supplier-change-check', () => {
         found: true,
         name: 'מגנזי אורבניקס בע"מ',
         status: 'מחוסלת מרצון',
-        details: { 'סוג תאגיד': 'חברה פרטית' },
+        details: { 'סוג תאגיד': 'חברה פרטית', checks: { registrar: 'ok', events: 'ok' } },
       },
       {
         id: 'i-nonprofit',
@@ -119,6 +129,8 @@ describe('supplier-change-check', () => {
           approval46: false,
           malkarType: 'עמותה',
           urlGuidestar: 'https://www.guidestar.org.il/organization/580536878',
+          'ניהול תקין': `אין רשומה לשנת ${String(new Date().getFullYear())}`,
+          checks: { guidestar: 'ok', amutot: 'ok', proper: 'ok', events: 'ok' },
         },
       },
     ]);
@@ -130,7 +142,8 @@ describe('supplier-change-check', () => {
       organization: new Response('', { status: 404 }),
     });
     await handle(post({ supplier_id: SUPPLIER }), ctx(fetcher));
-    assert.deepEqual(saved(calls).results, [
+    const results = saved(calls).results.map(({ id, found }) => ({ id, found }));
+    assert.deepEqual(results, [
       { id: 'i-company', found: false },
       { id: 'i-nonprofit', found: false },
     ]);
@@ -150,9 +163,29 @@ describe('supplier-change-check', () => {
     const response = await handle(post({ supplier_id: SUPPLIER }), ctx(fetcher, null));
     assert.deepEqual(await response.json(), {
       checked: 0,
-      sources: { companies_registrar: 'failed', guidestar: 'not_configured' },
+      sources: { companies_registrar: 'failed', guidestar: 'not_configured', datagov: 'ok' },
     });
     assert.equal(saved(calls).call, undefined);
+  });
+
+  it('uses the nonprofit registrar when GuideStar is not set up, and keeps its flags', async () => {
+    const amuta = { 'מספר עמותה': 580536878, 'שם עמותה בעברית': 'הסדנא', 'סטטוס עמותה': 'נמחקה' };
+    const { calls, fetcher } = fake({
+      input: Response.json({ identifiers: [NONPROFIT] }),
+      datagov: {
+        be5b7935: Response.json({ success: true, result: { records: [amuta] } }),
+        '28780ab5': Response.json({ success: false }),
+      },
+    });
+    await handle(post({ supplier_id: SUPPLIER }), ctx(fetcher, null));
+    const [result] = saved(calls).results;
+    assert.equal(result?.status, 'נמחקה');
+    assert.deepEqual((result.details as { checks: unknown }).checks, {
+      guidestar: 'not_configured',
+      amutot: 'ok',
+      proper: 'ok',
+      events: 'failed',
+    });
   });
 
   it('asks nobody when every number was checked in the last day', async () => {

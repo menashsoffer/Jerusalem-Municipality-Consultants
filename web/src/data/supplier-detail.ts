@@ -1,4 +1,4 @@
-import type { PublicSchema } from '../database.types.ts';
+import type { Json, PublicSchema } from '../database.types.ts';
 import type { CatalogData, ContactRow } from './catalog.ts';
 import { DataError, type DataClient } from './client.ts';
 import { array, boolean, json, nullable, number, object, record, text } from './parse.ts';
@@ -14,10 +14,15 @@ export type DetailContact = ContactRow & { map: MapCheck | null };
 export interface SupplierDetail {
   supplier: CatalogData['suppliers'][number];
   names: CatalogData['names'];
-  identifiers: Pick<
+  identifiers: (Pick<
     Row<'supplier_identifiers'>,
     'id' | 'scheme' | 'value' | 'review_status' | 'source'
-  >[];
+  > & {
+    /** What the registries last said about the number (stage B, 25.11); null until asked. */
+    registrar_status: string | null;
+    registry_details: Json | null;
+    checked_at: string | null;
+  })[];
   contacts: DetailContact[];
   memberships: CatalogData['memberships'];
   versions: CatalogData['versions'];
@@ -69,6 +74,9 @@ export async function supplierDetail(
       value: text,
       review_status: text,
       source: text,
+      registrar_status: nullable(text),
+      registry_details: nullable(json),
+      checked_at: nullable(text),
     }),
   );
   const contacts = parseContacts(raw.contacts, supplierId);

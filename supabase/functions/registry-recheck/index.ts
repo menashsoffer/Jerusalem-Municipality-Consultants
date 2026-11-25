@@ -1,11 +1,8 @@
 import { serverEnv, type ServerEnv } from '../_shared/http/env.ts';
 import { failure, json, preflight } from '../_shared/http/respond.ts';
 import { rest } from '../_shared/http/rest.ts';
-import {
-  checkGuidestar,
-  checkRegistrar,
-  type Identifier,
-} from '../supplier-change-check/registry.ts';
+import { checkAll } from '../supplier-change-check/checks.ts';
+import type { Identifier } from '../supplier-change-check/registry.ts';
 import { guidestarCredentials, type Credentials } from '../supplier-identifiers/sources.ts';
 
 // POST with no body, once a day from GitHub Actions (supplier-edit-checks-spec-he.md, 6.7).
@@ -38,14 +35,9 @@ async function run(ctx: Db) {
   const queued = await service(ctx, 'registry_recheck_queue', { batch_size: BATCH });
   if (queued.status !== 200 || !Array.isArray(queued.body)) throw new Error('Queue unavailable');
   const items = queued.body as Identifier[];
-  const [registrar, guidestar] = await Promise.all([
-    checkRegistrar(items, ctx.fetcher),
-    checkGuidestar(items, ctx.guidestar, ctx.fetcher),
-  ]);
-  const results = [...registrar.results, ...guidestar.results];
+  const { results, sources } = await checkAll(items, ctx.guidestar, ctx.fetcher);
   const saved = await service(ctx, 'save_registry_rechecks', { results });
   if (saved.status !== 200) throw new Error('Could not save the answers');
-  const sources = { companies_registrar: registrar.state, guidestar: guidestar.state };
   const failed = Object.values(sources).includes('failed');
   return { queued: items.length, checked: results.length, remaining: saved.body, sources, failed };
 }

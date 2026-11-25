@@ -22,13 +22,20 @@ interface Upstream {
   readonly registrar?: Response;
 }
 
-function answer(url: URL, upstream: Upstream): Response {
-  const path = url.pathname;
+function database(path: string, upstream: Upstream): Response {
   if (path.endsWith('job_start')) return upstream.start ?? Response.json(7);
   if (path.endsWith('job_finish')) return new Response(null, { status: 204 });
   if (path.endsWith('registry_recheck_queue')) return upstream.queue ?? Response.json(QUEUE);
-  if (path.endsWith('save_registry_rechecks')) return Response.json(3);
+  return Response.json(3);
+}
+
+function answer(url: URL, upstream: Upstream): Response {
+  const path = url.pathname;
+  if (path.includes('/rpc/')) return database(path, upstream);
   if (url.hostname === 'data.gov.il') {
+    if (!url.searchParams.get('resource_id')?.startsWith('f004176c')) {
+      return Response.json({ success: true, result: { records: [] } });
+    }
     return upstream.registrar ?? Response.json({ success: true, result: { records: [RECORD] } });
   }
   if (path.endsWith('/login')) return Response.json({ sessionId: 'session-1' });
@@ -62,7 +69,7 @@ describe('registry-recheck', () => {
       queued: 2,
       checked: 2,
       remaining: 3,
-      sources: { companies_registrar: 'ok', guidestar: 'ok' },
+      sources: { companies_registrar: 'ok', guidestar: 'ok', datagov: 'ok' },
       failed: false,
     });
     const start = calls.find((c) => c.path.endsWith('job_start'));

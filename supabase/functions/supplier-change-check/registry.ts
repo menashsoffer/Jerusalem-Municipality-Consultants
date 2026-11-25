@@ -24,7 +24,7 @@ export interface Checked {
   readonly found: boolean;
   readonly name?: string | null;
   readonly status?: string | null;
-  readonly details?: Record<string, string | boolean>;
+  readonly details?: Record<string, unknown>;
 }
 
 export interface Answers {
@@ -35,7 +35,14 @@ export interface Answers {
 type Row = Record<string, unknown>;
 
 // Fields of the registrar's dataset worth keeping beside the name and status.
-const REGISTRAR_DETAILS = ['סוג תאגיד', 'תת סטטוס', 'חברה ממשלתית', 'מגבלות', 'מפרה'];
+const REGISTRAR_DETAILS = [
+  'סוג תאגיד',
+  'תת סטטוס',
+  'חברה ממשלתית',
+  'מגבלות',
+  'מפרה',
+  'שנה אחרונה של דוח שנתי (שהוגש)',
+];
 const GUIDESTAR_FLAGS = ['isActive', 'hasNihulTakin', 'hasNihulTakinForNextYear', 'approval46'];
 
 function pick(row: Row, keys: string[]): Record<string, string | boolean> {
@@ -43,6 +50,7 @@ function pick(row: Row, keys: string[]): Record<string, string | boolean> {
   for (const key of keys) {
     const value = row[key];
     if (typeof value === 'boolean') details[key] = value;
+    else if (typeof value === 'number') details[key] = String(value);
     else if (text(value)) details[key] = text(value) ?? '';
   }
   return details;

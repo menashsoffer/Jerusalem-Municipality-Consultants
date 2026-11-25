@@ -68,7 +68,7 @@ describe('supplier details', () => {
     expect(screen.getByRole('button', { name: 'ספק מאומת' })).toBeDefined();
     const band = screen.getByRole('region', { name: /^(מותר|לא מותר|לבדוק)$/ });
     expect(band.textContent).toContain('אפשר להתקשר עם הספק דרך המאגר?');
-    expect(band.textContent).toContain('לא נבדק כאן');
+    expect(band.textContent).toContain('לא נבדק ברשמים');
   });
 
   it('marks a waiting supplier with a labelled clock that shows its label on focus', async () => {
