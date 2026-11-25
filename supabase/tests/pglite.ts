@@ -55,6 +55,9 @@ export const SUPABASE_STUB = `
   grant usage on schema storage to anon, authenticated, service_role;
   grant select, insert, update, delete on storage.objects to anon, authenticated, service_role;
   grant execute on function storage.foldername(text) to anon, authenticated, service_role;
+  -- What production gives every new public table by default (see pg_default_acl).
+  alter default privileges in schema public
+    grant truncate, references, trigger on tables to anon, authenticated, service_role;
 `;
 
 export interface MigrationRange {
