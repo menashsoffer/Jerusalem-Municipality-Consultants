@@ -43,6 +43,8 @@ jobs:
 
   # Browser tests of the main journeys against a local Supabase (documentation/e2e-tests-he.md).
   e2e:
+    permissions:
+      contents: write
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
@@ -63,15 +65,22 @@ jobs:
             | sed -E 's/^([A-Z_]+)="?([^"]*)"?$/E2E_\1=\2/' >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
-      # TEMPORARY (PR #181): retake the screen pictures on the runner and print them, so the new
-      # header's baselines can be committed. Removed before merge.
+      # TEMPORARY (PR #181): retake the screen pictures on the runner and commit them to the PR
+      # branch, since the new header changes every screen. Removed before merge.
       - if: failure()
+        env:
+          HEAD_REF: ${{ github.head_ref }}
         run: |
           npx playwright test --project screens-phone --project screens-desktop --update-snapshots || true
-          echo "BASELINE-BEGIN"
-          tar czf - e2e/screens/baseline | base64 -w 0 | fold -w 60000
-          echo
-          echo "BASELINE-END"
+          cp -r e2e/screens/baseline /tmp/baseline
+          git fetch --depth 1 origin "$HEAD_REF"
+          git checkout -q FETCH_HEAD
+          rm -rf e2e/screens/baseline && cp -r /tmp/baseline e2e/screens/baseline
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add e2e/screens/baseline
+          git commit -m "Retake the screen pictures for the new header logo"
+          git push origin "HEAD:$HEAD_REF"
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
