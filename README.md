@@ -34,6 +34,11 @@
 - Python: `ruff format --check . && ruff check .` ו-`python3 -m unittest discover -s tests -t .`
 - סקריפטי חילוץ: `pip install -r requirements-scripts.txt`, ואז `python3 scripts/extract.py --sources <תיקייה> --output <קובץ.json>` או `python3 scripts/extract_additional.py --sources <תיקייה> --output <קובץ.csv>`.
 
+## תהליך העבודה עם סוכנים
+- אפשר לבקש שינוי בפתיחת issue מסוג Task.
+- סוכנים מכינים אפיון, תוכנית ו-PR טיוטה. הכללים: [AGENTS.md](AGENTS.md) ו[תהליך הפס](documentation/factory/pipeline.md).
+- אדם מאשר וממזג כל PR. אף סוכן אינו ממזג.
+
 ## פריסה
 שינוי מגיע לסביבה החיה רק דרך GitHub Actions. מיגרציות מוחלות קודם על סביבת הבדיקה, ועל החי רק בהפעלה ידנית ואחרי אישור בלחיצה. האתר, לעומת זאת, מתפרסם מיד עם המיזוג ל-`main`, ולכן מיגרציה שהאתר תלוי בה מוחלת על החי לפני המיזוג. הפרטים וההגדרה החד פעמית: [סביבות ופריסה](documentation/environments-he.md).
 
