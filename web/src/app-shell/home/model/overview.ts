@@ -133,3 +133,13 @@ export function waitingItems(
     (a, b) => order[a.tone] - order[b.tone],
   );
 }
+
+/** The line under the greeting: how much waits and how much of it is urgent. */
+export function waitingLead(items: readonly WaitingItem[]): string {
+  if (items.length === 0) return 'אין כרגע עבודה שמחכה לך.';
+  const urgent = items.filter((item) => item.tone === 'danger').length;
+  if (items.length === 1) return urgent ? 'יש נושא אחד פתוח, והוא דחוף.' : 'יש נושא אחד פתוח.';
+  const open = `יש ${items.length.toLocaleString('he-IL')} נושאים פתוחים`;
+  if (urgent === 0) return `${open}. שום דבר לא דחוף.`;
+  return `${open}, ${urgent === 1 ? 'אחד מהם דחוף' : `${urgent.toLocaleString('he-IL')} מהם דחופים`}.`;
+}

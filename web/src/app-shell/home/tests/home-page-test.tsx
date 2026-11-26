@@ -58,7 +58,11 @@ describe('home screen', () => {
   it('shows what waits, the quick actions and the registry numbers', async () => {
     signIn(ACCESS, HOME);
     open();
-    expect(await screen.findByRole('heading', { level: 1, name: 'בית' })).toBeDefined();
+    expect(await screen.findByRole('heading', { level: 1, name: /טוב/ })).toBeDefined();
+    expect(screen.getByText('יש 4 נושאים פתוחים, אחד מהם דחוף.')).toBeDefined();
+    expect(screen.getByRole('region', { name: /^דחוף/ }).textContent).toContain('פיתוח המשאב');
+    expect(screen.getByRole('region', { name: /^מחכה לאישור שלך/ }).textContent).toContain('297');
+    expect(screen.getByRole('region', { name: /^להשלים/ }).textContent).toContain('23');
     const waiting = screen.getByRole('region', { name: 'מחכה לך' });
     expect(waiting.textContent).toContain('66 ספקים במאגר "פיתוח המשאב האנושי"');
     expect(waiting.textContent).toContain('377 מועמדים ממתינים');
@@ -76,12 +80,21 @@ describe('home screen', () => {
     expect(router.state.location.state).toEqual({ query: 'הדרכה' });
   });
 
+  it('opens a lapsed registry from its lane, already filtered', async () => {
+    signIn(ACCESS, HOME);
+    const router = open();
+    fireEvent.click(await screen.findByRole('button', { name: /^לרשימה: 66 ספקים/ }));
+    await screen.findByRole('heading', { name: 'איתור ספקים' });
+    expect(router.state.location.state).toEqual({ registry: 'r1', validity: 'expired' });
+  });
+
   it('still works when the numbers cannot be read, and hides admin actions', async () => {
     signIn({ ...ACCESS, admin: false, grants: [{ role: 'viewer', unitId: 'x' }] }, new Error('x'));
     open();
     expect(await screen.findByText('מצב המאגרים לא נטען.')).toBeDefined();
     expect(screen.queryByRole('link', { name: 'קליטת ספקים מאקסל' })).toBeNull();
     expect(screen.getByText('אין כרגע עבודה שמחכה לך.')).toBeDefined();
+    expect(screen.getByText('הכול טופל. יום שקט לפניך.')).toBeDefined();
   });
 
   it('sends someone who is not active staff to the catalog', async () => {

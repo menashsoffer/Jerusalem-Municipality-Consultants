@@ -39,11 +39,21 @@
     font-weight: var(--font-weight-strong);
     overflow-wrap: anywhere;
     text-align: center;
+    /* A physical edge under the button that it presses into (DESIGN.md 6.2, 26.11.2026). */
+    box-shadow: 0 var(--press-depth) 0 var(--color-press-edge);
     @media (prefers-reduced-motion: no-preference) {
       transition:
         background-color var(--duration-quick),
         border-color var(--duration-quick),
-        color var(--duration-quick);
+        color var(--duration-quick),
+        transform var(--duration-spring) var(--ease-spring),
+        box-shadow var(--duration-quick);
+      &:active:not(:disabled, [aria-disabled='true']) {
+        transform: translateY(calc(var(--press-depth) * 0.7)) scale(0.97);
+      }
+    }
+    &:active:not(:disabled, [aria-disabled='true']) {
+      box-shadow: 0 calc(var(--press-depth) * 0.3) 0 var(--color-press-edge);
     }
     &:hover:not(:disabled, [aria-disabled='true']),
     &:active:not(:disabled, [aria-disabled='true']) {
@@ -59,6 +69,10 @@
     color: var(--color-brand);
     background: var(--color-surface);
     border-color: var(--color-brand-line);
+    box-shadow: 0 var(--press-depth) 0 var(--color-press-edge-soft);
+    &:active:not(:disabled, [aria-disabled='true']) {
+      box-shadow: 0 calc(var(--press-depth) * 0.3) 0 var(--color-press-edge-soft);
+    }
     &:hover:not(:disabled, [aria-disabled='true']),
     &:active:not(:disabled, [aria-disabled='true']) {
       color: var(--color-brand-hover);
@@ -72,6 +86,10 @@
     color: var(--color-brand);
     background: transparent;
     border-color: transparent;
+    box-shadow: none;
+    &:active:not(:disabled, [aria-disabled='true']) {
+      box-shadow: none;
+    }
     &:hover:not(:disabled, [aria-disabled='true']),
     &:active:not(:disabled, [aria-disabled='true']) {
       color: var(--color-brand-hover);
@@ -85,6 +103,10 @@
     color: var(--color-on-brand);
     background: var(--color-error);
     border-color: var(--color-error);
+    box-shadow: 0 var(--press-depth) 0 var(--color-press-edge-danger);
+    &:active:not(:disabled, [aria-disabled='true']) {
+      box-shadow: 0 calc(var(--press-depth) * 0.3) 0 var(--color-press-edge-danger);
+    }
     &:hover:not(:disabled, [aria-disabled='true']),
     &:active:not(:disabled, [aria-disabled='true']) {
       background: var(--color-badge-danger-text);

@@ -4,11 +4,11 @@
    * these names only, never raw colors. Light only for now (DESIGN.md section 9).
    */
   :root {
-    /* Brand: Jerusalem Municipality purple, for actions only. */
-    --color-brand: #522583;
-    --color-brand-hover: #3f1c66;
-    --color-brand-soft: #f1ecf7;
-    --color-brand-line: #ddd2ea;
+    /* Actions: deep indigo (DESIGN.md 2.1, Menash 26.11.2026). Colour never marks a state here. */
+    --color-brand: #2d2b55;
+    --color-brand-hover: #1e1c40;
+    --color-brand-soft: #e9e7f3;
+    --color-brand-line: #d3d0e6;
     --color-on-brand: #ffffff;
 
     /* Logo colors: decoration only (stripe and pool dots), never text or state. */
@@ -39,31 +39,40 @@
       #522583 100%
     );
 
-    /* Neutrals, tinted slightly toward the brand. */
-    --color-page: #f7f6f9;
-    --color-surface: #ffffff;
-    --color-text: #1f1a2b;
-    --color-muted: #5b5568;
-    --color-border: #e2dfe8;
-    --color-input-border: #8c8599;
-    --color-subtle: #f1eff4;
-    --color-backdrop: #1f1a2b99;
-    --color-focus: #522583;
+    /* Warm neutrals: cream ground, never sterile white or cold grey. */
+    --color-page: #f7f5f0;
+    --color-surface: #fcfaf6;
+    --color-text: #262335;
+    --color-muted: #5c566b;
+    --color-border: #e7e1d5;
+    --color-input-border: #8a8378;
+    --color-subtle: #f1eee6;
+    --color-backdrop: #26233599;
+    --color-focus: #2d2b55;
     --color-error: #9b1c2c;
 
-    /* States: text and surface pairs at 4.5:1, borders at 3:1. */
-    --color-badge-success-text: #1e6b3c;
-    --color-badge-success-surface: #e7f4ec;
-    --color-badge-success-border: #3f8a5a;
-    --color-badge-warning-text: #7a4b06;
-    --color-badge-warning-surface: #fdf1d8;
-    --color-badge-warning-border: #a86b0c;
-    --color-badge-danger-text: #9b1c2c;
-    --color-badge-danger-surface: #fbe8ea;
-    --color-badge-danger-border: #c2414f;
-    --color-badge-info-text: #1f4f86;
-    --color-badge-info-surface: #e8f0fa;
-    --color-badge-info-border: #4a7bb7;
+    /* States: one colour, one meaning (DESIGN.md 2.3). Peach urgent, butter waits for you, sage to
+       complete. Text and surface pairs at 4.5:1, borders at 3:1. */
+    --color-badge-success-text: #2f6b47;
+    --color-badge-success-surface: #e1f0e6;
+    --color-badge-success-border: #4e8a63;
+    --color-badge-warning-text: #6b4e00;
+    --color-badge-warning-surface: #fdf2d0;
+    --color-badge-warning-border: #9a7414;
+    --color-badge-danger-text: #8a3410;
+    --color-badge-danger-surface: #fbe3d6;
+    --color-badge-danger-border: #c9662f;
+    --color-badge-info-text: #3e5c4d;
+    --color-badge-info-surface: #e3ebe6;
+    --color-badge-info-border: #6b8a7a;
+
+    /* Status dots and the pressed edge of buttons: decoration beside text, never text. */
+    --color-dot-danger: #f4a261;
+    --color-dot-warning: #e2b544;
+    --color-dot-info: #8fa89b;
+    --color-press-edge: #17163a;
+    --color-press-edge-soft: #ddd5c6;
+    --color-press-edge-danger: #6b1220;
 
     /* Type: Assistant (fonts.css), scale in DESIGN.md section 3. */
     --font-body: 'Assistant', 'Assistant Fallback', 'Segoe UI', Arial, sans-serif;
@@ -90,10 +99,10 @@
 
     /* Shape and depth. */
     --radius-tag: 0.375rem;
-    --radius-control: 0.625rem;
-    --radius-panel: 0.875rem;
+    --radius-control: 0.875rem;
+    --radius-panel: 1.5rem;
     --radius-pill: 999px;
-    --shadow-overlay: 0 0.5rem 1.5rem #1f1a2b26;
+    --shadow-overlay: 0 0.5rem 1.5rem #26233526;
     --border-width: 0.0625rem;
     --focus-width: 0.1875rem;
 
@@ -106,6 +115,9 @@
     --layer-raised: 1;
     --skeleton-opacity-min: 0.45;
     --duration-quick: 150ms;
+    --duration-spring: 350ms;
+    --ease-spring: linear(0, 0.25 7%, 0.86 22%, 1.06 31%, 1.09 37%, 1.02 50%, 0.99 62%, 1);
+    --press-depth: 0.1875rem;
 
     /* Loading (DESIGN.md 6.8). */
     --color-skeleton-sheen: #ffffffb3;
