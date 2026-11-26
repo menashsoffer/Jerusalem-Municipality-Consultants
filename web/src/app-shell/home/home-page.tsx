@@ -3,6 +3,7 @@ import { Link, redirect, useLoaderData, useNavigate } from 'react-router';
 import { overview as adminOverview } from '../home-page.tsx';
 import { allowedScreens } from '../screens.ts';
 import { getAdminSession, identity, rpc, type Identity } from '../../data/rpc.ts';
+import { z } from '../../data/zod.ts';
 import { useCatalogSnapshot } from '../../data/react-catalog.ts';
 import { IconButton } from '../../ui/icon-button.tsx';
 import { Notice } from '../../ui/notice.tsx';
@@ -15,6 +16,7 @@ import {
   waitingLead,
   type AdminCounts,
   type HomeOverview,
+  type PopularSearch,
 } from './model/overview.ts';
 import { busiestRegistries, greeting } from './model/popular.ts';
 import styles from './home.module.css';
@@ -49,6 +51,8 @@ function SupplierSearch() {
   const [query, setQuery] = useState('');
   const submit = (event: SyntheticEvent<HTMLFormElement>) => {
     event.preventDefault();
+    // Counted anonymously for the popular searches; a failure must never stop the search.
+    if (query.trim()) rpc('record_search', { query }, z.null()).catch(() => undefined);
     void navigate('/catalog', { state: { query } });
   };
   return (
@@ -72,7 +76,7 @@ function SupplierSearch() {
 }
 
 /** The registries with the most suppliers, once the catalog has loaded; nothing before. */
-function PopularChips() {
+function BusiestChips() {
   const suppliers = useCatalogSnapshot()?.suppliers ?? [];
   const busiest = busiestRegistries(suppliers);
   if (busiest.length === 0) return null;
@@ -94,7 +98,22 @@ function PopularChips() {
   );
 }
 
-function Hero({ lead }: { lead: string }) {
+/** What staff searched most in 30 days; until there is enough, the busiest registries. */
+function PopularChips({ popular }: { popular: readonly PopularSearch[] }) {
+  if (popular.length === 0) return <BusiestChips />;
+  return (
+    <div className={styles.chips}>
+      <span className={styles.muted}>חיפושים נפוצים:</span>
+      {popular.map(({ term }) => (
+        <Link key={term} to="/catalog" state={{ query: term }} className={styles.chip}>
+          <bdi>{term}</bdi>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
+function Hero({ lead, popular }: { lead: string; popular: readonly PopularSearch[] }) {
   return (
     <section className={[styles.panel, styles.hero].join(' ')} aria-labelledby="home-title">
       <h1 id="home-title" tabIndex={-1} data-volatile>
@@ -102,7 +121,7 @@ function Hero({ lead }: { lead: string }) {
       </h1>
       <p className={styles.lead}>{lead}</p>
       <SupplierSearch />
-      <PopularChips />
+      <PopularChips popular={popular} />
     </section>
   );
 }
@@ -114,7 +133,7 @@ export function HomePage() {
   return (
     <div className={styles.home}>
       <div className={styles.layout}>
-        <Hero lead={waitingLead(items)} />
+        <Hero lead={waitingLead(items)} popular={home?.popular_searches ?? []} />
         <QuickActions access={who.access} />
         <WaitingList items={items} />
         {home ? (

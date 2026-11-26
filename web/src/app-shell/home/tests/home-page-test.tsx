@@ -78,6 +78,16 @@ describe('home screen', () => {
     fireEvent.click(screen.getByRole('button', { name: 'חיפוש' }));
     await screen.findByRole('heading', { name: 'איתור ספקים' });
     expect(router.state.location.state).toEqual({ query: 'הדרכה' });
+    expect(rpc.rpc).toHaveBeenCalledWith('record_search', { query: 'הדרכה' }, expect.anything());
+  });
+
+  it('offers the searches staff made most, each opening the catalog with that search', async () => {
+    signIn(ACCESS, { ...HOME, popular_searches: [{ term: 'הנדסה', count: 7 }] });
+    const router = open();
+    expect(await screen.findByText('חיפושים נפוצים:')).toBeDefined();
+    fireEvent.click(screen.getByRole('link', { name: 'הנדסה' }));
+    await screen.findByRole('heading', { name: 'איתור ספקים' });
+    expect(router.state.location.state).toEqual({ query: 'הנדסה' });
   });
 
   it('opens a lapsed registry from its lane, already filtered', async () => {

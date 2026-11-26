@@ -35,6 +35,7 @@ const READABLE: Record<string, (rows: Json[]) => void> = {
 
 const REJECT = new Set([
   'home_overview()',
+  'record_search(text)',
   'registry_reviews()',
   'registry_review(uuid)',
   'set_registry_validity(uuid,date)',
