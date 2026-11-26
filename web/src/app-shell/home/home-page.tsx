@@ -57,6 +57,7 @@ function SupplierSearch() {
       <form className={styles.search} onSubmit={submit}>
         <input
           type="search"
+          dir="auto"
           aria-label="חיפוש ספק"
           placeholder="שם ספק, שם קודם או תחום, למשל: הדרכה"
           value={query}

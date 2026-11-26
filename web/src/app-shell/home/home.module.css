@@ -167,6 +167,9 @@
     }
   }
   .laneHead {
+    display: flex;
+    align-items: center;
+    gap: var(--space-xs);
     margin: 0;
     color: var(--lane-text);
     font-size: var(--font-lg);

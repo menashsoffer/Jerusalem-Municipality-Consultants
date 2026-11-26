@@ -1,17 +1,18 @@
 import { useNavigate } from 'react-router';
+import { Icon, type IconName } from '../../../ui/icon.tsx';
 import { IconButton } from '../../../ui/icon-button.tsx';
 import type { Tone, WaitingItem } from '../model/overview.ts';
 import styles from '../home.module.css';
 
 /**
- * The three lanes keep their place and say what they are by colour alone (Menash, 26.11.2026):
- * peach urgent, butter waiting for your approval, sage to complete. The names stay for screen
- * readers, hidden from the eye.
+ * The three lanes keep their place and carry no visible title (Menash, 26.11.2026): peach urgent,
+ * butter waiting for your approval, sage to complete. Colour may not be the only cue (WCAG 1.4.1,
+ * required by IS 5568), so each lane also shows its own shape. The names stay for screen readers.
  */
-const LANES: readonly { tone: Tone; name: string }[] = [
-  { tone: 'danger', name: 'דחוף' },
-  { tone: 'warning', name: 'מחכה לאישור שלך' },
-  { tone: 'info', name: 'להשלים' },
+const LANES: readonly { tone: Tone; name: string; icon: IconName }[] = [
+  { tone: 'danger', name: 'דחוף', icon: 'warning' },
+  { tone: 'warning', name: 'מחכה לאישור שלך', icon: 'clock' },
+  { tone: 'info', name: 'להשלים', icon: 'pencil' },
 ];
 
 function Item({ item }: { item: WaitingItem }) {
@@ -35,11 +36,17 @@ function Item({ item }: { item: WaitingItem }) {
   );
 }
 
-function Lane({ tone, name, items }: { tone: Tone; name: string; items: readonly WaitingItem[] }) {
+interface LaneProps {
+  lane: (typeof LANES)[number];
+  items: readonly WaitingItem[];
+}
+
+function Lane({ lane: { tone, name, icon }, items }: LaneProps) {
   const id = `home-lane-${tone}`;
   return (
     <section className={styles.lane} data-tone={tone} aria-labelledby={id}>
       <h3 id={id} className={styles.laneHead}>
+        <Icon name={icon} />
         <span className={styles.hidden}>{name}: </span>
         <span className={styles.laneCount}>{items.length.toLocaleString('he-IL')}</span>
       </h3>
@@ -67,7 +74,7 @@ export function WaitingList({ items }: { items: readonly WaitingItem[] }) {
       {items.length ? (
         <div className={styles.lanes}>
           {LANES.map((lane) => (
-            <Lane key={lane.tone} {...lane} items={items.filter((i) => i.tone === lane.tone)} />
+            <Lane key={lane.tone} lane={lane} items={items.filter((i) => i.tone === lane.tone)} />
           ))}
         </div>
       ) : (
