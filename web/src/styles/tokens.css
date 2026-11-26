@@ -108,7 +108,8 @@
 
     /* Sizes and layers. */
     --control-min-size: 3rem;
-    --page-max-size: 72.5rem;
+    --page-max-size: 120rem;
+    --measure-prose: 75ch;
     --dialog-max-size: 36rem;
     --panel-min-size: 12rem;
     --card-min-size: 18rem;
