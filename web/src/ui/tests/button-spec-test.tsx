@@ -42,6 +42,17 @@ describe('Button (DESIGN.md 6.2)', () => {
     await userEvent.click(screen.getByRole('button', { name: 'שומר…' }));
     expect(run).toHaveBeenCalledTimes(1);
   });
+  it('keeps its width while saving: the label stays, hidden, under "שומר…"', () => {
+    render(
+      <Button variant="secondary" icon="pencil" pending>
+        דחיית המועמד
+      </Button>,
+    );
+    const button = screen.getByRole('button', { name: 'שומר…' });
+    const held = screen.getByText('דחיית המועמד');
+    expect(button.contains(held)).toBe(true);
+    expect(held.closest('[aria-hidden="true"]')).not.toBeNull();
+  });
 });
 
 describe('IconButton (DESIGN.md 6.2)', () => {

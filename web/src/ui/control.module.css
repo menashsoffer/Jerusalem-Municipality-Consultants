@@ -117,6 +117,20 @@
       }
     }
   }
+  /* "שומר…" sits over the label it replaces, which keeps its place but is not shown. */
+  .saving {
+    display: inline-grid;
+    place-items: center;
+    & > * {
+      grid-area: 1 / 1;
+    }
+  }
+  .held {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-sm);
+    visibility: hidden;
+  }
   @keyframes button-stripe-flow {
     to {
       background-position: 300% 0;
