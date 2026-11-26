@@ -17,10 +17,12 @@ export const homeSchema = z.object({
   lapsed: z.array(
     z.object({ registry_id: z.string(), name: z.string(), count, ended_on: z.string() }),
   ),
+  popular_searches: z.array(z.object({ term: z.string(), count })).optional(),
   kind_suggestions_pending: count.optional(),
   registries_without_unit: count.optional(),
 });
 export type HomeOverview = z.infer<typeof homeSchema>;
+export type PopularSearch = NonNullable<HomeOverview['popular_searches']>[number];
 export type AdminCounts = Partial<Record<OverviewKey, number | undefined>>;
 
 export type Tone = 'danger' | 'warning' | 'info';

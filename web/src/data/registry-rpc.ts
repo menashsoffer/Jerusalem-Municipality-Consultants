@@ -1,4 +1,5 @@
-// The calls added on 25.11 (home screen, registry verification, awarding a request), kept
+// The calls added on 25.11 (home screen, registry verification, awarding a request) and 26.11
+// (counting home searches), kept
 // apart so rpc.ts stays in size.
 export interface RegistryRpc {
   home_overview: Record<string, never>;
@@ -7,6 +8,7 @@ export interface RegistryRpc {
   set_registry_validity: { version: string; valid_until: string | null };
   decide_membership: { membership: string; approve: boolean; note: string | null };
   award_engagement_request: { request: string; approach: string; note: string | null };
+  record_search: { query: string };
 }
 
 declare module '../database.types.ts' {
@@ -17,5 +19,6 @@ declare module '../database.types.ts' {
     set_registry_validity: { Args: RegistryRpc['set_registry_validity']; Returns: null };
     decide_membership: { Args: RegistryRpc['decide_membership']; Returns: null };
     award_engagement_request: { Args: RegistryRpc['award_engagement_request']; Returns: null };
+    record_search: { Args: RegistryRpc['record_search']; Returns: null };
   }
 }
