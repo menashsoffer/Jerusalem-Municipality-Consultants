@@ -110,6 +110,11 @@
       padding-block: var(--space-md);
       outline: none;
     }
+    /* dir="auto" lets an English query run left to right, but an empty field counts as left to
+       right too, so the Hebrew hint would sit on the left. While the hint shows, keep it right. */
+    & > input:placeholder-shown {
+      direction: rtl;
+    }
   }
   .chips {
     display: flex;

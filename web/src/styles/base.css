@@ -19,6 +19,10 @@
     outline: var(--focus-width) solid var(--color-focus);
     outline-offset: var(--space-xs);
   }
+  /* The page uses the whole screen (Menash, 26.11.2026); a paragraph stays a readable length. */
+  :where(p) {
+    max-inline-size: var(--measure-prose);
+  }
   :where(h1, h2, h3) {
     line-height: var(--line-height-heading);
     text-wrap: balance;

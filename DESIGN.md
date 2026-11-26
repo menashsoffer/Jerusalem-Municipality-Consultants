@@ -121,7 +121,7 @@ https://claude.ai/artifact/M8JgKWyYRmCaoWHn6QLe9z, https://claude.ai/artifact/9X
 
 - סולם על בסיס 4px, הטוקנים הקיימים: `--space-xs` 4, `--space-sm` 8, `--space-md` 12,
   `--space-lg` 16, `--space-xl` 24, `--space-2xl` 32. חדש: `--space-3xl` 48.
-- רוחב תוכן: `--page-max-size` (72.5rem, קיים). שוליים צדדיים: 28px במחשב, 16px בנייד.
+- רוחב תוכן: `--page-max-size` (120rem): האתר ממלא את המסך במחשב (בקשת מנש, 26.11.2026). כדי ששורת טקסט לא תימתח, פסקה מוגבלת ל-`--measure-prose` (75ch). שוליים צדדיים: 28px במחשב, 16px בנייד.
 - רשת כרטיסים: `grid-template-columns: repeat(auto-fill, minmax(18rem, 1fr))`, רווח 16px. יוצא
   שלוש עמודות במחשב רגיל ואחת בנייד, בלי נקודות שבירה ידניות.
 - מאפיינים לוגיים בלבד (`inline-start`, `margin-inline` וכו'), כי האתר מימין לשמאל.
