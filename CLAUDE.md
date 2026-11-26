@@ -15,3 +15,5 @@ Follow `documentation/coding-standards-he.md`. It is binding for all new code. I
 - Legacy files listed in section 10 of the standards are being replaced; do not extend them.
 
 The issue-to-PR pipeline rules and protected files are in `AGENTS.md`.
+
+Which skill to use for which task, and the vendored skill copies: `.claude/skills/README.md`.
