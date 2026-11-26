@@ -50,6 +50,18 @@ function Label({
   );
 }
 
+/** "שומר…" over the hidden label, so the button keeps its width and its neighbours stay put. */
+function Saving({ label, children }: { label: string; children: ButtonProps['children'] }) {
+  return (
+    <span className={styles.saving}>
+      <span aria-hidden="true" className={styles.held}>
+        {children}
+      </span>
+      <span>{label}</span>
+    </span>
+  );
+}
+
 function commandAttributes(command: ButtonProps['command']) {
   return command ? { commandfor: command.target, command: command.action } : {};
 }
@@ -87,7 +99,13 @@ export function Button({
       onClick={activate}
       className={`${CLASS[variant] ?? ''} ${className}`}
     >
-      {pending && pendingLabel ? pendingLabel : <Label icon={icon}>{children}</Label>}
+      {pending && pendingLabel ? (
+        <Saving label={pendingLabel}>
+          <Label icon={icon}>{children}</Label>
+        </Saving>
+      ) : (
+        <Label icon={icon}>{children}</Label>
+      )}
     </button>
   );
 }
