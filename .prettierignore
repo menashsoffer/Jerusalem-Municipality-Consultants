@@ -12,3 +12,7 @@ web/src/database.types.ts
 /e2e-dist/
 /test-results/
 /playwright-report/
+
+# Factory pipeline scripts: copied from the template, kept verbatim so they can be synced
+.github/scripts/
+.claude/
