@@ -224,19 +224,16 @@ describe('the supplier area', () => {
     expect(screen.getByRole('link', { name: 'מסמך המאגר' })).toBeDefined();
   });
 
-  it('lists what is missing and moves to that section', async () => {
+  it('lists what is missing in its lane and moves to that section', async () => {
     page({ me: me(), step: 'file', file: FILE });
     const missing = screen.getByRole('region', { name: 'מה חסר לי' });
-    const cards = within(missing).getAllByRole('listitem');
-    expect(cards.map((c) => c.firstChild?.textContent)).toEqual([
-      'רישום אחד מסתיים ב-01.12.2026',
-      'חסר דוא"ל ליצירת קשר',
-    ]);
-    const [ending, contact] = within(missing).getAllByRole('button', { name: 'מעבר' });
-    if (!ending || !contact) throw new Error('two cards expected');
-    await userEvent.click(ending);
+    const urgent = within(missing).getByRole('region', { name: /^דחוף/ });
+    const complete = within(missing).getByRole('region', { name: /^להשלים/ });
+    expect(urgent.textContent).toContain('רישום אחד מסתיים ב-01.12.2026');
+    expect(complete.textContent).toContain('חסר דוא"ל ליצירת קשר');
+    await userEvent.click(within(urgent).getByRole('button', { name: /^מעבר:/ }));
     expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'המאגרים שלי' }));
-    await userEvent.click(contact);
+    await userEvent.click(within(complete).getByRole('button', { name: /^מעבר:/ }));
     expect(document.activeElement).toBe(screen.getByRole('heading', { name: 'הפרטים שלי' }));
   });
 

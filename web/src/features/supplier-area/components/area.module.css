@@ -58,24 +58,6 @@
       align-items: center;
     }
   }
-  .tasks {
-    display: grid;
-    gap: var(--space-sm);
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    & li {
-      display: flex;
-      flex-wrap: wrap;
-      gap: var(--space-sm);
-      align-items: center;
-      justify-content: space-between;
-      padding: var(--space-md);
-      background: var(--color-badge-warning-surface);
-      border-inline-start: 0.25rem solid var(--color-badge-warning-border);
-      border-radius: var(--radius-control);
-    }
-  }
   .until {
     margin-inline-start: auto;
   }
