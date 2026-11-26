@@ -22,7 +22,7 @@ const SCREENS: Screen[] = [
     name: 'home',
     path: '/',
     ready: async (page) => {
-      await heading('בית')(page);
+      await heading(/טוב/)(page);
       await expect(page.getByRole('heading', { name: 'מחכה לך' })).toBeVisible();
     },
   },

@@ -3,7 +3,7 @@ import { describe, it } from 'node:test';
 
 import { ADMIN_SCREENS } from '../../screens.ts';
 import { dateLabel } from '../../../lib/dates.ts';
-import { waitingItems, type HomeOverview } from '../model/overview.ts';
+import { waitingItems, waitingLead, type HomeOverview } from '../model/overview.ts';
 
 const OVERVIEW: HomeOverview = {
   active_suppliers: 1276,
@@ -53,5 +53,24 @@ describe('what waits on the home screen', () => {
 
   it('shows dates the Israeli way', () => {
     assert.equal(dateLabel('2026-12-24'), '24.12.2026');
+  });
+});
+
+describe('the line under the greeting', () => {
+  const item = (tone: 'danger' | 'warning' | 'info') =>
+    ({ id: tone, tone, badge: '', title: '', detail: '', action: '', to: '/' }) as const;
+  it('says how much waits and how much of it is urgent', () => {
+    assert.equal(waitingLead([]), 'אין כרגע עבודה שמחכה לך.');
+    assert.equal(waitingLead([item('danger')]), 'יש נושא אחד פתוח, והוא דחוף.');
+    assert.equal(waitingLead([item('info')]), 'יש נושא אחד פתוח.');
+    assert.equal(
+      waitingLead([item('info'), item('warning')]),
+      'יש 2 נושאים פתוחים. שום דבר לא דחוף.',
+    );
+    assert.equal(
+      waitingLead([item('danger'), item('danger'), item('info')]),
+      'יש 3 נושאים פתוחים, 2 מהם דחופים.',
+    );
+    assert.equal(waitingLead([item('danger'), item('info')]), 'יש 2 נושאים פתוחים, אחד מהם דחוף.');
   });
 });

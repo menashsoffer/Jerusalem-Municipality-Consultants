@@ -42,10 +42,12 @@
     white-space: nowrap;
   }
   /* The product logo. Its own file carries the name, so the header shows no extra title. */
+  /* The logo file has a white background; multiply lets the cream header show through it. */
   .shell-logo {
     display: block;
     block-size: 4.5rem;
     inline-size: auto;
+    mix-blend-mode: multiply;
   }
   .shell-brand-area {
     padding-inline-start: var(--space-md);

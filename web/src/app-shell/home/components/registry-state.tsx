@@ -12,7 +12,7 @@ export function RegistryState({ overview }: { overview: HomeOverview }) {
     : 0;
   const missing = overview.active_suppliers - overview.suppliers_identified;
   return (
-    <section aria-labelledby="home-state">
+    <section aria-labelledby="home-state" className={styles.state}>
       <h2 id="home-state">מצב המאגרים</h2>
       <ul className={styles.stats}>
         <li className={styles.stat}>
