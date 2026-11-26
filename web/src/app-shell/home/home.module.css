@@ -1,26 +1,36 @@
 @layer features {
   /* Option B (Menash, 26.11.2026): greeting and search beside the quick actions, the lanes of
      what waits across the page, then a strip of numbers. One column below 48rem of room. */
+  /* The container is the outer box; a container query styles only what is inside it. */
   .home {
     container: home / inline-size;
   }
-  .home > * {
-    min-width: 0;
-    margin-block-end: var(--space-md);
+  .layout {
+    display: grid;
+    gap: var(--space-md);
+    & > * {
+      min-width: 0;
+    }
   }
   @container home (min-width: 48rem) {
-    .home {
-      display: grid;
+    .layout {
       grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
       grid-template-areas: 'hero side' 'wait wait' 'state state';
-      gap: var(--space-md);
     }
-    .home > * {
-      margin-block-end: 0;
+    .hero {
+      grid-area: hero;
+    }
+    .side {
+      grid-area: side;
+    }
+    .wait {
+      grid-area: wait;
+    }
+    .state {
+      grid-area: state;
     }
   }
   .hero {
-    grid-area: hero;
     align-content: start;
     & h1 {
       margin: 0;
@@ -29,14 +39,9 @@
     }
   }
   .side {
-    grid-area: side;
     align-content: start;
   }
-  .wait {
-    grid-area: wait;
-  }
   .state {
-    grid-area: state;
     & h2 {
       position: absolute;
       inline-size: 1px;

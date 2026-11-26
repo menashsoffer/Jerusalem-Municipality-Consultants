@@ -112,18 +112,20 @@ export function HomePage() {
   const items = waitingItems(home, allowedScreens(who.access), counts);
   return (
     <div className={styles.home}>
-      <Hero lead={waitingLead(items)} />
-      <QuickActions access={who.access} />
-      <WaitingList items={items} />
-      {home ? (
-        <RegistryState overview={home} />
-      ) : (
-        <div className={styles.state}>
-          <Notice tone="info" title="מצב המאגרים לא נטען.">
-            אפשר להמשיך לעבוד. המספרים יופיעו בכניסה הבאה.
-          </Notice>
-        </div>
-      )}
+      <div className={styles.layout}>
+        <Hero lead={waitingLead(items)} />
+        <QuickActions access={who.access} />
+        <WaitingList items={items} />
+        {home ? (
+          <RegistryState overview={home} />
+        ) : (
+          <div className={styles.state}>
+            <Notice tone="info" title="מצב המאגרים לא נטען.">
+              אפשר להמשיך לעבוד. המספרים יופיעו בכניסה הבאה.
+            </Notice>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
