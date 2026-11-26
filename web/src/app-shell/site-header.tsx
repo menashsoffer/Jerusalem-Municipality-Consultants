@@ -2,6 +2,7 @@ import { Link, useLocation } from 'react-router';
 
 import { useCatalogSnapshot } from '../data/react-catalog.ts';
 import { AccountMenu } from './account-menu.tsx';
+import { BrandLogo } from './brand-logo.tsx';
 import { allowedScreens } from './screens.ts';
 import { sectionOf, visibleSections, type Section } from './sections.ts';
 
@@ -21,20 +22,11 @@ function Icon({ path }: { path: string }) {
   );
 }
 
-/** The logo dots and the site name. Not the municipality emblem, which needs approval. */
+/** The product logo, which links home. */
 function Brand() {
   return (
     <Link to="/" className="shell-brand">
-      <span className="shell-dots" aria-hidden="true">
-        <i />
-        <i />
-        <i />
-        <i />
-      </span>
-      <span>
-        מאגרי ספקים
-        <small>עיריית ירושלים</small>
-      </span>
+      <BrandLogo />
     </Link>
   );
 }

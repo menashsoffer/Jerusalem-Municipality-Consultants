@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation, useNavigation } from 'react-router';
 import { Button } from '../ui/button.tsx';
+import { BrandLogo } from './brand-logo.tsx';
 import { getAdminSession } from '../data/rpc.ts';
 import { signOut } from '../features/auth/api/session.ts';
 
@@ -23,16 +24,8 @@ export function SupplierAreaLayout() {
       <header className="shell-header">
         <div className="shell-header-inner">
           <Link to="/supplier-area" className="shell-brand">
-            <span className="shell-dots" aria-hidden="true">
-              <i />
-              <i />
-              <i />
-              <i />
-            </span>
-            <span>
-              {AREA_NAME}
-              <small>עיריית ירושלים</small>
-            </span>
+            <BrandLogo />
+            <span className="shell-brand-area">{AREA_NAME}</span>
           </Link>
           {getAdminSession() && (
             <form action={signOut}>
