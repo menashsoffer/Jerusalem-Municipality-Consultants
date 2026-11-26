@@ -1,5 +1,6 @@
 // "מה חסר לי" and the order of "המאגרים שלי" (supplier-portal-spec-he.md 6.3), without the network.
 import { dayOf } from '../../../lib/dates.ts';
+import type { LaneTone } from '../../../ui/status-lanes.tsx';
 import type { Approach } from '../api/approaches.ts';
 import type { Proposal, SupplierFile } from '../api/portal.ts';
 import { waitingTaskText } from './approaches.ts';
@@ -10,15 +11,16 @@ import { plusDays, validity } from './portal-model.ts';
 export type TaskTarget =
   'details-title' | 'requests-title' | 'registries-title' | 'documents-title' | 'approaches-title';
 
+/** Its lane (DESIGN.md 2.3): urgent, waiting for an answer, or to complete. */
 export interface Task {
   key: string;
+  tone: LaneTone;
   text: string;
   target: TaskTarget;
 }
 
 type Membership = SupplierFile['memberships'][number];
 
-const MAX_TASKS = 3;
 const REJECTED_DAYS = 30;
 
 const count = (n: number, one: string, many: string) => (n === 1 ? one : `${String(n)} ${many}`);
@@ -34,7 +36,7 @@ function endingTask(memberships: Membership[], today: string): Task | null {
     ending.length === 1
       ? `רישום אחד מסתיים ב-${dayOf(first)}`
       : `${String(ending.length)} רישומים מסתיימים בחודשיים הקרובים, הראשון ב-${dayOf(first)}`;
-  return { key: 'ending', text, target: 'registries-title' };
+  return { key: 'ending', tone: 'danger', text, target: 'registries-title' };
 }
 
 function rejectedTask(proposals: Proposal[], today: string): Task | null {
@@ -45,6 +47,7 @@ function rejectedTask(proposals: Proposal[], today: string): Task | null {
   if (n === 0) return null;
   return {
     key: 'rejected',
+    tone: 'danger',
     text: count(n, 'בקשה אחת נדחתה', 'בקשות נדחו'),
     target: 'requests-title',
   };
@@ -61,24 +64,24 @@ function contactTask(file: SupplierFile): Task | null {
       : phone
         ? 'חסר דוא"ל ליצירת קשר'
         : 'חסר טלפון ליצירת קשר';
-  return { key: 'contact', text, target: 'details-title' };
+  return { key: 'contact', tone: 'info', text, target: 'details-title' };
 }
 
 function pendingTask(proposals: Proposal[]): Task | null {
   const n = proposals.filter((p) => p.status === 'pending').length;
   if (n === 0) return null;
   const text = count(n, 'תיקון אחד ממתין לבדיקת העירייה', 'תיקונים ממתינים לבדיקת העירייה');
-  return { key: 'pending', text, target: 'requests-title' };
+  return { key: 'pending', tone: 'warning', text, target: 'requests-title' };
 }
 
 function documentsTask(rows: KindRow[]): Task | null {
   const text = documentsTaskText(rows);
-  return text ? { key: 'documents', text, target: 'documents-title' } : null;
+  return text ? { key: 'documents', tone: 'info', text, target: 'documents-title' } : null;
 }
 
 function approachesTask(approaches: readonly Approach[]): Task | null {
   const text = waitingTaskText(approaches);
-  return text ? { key: 'approaches', text, target: 'approaches-title' } : null;
+  return text ? { key: 'approaches', tone: 'warning', text, target: 'approaches-title' } : null;
 }
 
 export interface FileState {
@@ -88,7 +91,7 @@ export interface FileState {
   approaches?: readonly Approach[];
 }
 
-/** Up to three things the supplier should look at, most urgent first; empty when all is well. */
+/** What the supplier should look at, most urgent first; empty when all is well. */
 export function missingTasks(state: FileState, today: string): Task[] {
   const { file, proposals, documents, approaches = [] } = state;
   const tasks = [
@@ -99,7 +102,7 @@ export function missingTasks(state: FileState, today: string): Task[] {
     contactTask(file),
     pendingTask(proposals),
   ];
-  return tasks.filter((t): t is Task => t !== null).slice(0, MAX_TASKS);
+  return tasks.filter((t): t is Task => t !== null);
 }
 
 const ORDER: Record<ReturnType<typeof validity>, number> = { soon: 0, valid: 1, open: 1, ended: 2 };

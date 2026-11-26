@@ -57,6 +57,7 @@ describe('what the supplier is missing', () => {
     assert.deepEqual(one, [
       {
         key: 'ending',
+        tone: 'danger',
         text: `רישום אחד מסתיים ב-${dayOf('2026-12-31')}`,
         target: 'registries-title',
       },
@@ -93,14 +94,28 @@ describe('what the supplier is missing', () => {
     assert.equal(tasksOf(file(), [proposal({})], TODAY)[0]?.text, 'תיקון אחד ממתין לבדיקת העירייה');
     const two = tasksOf(file(), [proposal({}), proposal({ id: 'q' })], TODAY);
     assert.deepEqual(two, [
-      { key: 'pending', text: '2 תיקונים ממתינים לבדיקת העירייה', target: 'requests-title' },
+      {
+        key: 'pending',
+        tone: 'warning',
+        text: '2 תיקונים ממתינים לבדיקת העירייה',
+        target: 'requests-title',
+      },
     ]);
   });
 
-  it('keeps the three most urgent cards', () => {
+  it('shows every card, most urgent first, each in its lane', () => {
     const busy = file({ contacts: [], memberships: [membership('א', '2026-12-01')] });
     const proposals = [proposal({ status: 'rejected', decided_at: '2026-11-21' }), proposal({})];
-    assert.deepEqual(keys(busy, proposals), ['ending', 'rejected', 'contact']);
+    const tasks = tasksOf(busy, proposals, TODAY);
+    assert.deepEqual(
+      tasks.map((t) => [t.key, t.tone]),
+      [
+        ['ending', 'danger'],
+        ['rejected', 'danger'],
+        ['contact', 'info'],
+        ['pending', 'warning'],
+      ],
+    );
   });
 });
 

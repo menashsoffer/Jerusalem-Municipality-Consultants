@@ -2,6 +2,7 @@
 // the state of the registries. The counts come from home_overview and admin_overview.
 import { z } from '../../../data/zod.ts';
 import { dateLabel } from '../../../lib/dates.ts';
+import type { LaneTone } from '../../../ui/status-lanes.tsx';
 import type { AdminScreen, OverviewKey } from '../../screens.ts';
 
 const count = z.number().int().nonnegative();
@@ -25,7 +26,7 @@ export type HomeOverview = z.infer<typeof homeSchema>;
 export type PopularSearch = NonNullable<HomeOverview['popular_searches']>[number];
 export type AdminCounts = Partial<Record<OverviewKey, number | undefined>>;
 
-export type Tone = 'danger' | 'warning' | 'info';
+export type Tone = LaneTone;
 
 /** One line of "מחכה לך": what, why it matters and where to handle it. */
 export interface WaitingItem {
