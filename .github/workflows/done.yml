@@ -1,0 +1,79 @@
+name: Pipeline · Done
+
+# A PR closed. Linked issues: closingIssuesReferences, or else the issue a
+# same-repo `issue-<n>-<slug>` head branch names (see planPrClosed in
+# pipeline-lib.mjs).
+# - Merged: the PR and its issues get stage:done (every other stage:* label
+#   removed) and move to "Done" in the Project. No router.
+# - Closed without merging: each linked issue that is still open and has no
+#   other open PR gets a `pr_closed` outcome note and stage:routing; the
+#   router hands it to a human. The closed PR's stage labels are cleared.
+# - No linked issue (Dependabot, manual PRs): nothing.
+# Never runs PR code: it checks out only .github/scripts from the default
+# branch. Fork PRs are ignored.
+on:
+  pull_request:
+    types: [closed]
+
+permissions: {}
+
+jobs:
+  done:
+    if: >-
+      vars.PIPELINE_APP_CLIENT_ID != '' &&
+      github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    concurrency:
+      group: pipeline-pr-${{ github.event.pull_request.number }}-done
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      pull-requests: read
+      issues: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      # Read-only, so PRs with nothing to do (e.g. closed by Dependabot,
+      # which gets no App secrets) never need the App token.
+      - id: plan
+        env:
+          GH_TOKEN: ${{ github.token }}
+          N: ${{ github.event.pull_request.number }}
+          CLOSED_BY: ${{ github.event.sender.login }}
+        run: node .github/scripts/pipeline.mjs pr-closed-plan "$N" "$RUNNER_TEMP/pr-closed.json"
+
+      # App token: outcome notes must be bot-authored for the router to trust
+      # them, and label changes made with GITHUB_TOKEN trigger nothing.
+      - id: app
+        if: ${{ steps.plan.outputs.act == 'true' }}
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PIPELINE_APP_PRIVATE_KEY }}
+          permission-issues: write
+          permission-pull-requests: write
+
+      - name: Label the PR and its issues
+        if: ${{ steps.plan.outputs.act == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          PIPELINE_BOT_LOGIN: ${{ vars.PIPELINE_BOT_LOGIN }}
+        run: node .github/scripts/pipeline.mjs pr-closed "$RUNNER_TEMP/pr-closed.json"
+
+      # project-sync.yml also maps stage:done to Done; this keeps the board
+      # right even if that run is skipped or races the item closing.
+      - name: Move cards to Done
+        if: ${{ github.event.pull_request.merged && steps.plan.outputs.act == 'true' && vars.PROJECT_URL != '' }}
+        env:
+          GH_TOKEN: ${{ secrets.PROJECT_TOKEN }}
+          PROJECT_URL: ${{ vars.PROJECT_URL }}
+          PR_ID: ${{ steps.plan.outputs.pr_node_id }}
+          ISSUE_IDS: ${{ steps.plan.outputs.issue_node_ids }}
+        run: |
+          node .github/scripts/pipeline.mjs project-status --project-url "$PROJECT_URL" --status Done \
+            --content-id "$PR_ID" --content-id "$ISSUE_IDS"

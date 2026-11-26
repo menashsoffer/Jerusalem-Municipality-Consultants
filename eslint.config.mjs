@@ -38,6 +38,7 @@ const featureZones = features.map(({ name }) => ({
 export default defineConfig(
   globalIgnores([
     'node_modules/**',
+    '.github/scripts/**',
     'dist/**',
     'e2e-dist/**',
     'test-results/**',

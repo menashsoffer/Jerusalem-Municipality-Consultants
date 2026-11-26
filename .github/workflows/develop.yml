@@ -1,0 +1,279 @@
+name: Pipeline · Develop
+
+# stage:planned -> Claude implements on issue-<n>-<slug> and runs npm run check
+# -> a deterministic job pushes the branch, opens a draft PR ("Closes #n"),
+# appends an outcome note and labels stage:building. On a problem (agent
+# blocked, failed run, rejected patch) the report job appends an outcome
+# note and sets stage:routing. The agent never holds a write token: its
+# commits leave the job as a patch that is checked before it is pushed.
+# A patch whose protected paths are all approvable (package.json, the
+# lockfile) is
+# pushed WITHOUT a PR and the owner approves it first, on the issue
+# (protected-approve.yml): protected content runs with repo secrets as soon
+# as a pull_request workflow runs on it. No workflow may trigger on a push
+# of an issue-<n>-<slug> branch (pipeline-lib.test.mjs, "push guard").
+# Never-approvable paths (.github/, tools/security/, ...) stay a hard gate.
+on:
+  issues:
+    types: [labeled]
+
+permissions: {}
+
+jobs:
+  implement:
+    if: ${{ github.event.label.name == 'stage:planned' && !github.event.issue.pull_request && github.event.issue.state == 'open' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    concurrency:
+      group: pipeline-issue-${{ github.event.issue.number }}-develop
+      cancel-in-progress: false
+    permissions:
+      contents: read
+      issues: read
+    outputs:
+      branch: ${{ steps.branch.outputs.branch }}
+      base: ${{ steps.branch.outputs.base }}
+      result: ${{ steps.claude.outputs.structured_output }}
+      prompt_version: ${{ steps.prompt.outputs.version }}
+      patch_rejected: ${{ steps.guard.outputs.rejected }}
+      # none | approvable (see check-patch) and the sorted protected paths.
+      protected: ${{ steps.guard.outputs.protected }}
+      protected_paths: ${{ steps.guard.outputs.protected_paths }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.repository.default_branch }}
+          persist-credentials: false
+
+      - uses: ./.github/actions/setup
+
+      # The spec and plan come only from the pipeline bot's marker comments.
+      - name: Collect issue, spec and plan (untrusted data)
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PIPELINE_BOT_LOGIN: ${{ vars.PIPELINE_BOT_LOGIN }}
+          N: ${{ github.event.issue.number }}
+        run: |
+          mkdir -p .pipeline
+          node .github/scripts/pipeline.mjs collect-issue "$N" .pipeline/issue.json
+
+      - id: branch
+        env:
+          ISSUE_TITLE: ${{ github.event.issue.title }}
+        run: |
+          node .github/scripts/pipeline.mjs branch-name "${{ github.event.issue.number }}"
+          echo "base=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+
+      - name: Create working branch
+        env:
+          BRANCH: ${{ steps.branch.outputs.branch }}
+        run: |
+          git switch -c "$BRANCH"
+          git config user.name "pipeline-agent"
+          git config user.email "pipeline-agent@users.noreply.github.com"
+
+      - id: prompt
+        env:
+          BRANCH: ${{ steps.branch.outputs.branch }}
+        run: |
+          node .github/scripts/pipeline.mjs render-prompt \
+            --prompt .github/prompts/develop.md --output prompt \
+            --context "repository=$GITHUB_REPOSITORY" \
+            --context "issue=#${{ github.event.issue.number }}" \
+            --context "branch=$BRANCH" \
+            --data issue=.pipeline/issue.json
+
+      - id: claude
+        uses: anthropics/claude-code-action@f3b070c88125d33dbae5653df5f143101d4ea9dc # v1.0.276
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          github_token: ${{ github.token }}
+          allowed_bots: ${{ vars.PIPELINE_BOT_LOGIN }}
+          prompt: ${{ steps.prompt.outputs.prompt }}
+          claude_args: >-
+            --max-turns 150
+            --allowedTools "Read,Glob,Grep,Edit,MultiEdit,Write,TodoWrite,Bash(npm:*),Bash(git status:*),Bash(git diff:*),Bash(git log:*),Bash(git add:*),Bash(git commit:*),Bash(ls:*)"
+            --disallowedTools "WebFetch,WebSearch,Bash(git push:*),Bash(gh:*),Bash(curl:*),Bash(wget:*)"
+            --json-schema '{"type":"object","additionalProperties":false,"required":["status","pr_title","pr_body","blocked_reason","problem"],"properties":{"status":{"type":"string","enum":["done","blocked"]},"pr_title":{"type":"string","maxLength":100},"pr_body":{"type":"string"},"blocked_reason":{"type":"string"},"problem":{"type":"string","enum":["none","verify_failed","plan_gap","protected_surface","needs_secrets_ci_infra","agent_error"]}}}'
+
+      # Diagnosis only (issue #120): the execution file holds the whole transcript,
+      # so the script prints just an allowlisted summary of the last SDK result.
+      - name: Summarize agent failure
+        if: ${{ failure() }}
+        env:
+          EXECUTION_FILE: ${{ steps.claude.outputs.execution_file }}
+        run: node .github/scripts/agent-failure-summary.mjs "$EXECUTION_FILE"
+
+      - name: Package commits as a patch
+        env:
+          BASE: ${{ steps.branch.outputs.base }}
+        run: |
+          rm -rf .pipeline
+          # Drop uncommitted tool files in protected dirs (committed ones are rejected below).
+          git checkout -- .claude 2>/dev/null || true
+          git clean -fdq -- .claude
+          if [[ -n "$(git status --porcelain)" ]]; then
+            git add -A
+            git commit -m "Add remaining agent changes"
+          fi
+          mkdir -p "$RUNNER_TEMP/out"
+          git -c core.quotePath=false format-patch "$BASE..HEAD" --stdout > "$RUNNER_TEMP/out/changes.patch"
+          test -s "$RUNNER_TEMP/out/changes.patch" || { echo "::error::The agent produced no commits"; exit 1; }
+
+      # A rejected patch is the forbidden_path hard gate, not an agent error.
+      # Protected paths that are all approvable pass with protected=approvable.
+      - id: guard
+        run: |
+          if ! node .github/scripts/pipeline.mjs check-patch --accept approvable "$RUNNER_TEMP/out/changes.patch"; then
+            echo "rejected=true" >> "$GITHUB_OUTPUT"; exit 1
+          fi
+
+      - if: ${{ steps.guard.outputs.protected != 'approvable' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: develop-patch
+          path: ${{ runner.temp }}/out/changes.patch
+          retention-days: 7
+
+      # Protected changes wait for the owner: a separate artifact name so
+      # nothing downstream can mistake it for a patch that opens a PR.
+      - if: ${{ steps.guard.outputs.protected == 'approvable' }}
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: protected-patch
+          path: ${{ runner.temp }}/out/changes.patch
+          retention-days: 7
+
+  publish:
+    needs: implement
+    if: ${{ fromJSON(needs.implement.outputs.result || '{}').status == 'done' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pipeline-issue-${{ github.event.issue.number }}-develop-publish
+      cancel-in-progress: false
+    permissions:
+      contents: read
+    outputs:
+      patch_rejected: ${{ steps.guard.outputs.rejected || steps.push.outputs.rejected }}
+    steps:
+      # App token: pushes/PRs made with GITHUB_TOKEN would not trigger CI.
+      # No `workflows` permission, so it can never push workflow changes.
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PIPELINE_APP_PRIVATE_KEY }}
+          permission-contents: write
+          permission-pull-requests: write
+          permission-issues: write
+
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ needs.implement.outputs.base }}
+          persist-credentials: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ needs.implement.outputs.protected == 'approvable' && 'protected-patch' || 'develop-patch' }}
+          path: ${{ runner.temp }}/in
+
+      # Checked again here: the patch crossed a job boundary, and it must be
+      # exactly the kind the implement job saw.
+      - id: guard
+        env:
+          PROTECTED: ${{ needs.implement.outputs.protected }}
+        run: |
+          if ! node .github/scripts/pipeline.mjs check-patch --expect "${PROTECTED:-none}" "$RUNNER_TEMP/in/changes.patch"; then
+            echo "rejected=true" >> "$GITHUB_OUTPUT"; exit 1
+          fi
+
+      # The branch is pushed either way. A patch with no protected path then
+      # opens a draft PR. An approvable one opens NO PR: the bot posts the diff
+      # on the issue and the issue waits in stage:awaiting-approval for the
+      # owner's /approve-protected, which opens the PR (protected-approve.yml).
+      # Nothing runs on this code before that. A branch that turns out to hold
+      # a never-approvable path is deleted and reported as forbidden_path.
+      - name: Push branch, then open a draft PR or ask the owner
+        id: push
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          N: ${{ github.event.issue.number }}
+          BRANCH: ${{ needs.implement.outputs.branch }}
+          RESULT: ${{ needs.implement.outputs.result }}
+          VERSION: ${{ needs.implement.outputs.prompt_version }}
+          DEFAULT_BRANCH: ${{ github.event.repository.default_branch }}
+          PROTECTED: ${{ steps.guard.outputs.protected }}
+        run: |
+          if [[ -n "$(gh pr list --repo "$GITHUB_REPOSITORY" --head "$BRANCH" --state open --json number --jq '.[].number')" ]]; then
+            echo "::notice::An open PR already exists for $BRANCH; nothing to do."
+            exit 0
+          fi
+          git config user.name "pipeline-agent"
+          git config user.email "pipeline-agent@users.noreply.github.com"
+          git switch -c "$BRANCH"
+          git am --keep-cr "$RUNNER_TEMP/in/changes.patch"
+          # issue-<n>-* branches belong to the pipeline; no open PR uses this one (checked above).
+          # The token goes in an environment-supplied header, not the URL, so it
+          # is not in the command line (`ps`) or the remote config.
+          auth=$(printf 'x-access-token:%s' "$GH_TOKEN" | base64 | tr -d '\n')
+          echo "::add-mask::$auth"
+          GIT_CONFIG_COUNT=1 \
+            GIT_CONFIG_KEY_0="http.https://github.com/.extraheader" \
+            GIT_CONFIG_VALUE_0="Authorization: basic $auth" \
+            git push --force "https://github.com/${GITHUB_REPOSITORY}.git" "HEAD:refs/heads/$BRANCH"
+
+          if [[ "$PROTECTED" == "approvable" ]]; then
+            printf '%s' "$RESULT" > result.json
+            node .github/scripts/pipeline.mjs protected-request "$N" --branch "$BRANCH" \
+              --result result.json --prompt-version "develop.md@$VERSION"
+            exit 0
+          fi
+
+          title=$(jq -r '.pr_title' <<<"$RESULT")
+          { jq -r '.pr_body' <<<"$RESULT"; echo; echo "Closes #$N"; echo;
+            echo "<sub>Implemented by Claude with prompt develop.md@$VERSION. Draft until the review gates pass. Only a human can approve and merge.</sub>"; } > body.md
+          url=$(gh pr create --repo "$GITHUB_REPOSITORY" --draft --base "$DEFAULT_BRANCH" \
+            --head "$BRANCH" --title "$title" --body-file body.md)
+          pr=${url##*/}
+          node .github/scripts/pipeline.mjs set-stage "$pr" stage:building
+          jq -n --arg s "Draft PR #$pr opened." --arg v "develop.md@$VERSION" \
+            '{stage: "develop", result: "success", summary: $s, prompt_version: $v}' > outcome.json
+          node .github/scripts/pipeline.mjs outcome "$N" outcome.json
+          node .github/scripts/pipeline.mjs set-stage "$N" stage:building
+
+  report:
+    needs: [implement, publish]
+    if: ${{ always() && needs.implement.result != 'skipped' && (needs.implement.result != 'success' || needs.publish.result != 'success') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+
+      - id: app
+        uses: actions/create-github-app-token@64ab729a6294000f5aa4a4bc0b73d1f32bc45510 # v3.3.0
+        with:
+          client-id: ${{ vars.PIPELINE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.PIPELINE_APP_PRIVATE_KEY }}
+          permission-issues: write
+
+      - name: Report the problem to the router (stage:routing)
+        env:
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+          N: ${{ github.event.issue.number }}
+          RESULT: ${{ needs.implement.outputs.result }}
+          IMPLEMENT: ${{ needs.implement.result }}
+          PUBLISH: ${{ needs.publish.result }}
+          REJECTED: ${{ needs.implement.outputs.patch_rejected || needs.publish.outputs.patch_rejected }}
+          VERSION: ${{ needs.implement.outputs.prompt_version }}
+        run: |
+          printf '%s' "$RESULT" > result.json
+          node .github/scripts/pipeline.mjs classify develop --job-result "$IMPLEMENT" \
+            --publish-result "$PUBLISH" --result result.json --patch-rejected "${REJECTED:-false}" \
+            --prompt-version "develop.md@${VERSION:-unknown}" --out outcome.json
+          node .github/scripts/pipeline.mjs outcome "$N" outcome.json

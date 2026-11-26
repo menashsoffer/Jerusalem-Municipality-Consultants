@@ -13,3 +13,5 @@ Follow `documentation/coding-standards-he.md`. It is binding for all new code. I
 - Run `npm run check` (and `ruff format --check . && ruff check .` for Python) before pushing.
 - Code, comments and commit messages in English. User-facing text and `documentation/` in Hebrew.
 - Legacy files listed in section 10 of the standards are being replaced; do not extend them.
+
+The issue-to-PR pipeline rules and protected files are in `AGENTS.md`.
