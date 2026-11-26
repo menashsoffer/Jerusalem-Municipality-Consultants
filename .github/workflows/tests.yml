@@ -63,6 +63,15 @@ jobs:
             | sed -E 's/^([A-Z_]+)="?([^"]*)"?$/E2E_\1=\2/' >> "$GITHUB_ENV"
       - run: npx playwright install --with-deps chromium
       - run: npm run e2e
+      # TEMPORARY (PR #181): retake the screen pictures on the runner and print them, so the new
+      # header's baselines can be committed. Removed before merge.
+      - if: failure()
+        run: |
+          npx playwright test --project screens-phone --project screens-desktop --update-snapshots || true
+          echo "BASELINE-BEGIN"
+          tar czf - e2e/screens/baseline | base64 -w 0 | fold -w 60000
+          echo
+          echo "BASELINE-END"
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
