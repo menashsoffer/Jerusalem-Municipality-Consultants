@@ -203,7 +203,7 @@ Nothing happens until these files are on `main`.
    | variable | `ROUTER_MODE`              | optional: `rules` (default when unset) or `external` ([Router](pipeline-router.md#router))                                                                                                                           |
    | variable | `ROUTER_SHADOW`            | optional: `true` records the external brain's pick without using it                                                                                                                                                  |
 
-4. **Labels:** `tools/scripts/pipeline/setup-labels.sh` (re-run it after
+4. **Labels:** `.github/pipeline/setup-labels.sh` (re-run it after
    upgrading to add new labels such as `stage:done` or
    `stage:awaiting-approval`; it is idempotent)
 5. **Project:** `gh auth refresh -s project && tools/scripts/pipeline/setup-project.sh`,
