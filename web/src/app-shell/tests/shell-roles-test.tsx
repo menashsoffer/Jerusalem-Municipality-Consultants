@@ -58,9 +58,24 @@ describe('top bar', () => {
       'איתור ספקים',
       'בקשות',
     ]);
-    const personal = screen.getByRole('link', { name: 'האזור האישי' });
-    expect(personal.textContent).toBe('D');
+    const personal = screen.getByRole('link', { name: /dana/ });
+    expect(personal.textContent).toContain('D');
+    expect(personal.textContent).toContain('dana');
+    expect(personal.textContent).toContain('צופה');
     expect(personal.getAttribute('href')).toBe('/auth');
+  });
+
+  it('marks the current tab, links the logo home and reserves a hidden search slot', async () => {
+    signedIn(['editor']);
+    at('/', <SiteHeader />);
+    const nav = await screen.findByRole('navigation', { name: 'ניווט ראשי' });
+    expect(nav.querySelector('[aria-current="page"]')?.textContent).toBe('בית');
+    expect(screen.getByRole('link', { name: 'ניהול' }).getAttribute('href')).toBe('/admin');
+    expect(screen.getByRole('link', { name: 'שווה לעבוד בירושלים' }).getAttribute('href')).toBe(
+      '/',
+    );
+    const slot = document.querySelector('[data-slot="quick-search"]');
+    expect(slot?.getAttribute('aria-hidden')).toBe('true');
   });
 
   it('shows the admin tab to an editor', async () => {

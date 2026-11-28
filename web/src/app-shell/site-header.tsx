@@ -1,6 +1,7 @@
 import { Link, useLocation } from 'react-router';
 
 import { useCatalogSnapshot } from '../data/react-catalog.ts';
+import styles from './nav/nav.module.css';
 import { AccountMenu } from './account-menu.tsx';
 import { BrandLogo } from './brand-logo.tsx';
 import { allowedScreens } from './screens.ts';
@@ -16,7 +17,7 @@ const ICONS: Record<Section['key'], string> = {
 
 function Icon({ path }: { path: string }) {
   return (
-    <svg className="shell-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+    <svg className={styles.icon} viewBox="0 0 24 24" aria-hidden="true" focusable="false">
       <path d={path} />
     </svg>
   );
@@ -25,8 +26,8 @@ function Icon({ path }: { path: string }) {
 /** The product logo, which links home. */
 function Brand() {
   return (
-    <Link to="/" className="shell-brand">
-      <BrandLogo />
+    <Link to="/" className={styles.brand}>
+      <BrandLogo className={styles.logo} />
     </Link>
   );
 }
@@ -34,7 +35,7 @@ function Brand() {
 /**
  * Top bar with the brand, the section tabs the user may open and the account menu, then the
  * logo color stripe, whose colors flow while a screen loads (DESIGN.md 6.8). Below 48rem the
- * tabs move to a bar fixed at the bottom of the screen (shell.css).
+ * tabs move to a bar fixed at the bottom of the screen (nav/nav.module.css).
  */
 export function SiteHeader({ busy = false }: { busy?: boolean }) {
   const current = sectionOf(useLocation().pathname);
@@ -43,21 +44,26 @@ export function SiteHeader({ busy = false }: { busy?: boolean }) {
   const sections = visibleSections(access, allowedScreens(access).length > 0);
   return (
     <header className="shell-header">
-      <div className="shell-header-inner">
+      <div className={styles.upper}>
         <Brand />
-        <nav aria-label="ניווט ראשי" className="shell-nav">
-          {sections.map((section) => (
-            <Link
-              key={section.key}
-              to={section.to}
-              aria-current={section.key === current ? 'page' : undefined}
-            >
-              <Icon path={ICONS[section.key]} />
-              {section.label}
-            </Link>
-          ))}
-        </nav>
+        <div className={styles.search} aria-hidden="true" data-slot="quick-search" />
         <AccountMenu />
+      </div>
+      <div className={styles.lowerBand}>
+        <div className={styles.lower}>
+          <nav aria-label="ניווט ראשי" className={styles.tabs}>
+            {sections.map((section) => (
+              <Link
+                key={section.key}
+                to={section.to}
+                aria-current={section.key === current ? 'page' : undefined}
+              >
+                <Icon path={ICONS[section.key]} />
+                {section.label}
+              </Link>
+            ))}
+          </nav>
+        </div>
       </div>
       <div className="shell-stripe" aria-hidden="true" data-busy={busy || undefined} />
     </header>
